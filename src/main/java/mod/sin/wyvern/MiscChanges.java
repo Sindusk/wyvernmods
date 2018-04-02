@@ -254,11 +254,13 @@ public class MiscChanges {
 	
 	public static void sendServerTabMessage(final String message, final int red, final int green, final int blue){
 		DiscordRelay.sendToDiscord("event", message);
-		Runnable r = () -> {
-            Message mess;
-            for(Player rec : Players.getInstance().getPlayers()){
-                mess = new Message(rec, (byte)16, "Server", message, red, green, blue);
-                rec.getCommunicator().sendMessage(mess);
+		Runnable r = new Runnable() {
+            public void run() {
+                Message mess;
+                for (Player rec : Players.getInstance().getPlayers()) {
+                    mess = new Message(rec, (byte) 16, "Server", message, red, green, blue);
+                    rec.getCommunicator().sendMessage(mess);
+                }
             }
         };
         r.run();
@@ -318,9 +320,6 @@ public class MiscChanges {
             CtClass ctPlanBridgeChecks = classPool.get("com.wurmonline.server.structures.PlanBridgeChecks");
             replace = "{ return new com.wurmonline.server.structures.PlanBridgeCheckResult(false); }";
             Util.setBodyDeclared(thisClass, ctPlanBridgeChecks, "checkForBuildings", replace);
-            /*ctPlanBridgeChecks.getDeclaredMethod("checkForBuildings").setBody("{"
-            		+ "  return new com.wurmonline.server.structures.PlanBridgeCheckResult(false);"
-            		+ "}");*/
 
             // - Disable mailboxes from being used while loaded - //
             CtClass ctItem = classPool.get("com.wurmonline.server.items.Item");
