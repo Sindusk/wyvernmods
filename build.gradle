@@ -5,6 +5,7 @@ version "1.0"
 
 repositories {
     mavenCentral()
+    maven { url "http://jcenter.bintray.com" }
     maven { url "http://gotti.no-ip.org/maven/repository" }
     maven { url 'https://jitpack.io' }
 }
@@ -12,6 +13,8 @@ repositories {
 dependencies {
     compile 'org.gotti.wurmunlimited:server-modlauncher:0.33-beta1'
     compile 'com.github.Sindusk:sindusklibrary:v1.0'
+    compile 'com.github.Sindusk:DiscordRelay:v1.1'
+    compile 'com.github.Sindusk:TreasureHunting:1.1.4'
 }
 
 jar {

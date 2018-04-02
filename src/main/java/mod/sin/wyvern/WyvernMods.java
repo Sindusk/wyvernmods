@@ -157,7 +157,7 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 		// Epic:
 		logger.info("Registering Epic creatures.");
 		ModCreatures.addCreature(new LavaFiend());
-		ModCreatures.addCreature(new SolDemon());
+		//ModCreatures.addCreature(new SolDemon());
 		ModCreatures.addCreature(new Worg());
 		
 		// Wyverns:
@@ -168,17 +168,17 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 		
 		// Flavor Mobs:
 		ModCreatures.addCreature(new Avenger());
-		ModCreatures.addCreature(new Charger());
+		//ModCreatures.addCreature(new Charger());
 		ModCreatures.addCreature(new ForestSpider());
 		ModCreatures.addCreature(new Giant());
-		ModCreatures.addCreature(new HornedPony());
-		ModCreatures.addCreature(new LargeBoar());
+		//ModCreatures.addCreature(new HornedPony());
+		//ModCreatures.addCreature(new LargeBoar());
 		ModCreatures.addCreature(new SpiritTroll());
 		
 		// Bosses:
 		logger.info("Registering Custom Boss creatures.");
-		ModCreatures.addCreature(new Reaper());
-		ModCreatures.addCreature(new SpectralDrake());
+		//ModCreatures.addCreature(new Reaper());
+		//ModCreatures.addCreature(new SpectralDrake());
 		// Uniques:
 		ModCreatures.addCreature(new Facebreyker());
 		
@@ -193,8 +193,8 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 		
 		// NPC's
 		logger.info("Registering Custom NPC creatures.");
-		ModCreatures.addCreature(new RobZombie());
-		ModCreatures.addCreature(new MacroSlayer());
+		//ModCreatures.addCreature(new RobZombie());
+		//ModCreatures.addCreature(new MacroSlayer());
 		
 		Bounty.init();
 		

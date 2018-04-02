@@ -1,33 +1,9 @@
 package mod.sin.wyvern;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.gotti.wurmunlimited.modloader.ReflectionUtil;
-import org.gotti.wurmunlimited.modloader.classhooks.HookException;
-import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
-import org.gotti.wurmunlimited.modloader.classhooks.InvocationHandlerFactory;
-import org.nyxcode.wurm.discordrelay.DiscordRelay;
-
 import com.wurmonline.mesh.Tiles;
-import com.wurmonline.server.Items;
-import com.wurmonline.server.NoSuchItemException;
-import com.wurmonline.server.NoSuchPlayerException;
-import com.wurmonline.server.Players;
-import com.wurmonline.server.Server;
-import com.wurmonline.server.Servers;
-import com.wurmonline.server.TimeConstants;
-import com.wurmonline.server.WurmId;
+import com.wurmonline.server.*;
 import com.wurmonline.server.bodys.Wound;
-import com.wurmonline.server.creatures.Creature;
-import com.wurmonline.server.creatures.CreatureTemplate;
-import com.wurmonline.server.creatures.CreatureTemplateFactory;
-import com.wurmonline.server.creatures.MovementScheme;
-import com.wurmonline.server.creatures.NoSuchCreatureException;
+import com.wurmonline.server.creatures.*;
 import com.wurmonline.server.items.Item;
 import com.wurmonline.server.items.ItemList;
 import com.wurmonline.server.modifiers.DoubleValueModifier;
@@ -39,28 +15,25 @@ import com.wurmonline.server.zones.NoSuchZoneException;
 import com.wurmonline.server.zones.Zone;
 import com.wurmonline.server.zones.Zones;
 import com.wurmonline.shared.constants.Enchants;
-
-import javassist.CannotCompileException;
-import javassist.ClassPool;
-import javassist.CtClass;
-import javassist.CtConstructor;
-import javassist.CtMethod;
-import javassist.NotFoundException;
+import javassist.*;
 import javassist.bytecode.Descriptor;
 import javassist.expr.ExprEditor;
 import javassist.expr.FieldAccess;
 import javassist.expr.MethodCall;
-import mod.sin.creatures.Avenger;
-import mod.sin.creatures.Charger;
-import mod.sin.creatures.SpiritTroll;
-import mod.sin.creatures.WyvernBlack;
-import mod.sin.creatures.WyvernGreen;
-import mod.sin.creatures.WyvernRed;
-import mod.sin.creatures.WyvernWhite;
+import mod.sin.creatures.*;
 import mod.sin.items.SealedMap;
 import mod.sin.lib.Util;
 import mod.sin.wyvern.arena.Arena;
 import mod.sin.wyvern.bestiary.MethodsBestiary;
+import org.gotti.wurmunlimited.modloader.ReflectionUtil;
+import org.gotti.wurmunlimited.modloader.classhooks.HookException;
+import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
+import org.nyxcode.wurm.discordrelay.DiscordRelay;
+
+import java.util.HashMap;
+import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class MiscChanges {
 	public static Logger logger = Logger.getLogger(MiscChanges.class.getName());
@@ -78,7 +51,7 @@ public class MiscChanges {
 		return ctype;
 	}
 	
-	protected static HashMap<Creature, Double> defDamage = new HashMap<Creature, Double>();
+	protected static HashMap<Creature, Double> defDamage = new HashMap<>();
 	public static void setDefDamage(Creature cret, double damage){
 		defDamage.put(cret, damage);
 	}
@@ -91,19 +64,13 @@ public class MiscChanges {
 		logger.severe("Severe error: could not find defDamage for creature "+cret);
 		return 0d;
 	}
-	
-	public static void sendRumour(Creature creature){
-		DiscordRelay.sendToDiscord("rumors", "Rumours of " + creature.getName() + " are starting to spread.");
-	}
-	
+
 	public static int getNewVillageTiles(int tiles){
 		float power = 2f;
 		float changeRate = 1000;
 		float maxNumTiles = 50000;
-		float tilesFloat = tiles;
-		// =(C2) * (1-POW(C2/$C$16, $A$24)) + (SQRT(C2)*$A$26) * POW(C2/$C$16, $A$24)
-		int newTiles = (int) (tilesFloat * (1-Math.pow(tilesFloat/maxNumTiles, power)) + (Math.sqrt(tilesFloat)*changeRate) * Math.pow(tilesFloat/maxNumTiles, power));
-		return newTiles;
+        // =(C2) * (1-POW(C2/$C$16, $A$24)) + (SQRT(C2)*$A$26) * POW(C2/$C$16, $A$24)
+        return (int) ((float) tiles * (1-Math.pow((float) tiles /maxNumTiles, power)) + (Math.sqrt((float) tiles)*changeRate) * Math.pow((float) tiles /maxNumTiles, power));
 	}
 	
 	private static final float PRICE_MARKUP = 1f/1.4f;
@@ -116,15 +83,14 @@ public class MiscChanges {
 			float baseCost = 100000f;
 			float power = 11.0f;
 			// =((10+B2/4.5)*(1-POW(A2/100, $A$27)) + B2*POW(A2/100, $A$27)) * ((100 - $A$29) / 100)
-			int newValue = (int) (((baseCost+(initialValue/4.5f)) * (1f-Math.pow(qual/100f, power)) + initialValue*Math.pow(qual/100f, power)) * ((100f-dam)/100f) * PRICE_MARKUP);
-			return newValue;
+            return (int) (((baseCost+(initialValue/4.5f)) * (1f-Math.pow(qual/100f, power)) + initialValue*Math.pow(qual/100f, power)) * ((100f-dam)/100f) * PRICE_MARKUP);
 		}
 		return -10;
 	}
 	
 	public static void checkEnchantedBreed(Creature creature){
 		int tile = Server.surfaceMesh.getTile(creature.getTileX(), creature.getTileY());
-        byte type = Tiles.decodeType((int)tile);
+        byte type = Tiles.decodeType(tile);
         if (type == Tiles.Tile.TILE_ENCHANTED_GRASS.id){
         	logger.info("Creature "+creature.getName()+" was born on enchanted grass, and has a negative trait removed!");
         	Server.getInstance().broadCastAction(creature.getName()+" was born on enchanted grass, and feels more healthy!", creature, 10);
@@ -136,11 +102,10 @@ public class MiscChanges {
 		int templateId = creature.getTemplate().getTemplateId();
 		if(templateId == Avenger.templateId){
 			return true;
-		}else if(Arena.isTitan(creature)){
-			return true;
-		}
-		return false;
-	}
+		}else{
+            return Arena.isTitan(creature);
+        }
+    }
 	
 	public static boolean insertItemIntoVehicle(Item item, Item vehicle, Creature performer) {
         // If can put into crates, try that
@@ -224,7 +189,6 @@ public class MiscChanges {
 				e.printStackTrace();
 			}
 		}
-		return;
 	}
 	
 	public static void setNewMoveLimits(Creature cret){
@@ -243,7 +207,7 @@ public class MiscChanges {
             ReflectionUtil.setPrivateField(moveScheme, ReflectionUtil.getField(moveScheme.getClass(), "stealthMod"), stealthMod);
         }
         catch (NoSuchSkillException | IllegalArgumentException | IllegalAccessException | ClassCastException | NoSuchFieldException nss) {
-            logger.log(Level.WARNING, "No strength skill for " + cret, (Throwable)((Object)nss));
+            logger.log(Level.WARNING, "No strength skill for " + cret, nss);
         }
 	}
 	
@@ -265,11 +229,10 @@ public class MiscChanges {
 	public static boolean isGhostCorpse(Creature creature){
 		if(creature.getTemplate().getTemplateId() == Avenger.templateId){
 			return true;
-		}else if(creature.getTemplate().getTemplateId() == SpiritTroll.templateId){
-			return true;
-		}
-		return false;
-	}
+		}else{
+            return creature.getTemplate().getTemplateId() == SpiritTroll.templateId;
+        }
+    }
 	
 	public static void doLifeTransfer(Creature creature, Item attWeapon, double defdamage, float armourMod){
 		Wound[] w;
@@ -291,35 +254,31 @@ public class MiscChanges {
 	
 	public static void sendServerTabMessage(final String message, final int red, final int green, final int blue){
 		DiscordRelay.sendToDiscord("event", message);
-		Runnable r = new Runnable(){
-        	public void run(){
-		        com.wurmonline.server.Message mess;
-		        for(Player rec : Players.getInstance().getPlayers()){
-		        	mess = new com.wurmonline.server.Message(rec, (byte)16, "Server", message, red, green, blue);
-		        	rec.getCommunicator().sendMessage(mess);
-		        }
-        	}
+		Runnable r = () -> {
+            Message mess;
+            for(Player rec : Players.getInstance().getPlayers()){
+                mess = new Message(rec, (byte)16, "Server", message, red, green, blue);
+                rec.getCommunicator().sendMessage(mess);
+            }
         };
         r.run();
 	}
 	
 	public static void sendGlobalFreedomChat(final Creature sender, final String message, final int red, final int green, final int blue){
-		Runnable r = new Runnable(){
-        	public void run(){
-		        com.wurmonline.server.Message mess;
-		        for(Player rec : Players.getInstance().getPlayers()){
-		        	mess = new com.wurmonline.server.Message(sender, (byte)10, "GL-Freedom", "<"+sender.getNameWithoutPrefixes()+"> "+message, red, green, blue);
-		        	rec.getCommunicator().sendMessage(mess);
-		        }
-		        if (message.trim().length() > 1) {
-                    WcKingdomChat wc = new WcKingdomChat(WurmId.getNextWCCommandId(), sender.getWurmId(), sender.getNameWithoutPrefixes(), message, false, (byte) 4, red, green, blue);
-                    if (!Servers.isThisLoginServer()) {
-                        wc.sendToLoginServer();
-                    } else {
-                        wc.sendFromLoginServer();
-                    }
+		Runnable r = () -> {
+            Message mess;
+            for(Player rec : Players.getInstance().getPlayers()){
+                mess = new Message(sender, (byte)10, "GL-Freedom", "<"+sender.getNameWithoutPrefixes()+"> "+message, red, green, blue);
+                rec.getCommunicator().sendMessage(mess);
+            }
+            if (message.trim().length() > 1) {
+                WcKingdomChat wc = new WcKingdomChat(WurmId.getNextWCCommandId(), sender.getWurmId(), sender.getNameWithoutPrefixes(), message, false, (byte) 4, red, green, blue);
+                if (!Servers.isThisLoginServer()) {
+                    wc.sendToLoginServer();
+                } else {
+                    wc.sendFromLoginServer();
                 }
-        	}
+            }
         };
         r.run();
 	}
@@ -344,18 +303,16 @@ public class MiscChanges {
             CtMethod m = ctPlayers.getDeclaredMethod("sendStartGlobalKingdomChat");
             String infoTabTitle = "Server";
             // Initial messages:
-            String[] infoTabLine = {"Server Thread: https://forum.wurmonline.com/index.php?/topic/155981-wyvern-reborn-modded-pve-pvp-3x5x/",
-            		"Custom Server Data: https://goo.gl/QRVJyC",
-            		"Server Discord: https://discordapp.com/invite/wxEeS7d",
-            		"Server Maps: https://www.sarcasuals.com/"};
-            String str = "{"
-                    + "        com.wurmonline.server.Message mess;";
-            for(int i = 0; i < infoTabLine.length; i++){
-            	str = str + "        mess = new com.wurmonline.server.Message(player, (byte)16, \"" + infoTabTitle + "\",\"" + infoTabLine[i] + "\", 0, 255, 0);"
-            			  + "        player.getCommunicator().sendMessage(mess);";
+            String[] infoTabLine = {"Server Thread: https://forum.wurmonline.com/index.php?/topic/162067-revenant-modded-pvepvp-3x-action-new-skillgain/",
+            		"Server Discord: https://discord.gg/r8QNXAC",
+            		"Server Maps: Coming Soon..."};
+            StringBuilder str = new StringBuilder("{"
+                    + "        com.wurmonline.server.Message mess;");
+            for (String anInfoTabLine : infoTabLine) {
+                str.append("        mess = new com.wurmonline.server.Message(player, (byte)16, \"").append(infoTabTitle).append("\",\"").append(anInfoTabLine).append("\", 0, 255, 0);").append("        player.getCommunicator().sendMessage(mess);");
             }
-            str = str + "}";
-            m.insertAfter(str);
+            str.append("}");
+            m.insertAfter(str.toString());
 
             // - Enable bridges to be built inside/over/through houses - //
             CtClass ctPlanBridgeChecks = classPool.get("com.wurmonline.server.structures.PlanBridgeChecks");
@@ -365,13 +322,6 @@ public class MiscChanges {
             		+ "  return new com.wurmonline.server.structures.PlanBridgeCheckResult(false);"
             		+ "}");*/
 
-            // - Allow mailboxes and bell towers to be loaded - //
-            // [Disabled 10/30 by Sindusk] - Added to ItemMod using reflection instead of editing the method.
-            /*CtClass ctItemTemplate = classPool.get("com.wurmonline.server.items.ItemTemplate");
-            ctItemTemplate.getDeclaredMethod("isTransportable").setBody("{"
-            		+ "  return this.isTransportable || (this.getTemplateId() >= 510 && this.getTemplateId() <= 513) || this.getTemplateId() == 722 || this.getTemplateId() == 670;"
-            		+ "}");*/
-            
             // - Disable mailboxes from being used while loaded - //
             CtClass ctItem = classPool.get("com.wurmonline.server.items.Item");
             replace = "$_ = $proceed($$);"
@@ -427,9 +377,10 @@ public class MiscChanges {
             //ctPlayer.getDeclaredMethod("getRarity").setBody("{ return mod.sin.wyvern.MiscChanges.newGetPlayerRarity(this); }");
             
             // - Add Facebreyker to the list of spawnable uniques - //
-            CtClass ctDens = classPool.get("com.wurmonline.server.zones.Dens");
+			// TODO: Re-enable after Facebreyker initialized.
+            /*CtClass ctDens = classPool.get("com.wurmonline.server.zones.Dens");
             replace = "com.wurmonline.server.zones.Dens.checkTemplate(2147483643, whileRunning);";
-            Util.insertBeforeDeclared(thisClass, ctDens, "checkDens", replace);
+            Util.insertBeforeDeclared(thisClass, ctDens, "checkDens", replace);*/
             //ctDens.getDeclaredMethod("checkDens").insertAt(0, "com.wurmonline.server.zones.Dens.checkTemplate(2147483643, whileRunning);");
 
             // - Announce player titles in the Server tab - //
@@ -483,59 +434,10 @@ public class MiscChanges {
             		+ "if(temp != -10){"
             		+ "  return temp;"
             		+ "}");*/
-            
-            // - Make food/drink affinities based on Item ID instead of creature ID - //
-            // [3/27] Removed: Merged to ServerTweaks
-            /*CtClass ctAffinitiesTimed = classPool.get("com.wurmonline.server.skills.AffinitiesTimed");
-            replace = "if(item.getCreatorName() != null){"
-            		+ "  $_ = $proceed("+MiscChanges.class.getName()+".getTimedAffinitySeed(item));"
-            		+ "}else{"
-            		+ "  $_ = $proceed($$);"
-            		+ "}";
-            Util.instrumentDeclared(thisClass, ctAffinitiesTimed, "getTimedAffinitySkill", "setSeed", replace);
-            CtClass ctItemBehaviour = classPool.get("com.wurmonline.server.behaviours.ItemBehaviour");
-            replace = "$_ = $proceed($1, $2, $3, $4, performer.getName());";
-            Util.instrumentDeclared(thisClass, ctItemBehaviour, "handleRecipe", "createItem", replace);
-            replace = "$_ = $proceed($1, $2, $3, $4, com.wurmonline.server.players.PlayerInfoFactory.getPlayerName(lastowner));";
-            Util.instrumentDeclared(thisClass, ctItem, "pollFermenting", "createItem", replace);
-            Util.instrumentDeclared(thisClass, ctItem, "pollDistilling", "createItem", replace);
-            CtClass ctTempStates = classPool.get("com.wurmonline.server.items.TempStates");
-            Util.instrumentDeclared(thisClass, ctTempStates, "checkForChange", "createItem", replace);*/
-            
-            // - Fix de-priesting when gaining faith below 30 - //
-            // [Disabled 10/30 Sindusk] - Added to SpellCraft.SpellcraftTweaks
-            /*CtClass ctDbPlayerInfo = classPool.get("com.wurmonline.server.players.DbPlayerInfo");
-            ctDbPlayerInfo.getDeclaredMethod("setFaith").instrument(new ExprEditor(){
-                public void edit(MethodCall m) throws CannotCompileException {
-                    if (m.getMethodName().equals("min")) {
-                        m.replace("if($2 == 20.0f && $1 < 30){"
-                        		+ "  $_ = $proceed(30.0f, lFaith);"
-                        		+ "}else{"
-                        		+ "  $_ = $proceed($$);"
-                        		+ "}");
-                        return;
-                    }
-                }
-            });
-            ctDbPlayerInfo.getDeclaredMethod("setFaith").instrument(new ExprEditor(){
-                public void edit(MethodCall m) throws CannotCompileException {
-                    if (m.getMethodName().equals("setPriest")) {
-                        m.replace("$_ = $proceed(true);");
-                        return;
-                    }
-                }
-            });
-            ctDbPlayerInfo.getDeclaredMethod("setFaith").instrument(new ExprEditor(){
-                public void edit(MethodCall m) throws CannotCompileException {
-                    if (m.getMethodName().equals("sendAlertServerMessage")) {
-                        m.replace("$_ = null;");
-                        return;
-                    }
-                }
-            });*/
-            
+
             // - Removal of eye/face shots to headshots instead - //
-            HookManager.getInstance().registerHook("com.wurmonline.server.combat.Armour", "getArmourPosForPos", "(I)I", new InvocationHandlerFactory() {
+            // [4/2/18] Removed: Unnecessary - WU 1.6 update resolves the reason it was done.
+            /*HookManager.getInstance().registerHook("com.wurmonline.server.combat.Armour", "getArmourPosForPos", "(I)I", new InvocationHandlerFactory() {
             	 
                 @Override
                 public InvocationHandler createInvocationHandler() {
@@ -554,7 +456,7 @@ public class MiscChanges {
 						}
                     };
                 }
-            });
+            });*/
             
             // - Remove requirement to bless for Libila taming - //
             CtClass ctMethodsCreatures = classPool.get("com.wurmonline.server.behaviours.MethodsCreatures");
@@ -577,7 +479,6 @@ public class MiscChanges {
                         if (m.getMethodName().equals("isFatigue")) {
                             m.replace("$_ = false;");
                             logger.info("Set isFatigue to false in action constructor.");
-                            return;
                         }
                     }
                 });
@@ -644,10 +545,11 @@ public class MiscChanges {
             Util.insertBeforeDescribed(thisClass, ctCreature, "doNew", desc1, replace);
             
             // - Send rumour messages to discord - //
-            Util.setReason("Send rumour messages to Discord.");
+			// [4/1/18] Removed: Merged to DiscordRelay.
+            /*Util.setReason("Send rumour messages to Discord.");
             replace = MiscChanges.class.getName()+".sendRumour(toReturn);"
             		+ "$proceed($$);";
-            Util.instrumentDescribed(thisClass, ctCreature, "doNew", desc1, "broadCastSafe", replace);
+            Util.instrumentDescribed(thisClass, ctCreature, "doNew", desc1, "broadCastSafe", replace);*/
             
             // - Allow custom creatures to be given special names when bred - //
             replace = "$_ = "+MiscChanges.class.getName()+".shouldBreedName(this);";
@@ -700,7 +602,6 @@ public class MiscChanges {
                         if (m.getMethodName().equals("isGhost")) {
                             m.replace("$_ = false;");
                             logger.info("Enabled archery against ghost targets in archery attack method.");
-                            return;
                         }
                     }
                 });
@@ -937,7 +838,7 @@ public class MiscChanges {
         	Util.instrumentDeclared(thisClass, ctCombatHandler, "setDamage", "getBattle", replace);*/
         	
         } catch (CannotCompileException | NotFoundException | IllegalArgumentException | ClassCastException e) {
-            throw new HookException((Throwable)e);
+            throw new HookException(e);
         }
 	}
 }
