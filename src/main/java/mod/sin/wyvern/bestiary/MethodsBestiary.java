@@ -3,22 +3,26 @@ package mod.sin.wyvern.bestiary;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Logger;
 
+import com.wurmonline.mesh.Tiles;
+import com.wurmonline.server.creatures.*;
+import com.wurmonline.server.items.*;
+import com.wurmonline.server.zones.NoSuchZoneException;
+import com.wurmonline.server.zones.Zone;
+import com.wurmonline.server.zones.Zones;
+import com.wurmonline.shared.constants.BodyPartConstants;
+import javassist.*;
+import javassist.bytecode.Descriptor;
+import javassist.expr.ExprEditor;
+import javassist.expr.MethodCall;
+import mod.sin.items.SealedMap;
+import mod.sin.lib.Util;
+import mod.sin.wyvern.RareSpawns;
+import mod.sin.wyvern.Titans;
 import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 
 import com.wurmonline.server.FailedException;
 import com.wurmonline.server.Server;
 import com.wurmonline.server.combat.Archery;
-import com.wurmonline.server.creatures.Creature;
-import com.wurmonline.server.creatures.CreatureStatus;
-import com.wurmonline.server.creatures.CreatureTemplate;
-import com.wurmonline.server.creatures.CreatureTemplateFactory;
-import com.wurmonline.server.creatures.NoSuchCreatureTemplateException;
-import com.wurmonline.server.items.Item;
-import com.wurmonline.server.items.ItemFactory;
-import com.wurmonline.server.items.ItemList;
-import com.wurmonline.server.items.ItemSpellEffects;
-import com.wurmonline.server.items.Materials;
-import com.wurmonline.server.items.NoSuchTemplateException;
 import com.wurmonline.server.skills.SkillList;
 import com.wurmonline.server.skills.Skills;
 import com.wurmonline.server.skills.SkillsFactory;
@@ -30,7 +34,9 @@ import mod.sin.creatures.titans.*;
 import mod.sin.weapons.Club;
 import mod.sin.weapons.titan.*;
 import mod.sin.wyvern.MiscChanges;
-import mod.sin.wyvern.arena.Arena;
+import mod.sin.wyvern.Arena;
+import org.gotti.wurmunlimited.modloader.classhooks.HookException;
+import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
 
 public class MethodsBestiary {
 	protected static Logger logger = Logger.getLogger(MethodsBestiary.class.getName());
@@ -40,9 +46,9 @@ public class MethodsBestiary {
 			int templateId = template.getTemplateId();
 			if(templateId == Lilith.templateId){
 	        	return true;
-	        }else if(templateId == ForestSpider.templateId){
+	        }/*else if(templateId == ForestSpider.templateId){
 				return true;
-			}else if(templateId == Avenger.templateId){
+			}*/else if(templateId == Avenger.templateId){
 				return true;
 			}else if(templateId == HornedPony.templateId){
 				return true;
@@ -58,9 +64,9 @@ public class MethodsBestiary {
 	public static byte getCreatureColorRed(CreatureTemplate template){
 		try {
 			int templateId = template.getTemplateId();
-			if(templateId == ForestSpider.templateId){
+			/*if(templateId == ForestSpider.templateId){
 	        	return (byte)0;
-	        }else if(templateId == Avenger.templateId){
+	        }else */if(templateId == Avenger.templateId){
 	        	return (byte)70;
 	        }
 		} catch (IllegalArgumentException | ClassCastException e) {
@@ -92,9 +98,9 @@ public class MethodsBestiary {
 			int templateId = template.getTemplateId();
 			if(templateId == Lilith.templateId){
 				return (byte)0;
-			}else if(templateId == ForestSpider.templateId){
+			}/*else if(templateId == ForestSpider.templateId){
 	        	return (byte)0;
-	        }else if(templateId == HornedPony.templateId){
+	        }*/else if(templateId == HornedPony.templateId){
 	        	return (byte)70;
 	        }else if(templateId == LilithZombie.templateId){
 	        	return (byte)0;
@@ -162,11 +168,13 @@ public class MethodsBestiary {
 	        }else if(templateId == WyvernRed.templateId){
 	        	floatToRet *= 0.6f;
 	        }else if(templateId == WyvernWhite.templateId){
-	        	floatToRet *= 0.6f;
-	        }else if(templateId == MacroSlayer.templateId){
+				floatToRet *= 0.6f;
+			}else if(templateId == WyvernBlue.templateId){
+				floatToRet *= 0.6f;
+			}else if(templateId == MacroSlayer.templateId){
 	        	floatToRet *= 1.5f;
 	        }else if(templateId == ForestSpider.templateId){
-	        	floatToRet *= 0.4f;
+	        	floatToRet *= 0.7f;
 	        }else if(templateId == Avenger.templateId){
 	        	floatToRet *= 0.35f;
 	        }else if(templateId == LargeBoar.templateId){
@@ -178,8 +186,10 @@ public class MethodsBestiary {
 	        }else if(templateId == LilithZombie.templateId){
 	        	floatToRet *= 0.75f;
 	        }else if(templateId == Charger.templateId){
-	        	floatToRet *= 1.5f;
-	        }
+	        	floatToRet *= 1.15f;
+	        }else if(templateId == Terror.templateId){
+	            floatToRet *= 3.0f;
+            }
 	        
 	        return floatToRet * ageSizeModifier;
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
@@ -200,7 +210,7 @@ public class MethodsBestiary {
 		    }
 		    if(templateId == MaartensMight.templateId){
 			    effs.addSpellEffect(new SpellEffect(titanWeapon.getWurmId(), Enchants.BUFF_NIMBLENESS, 250, 20000000));
-			    effs.addSpellEffect(new SpellEffect(titanWeapon.getWurmId(), (byte) 111, 200, 20000000)); // Phasing
+			    //effs.addSpellEffect(new SpellEffect(titanWeapon.getWurmId(), (byte) 111, 200, 20000000)); // Phasing
 		    }else if(templateId == RaffehsRage.templateId){
 			    effs.addSpellEffect(new SpellEffect(titanWeapon.getWurmId(), Enchants.BUFF_FLAMING_AURA, 150, 20000000));
 			    effs.addSpellEffect(new SpellEffect(titanWeapon.getWurmId(), Enchants.BUFF_FROSTBRAND, 150, 20000000));
@@ -215,14 +225,89 @@ public class MethodsBestiary {
 				return titanWeapon;
 			}
 		} catch (FailedException | NoSuchTemplateException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return null;
 	}
+
+    public static void checkEnchantedBreed(Creature creature){
+        int tile = Server.surfaceMesh.getTile(creature.getTileX(), creature.getTileY());
+        byte type = Tiles.decodeType(tile);
+        if (type == Tiles.Tile.TILE_ENCHANTED_GRASS.id){
+            logger.info("Creature "+creature.getName()+" was born on enchanted grass, and has a negative trait removed!");
+            Server.getInstance().broadCastAction(creature.getName()+" was born on enchanted grass, and feels more healthy!", creature, 10);
+            creature.removeRandomNegativeTrait();
+        }
+    }
+
+    public static boolean shouldBreedName(Creature creature){
+        if(creature.getTemplate().getTemplateId() == WyvernBlack.templateId){
+            return true;
+        }else if(creature.getTemplate().getTemplateId() == WyvernGreen.templateId){
+            return true;
+        }else if(creature.getTemplate().getTemplateId() == WyvernRed.templateId){
+            return true;
+        }else if(creature.getTemplate().getTemplateId() == WyvernWhite.templateId){
+            return true;
+        }else if(creature.getTemplate().getTemplateId() == Charger.templateId){
+            return true;
+        }
+        return creature.isHorse();
+    }
+
+    public static boolean isGhostCorpse(Creature creature){
+        int templateId = creature.getTemplate().getTemplateId();
+        if(templateId == Avenger.templateId){
+            return true;
+        }else if(templateId == SpiritTroll.templateId){
+            return true;
+        }else if(templateId == Charger.templateId){
+            return true;
+        }
+        return false;
+    }
+
+    public static float getCustomSpellResistance(Creature creature){
+        int templateId = creature.getTemplate().getTemplateId();
+        if(templateId == Avenger.templateId){
+            return 0.5f;
+        }else if(templateId == Charger.templateId){
+            return 1.4f;
+        }else if(templateId == Giant.templateId){
+            return 0.3f;
+        }else if(templateId == LargeBoar.templateId){
+            return 0.8f;
+        }else if(templateId == Reaper.templateId){
+            return 0.1f;
+        }else if(templateId == SpectralDrake.templateId){
+            return 0.1f;
+        }else if(templateId == SpiritTroll.templateId){
+            return 0.2f;
+        }else if(templateId == WyvernBlack.templateId){
+            return 0.4f;
+        }else if(templateId == WyvernGreen.templateId){
+            return 0.6f;
+        }else if(templateId == WyvernWhite.templateId){
+            return 0.5f;
+        }else if(templateId == WyvernRed.templateId){
+            return 0.25f;
+        }
+        return -1f;
+    }
+
+    public static boolean isSacrificeImmune(Creature creature){
+        if(Titans.isTitan(creature) || Titans.isTitanMinion(creature)){
+            return true;
+        }else if(RareSpawns.isRareCreature(creature)){
+            return true;
+        }else if(creature.isUnique()){
+            return true;
+        }
+        return false;
+    }
 	
 	public static boolean isArcheryImmune(Creature performer, Creature defender){
-		if(Arena.isTitan(defender) || Arena.isTitanMinion(defender)){
+		if(Titans.isTitan(defender) || Titans.isTitanMinion(defender)){
 			performer.getCommunicator().sendCombatNormalMessage("You cannot archer "+defender.getName()+", as it is protected by a Titan.");
 			return true;
 		}
@@ -237,9 +322,9 @@ public class MethodsBestiary {
 		if(defender.isRegenerating() && arrow.getTemplateId() == ItemList.arrowShaft){
 			message = "The "+defender.getName()+" would be unaffected by the "+arrow.getName()+".";
 			immune = true;
-		}else if(defender.getTemplate().isNotRebirthable()){
+		}/*else if(defender.getTemplate().isNotRebirthable()){
 			immune = true;
-		}else if(defender.isUnique()){
+		}*/else if(defender.isUnique()){
 			immune = true;
 		}
 		if(immune){
@@ -247,22 +332,102 @@ public class MethodsBestiary {
 		}
 		return immune;
 	}
+
+    public static boolean blockSkillFrom(Creature defender, Creature attacker){
+        if(defender == null || attacker == null){
+            return false;
+        }
+        if(defender.isPlayer() && defender.getTarget() != attacker){
+            return true;
+        }
+        try {
+            if(defender.isPlayer() && attacker.getArmour(BodyPartConstants.TORSO) != null){
+                return true;
+            }
+        } catch (NoArmourException | NoSpaceException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public static boolean denyPathingOverride(Creature creature){
+        if(creature.getTemplate().getTemplateId() == Charger.templateId){
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean hasCustomCorpseSize(Creature creature){
+        int templateId = creature.getTemplate().getTemplateId();
+        if(templateId == Avenger.templateId){
+            return true;
+        }else{
+            return Titans.isTitan(creature);
+        }
+    }
+
+    public static void setCorpseSizes(Creature creature, Item corpse){
+        if(corpse.getTemplateId() != ItemList.corpse){
+            return;
+        }
+        int templateId = creature.getTemplate().getTemplateId();
+        boolean sendStatus = false;
+        int size = 50000;
+        if(templateId == Avenger.templateId){
+            size *= 1.2;
+            corpse.setSizes(size);
+            sendStatus = true;
+        }else if(Titans.isTitan(creature)){
+            size *= 1.5;
+            corpse.setSizes(size);
+            sendStatus = true;
+        }else{
+            corpse.setSizes((int)((float)(corpse.getSizeX() * (creature.getSizeModX() & 255)) / 64.0f), (int)((float)(corpse.getSizeY() * (creature.getSizeModY() & 255)) / 64.0f), (int)((float)(corpse.getSizeZ() * (creature.getSizeModZ() & 255)) / 64.0f));
+        }
+        if(sendStatus){
+            try {
+                Zone zone = Zones.getZone((int)corpse.getPosX() >> 2, (int)corpse.getPosY() >> 2, corpse.isOnSurface());
+                zone.removeItem(corpse, true, true);
+                zone.addItem(corpse, true, false, false);
+            } catch (NoSuchZoneException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static byte newCreatureType(int templateid, byte ctype) throws Exception{
+        CreatureTemplate template = CreatureTemplateFactory.getInstance().getTemplate(templateid);
+        if(ctype == 0 && (template.isAggHuman() || template.getBaseCombatRating() > 10) && !template.isUnique() && !Titans.isTitan(templateid)){
+            if(Server.rand.nextInt(5) == 0){
+                ctype = (byte) (Server.rand.nextInt(11)+1);
+                if(Server.rand.nextInt(50) == 0){
+                    ctype = 99;
+                }
+            }
+        }
+        return ctype;
+    }
 	
 	public static void modifyNewCreature(Creature creature){
 		try{
-			if(Arena.isTitan(creature)){
-				Arena.addTitan(creature);
-				MiscChanges.sendGlobalFreedomChat(creature, "The titan "+creature.getName()+" has stepped into the mortal realm. Challenge "+creature.getHimHerItString()+" in the Arena if you dare.", 255, 105, 180);
-				if(creature.getTemplate().getTemplateId() == Lilith.templateId){
+			if(Titans.isTitan(creature)){
+				Titans.addTitan(creature);
+				MiscChanges.sendGlobalFreedomChat(creature, "The titan "+creature.getName()+" has stepped into the mortal realm. Challenge them if you dare.", 255, 105, 180);
+				/*if(creature.getTemplate().getTemplateId() == Lilith.templateId){
 				    Item titanWeapon = createNewTitanWeapon(creature.getName(), new int[]{VindictivesVengeance.templateId, WilhelmsWrath.templateId});
 					creature.getInventory().insertItem(titanWeapon);
 				}else if(creature.getTemplate().getTemplateId() == Ifrit.templateId){
 				    Item titanWeapon = createNewTitanWeapon(creature.getName(), new int[]{MaartensMight.templateId, RaffehsRage.templateId});
 					creature.getInventory().insertItem(titanWeapon);
-				}
+				}*/
+				Titans.addTitanLoot(creature);
 			}else if(creature.getTemplate().getTemplateId() == Facebreyker.templateId){
-				Item club = ItemFactory.createItem(Club.templateId, 80f+(Server.rand.nextFloat()*15f), Server.rand.nextBoolean() ? Materials.MATERIAL_GLIMMERSTEEL : Materials.MATERIAL_ADAMANTINE, Server.rand.nextBoolean() ? (byte) 1 : (byte) 2, "Facebreyker");
+				Item club = ItemFactory.createItem(Club.templateId, 80f+(Server.rand.nextFloat()*15f), Server.rand.nextBoolean() ? Materials.MATERIAL_GLIMMERSTEEL : Materials.MATERIAL_ADAMANTINE, Server.rand.nextBoolean() ? (byte) 0 : (byte) 1, "Facebreyker");
 				creature.getInventory().insertItem(club);
+			} else if(RareSpawns.isRareCreature(creature)){
+                MiscChanges.sendServerTabMessage("event", "A rare "+creature.getName()+" has surfaced.", 123, 104, 238);
+                Item sealedMap = ItemFactory.createItem(SealedMap.templateId, 60f+(30f*Server.rand.nextFloat()), creature.getName());
+                creature.getInventory().insertItem(sealedMap, true);
 			}
 		}catch(Exception e){
 			e.printStackTrace();
@@ -290,12 +455,23 @@ public class MethodsBestiary {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private static void setGhost(int templateId){
 		try{
 			CreatureTemplate template = CreatureTemplateFactory.getInstance().getTemplate(templateId);
 			if(template != null){
 				ReflectionUtil.setPrivateField(template, ReflectionUtil.getField(template.getClass(), "ghost"), true);
+			}
+		} catch (NoSuchCreatureTemplateException | IllegalArgumentException | IllegalAccessException | ClassCastException | NoSuchFieldException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static void setNoCorpse(int templateId){
+		try{
+			CreatureTemplate template = CreatureTemplateFactory.getInstance().getTemplate(templateId);
+			if(template != null){
+				ReflectionUtil.setPrivateField(template, ReflectionUtil.getField(template.getClass(), "noCorpse"), true);
 			}
 		} catch (NoSuchCreatureTemplateException | IllegalArgumentException | IllegalAccessException | ClassCastException | NoSuchFieldException e) {
 			e.printStackTrace();
@@ -343,120 +519,51 @@ public class MethodsBestiary {
 		setCorpseModel(Avenger.templateId, "fogspider.");
 		setCorpseModel(SpiritTroll.templateId, "fogspider.");
 		setCorpseModel(SpectralDrake.templateId, "fogspider.");
-		/*CreatureTemplate spectralDrake = CreatureTemplateFactory.getInstance().getTemplate(SpectralDrake.templateId);
-		if(spectralDrake != null){
-			ReflectionUtil.setPrivateField(spectralDrake, ReflectionUtil.getField(spectralDrake.getClass(), "corpsename"), "fogspider.");
-		}*/
+		setCorpseModel(Charger.templateId, "fogspider.");
+
+		// Non-fog spider models
 		setCorpseModel(WyvernBlack.templateId, "blackdragonhatchling.");
-		/*CreatureTemplate blackWyvern = CreatureTemplateFactory.getInstance().getTemplate(WyvernBlack.templateId);
-		if(blackWyvern != null){
-			ReflectionUtil.setPrivateField(blackWyvern, ReflectionUtil.getField(blackWyvern.getClass(), "corpsename"), "blackdragonhatchling.");
-		}*/
 		setCorpseModel(WyvernGreen.templateId, "greendragonhatchling.");
-		/*CreatureTemplate greenWyvern = CreatureTemplateFactory.getInstance().getTemplate(WyvernGreen.templateId);
-		if(greenWyvern != null){
-			ReflectionUtil.setPrivateField(greenWyvern, ReflectionUtil.getField(greenWyvern.getClass(), "corpsename"), "greendragonhatchling.");
-		}*/
 		setCorpseModel(WyvernRed.templateId, "reddragonhatchling.");
-		/*CreatureTemplate redWyvern = CreatureTemplateFactory.getInstance().getTemplate(WyvernRed.templateId);
-		if(redWyvern != null){
-			ReflectionUtil.setPrivateField(redWyvern, ReflectionUtil.getField(redWyvern.getClass(), "corpsename"), "reddragonhatchling.");
-		}*/
 		setCorpseModel(WyvernWhite.templateId, "whitedragonhatchling.");
-		/*CreatureTemplate whiteWyvern = CreatureTemplateFactory.getInstance().getTemplate(WyvernWhite.templateId);
-		if(whiteWyvern != null){
-			ReflectionUtil.setPrivateField(whiteWyvern, ReflectionUtil.getField(whiteWyvern.getClass(), "corpsename"), "whitedragonhatchling.");
-		}*/
+		setCorpseModel(WyvernBlue.templateId, "bluedragonhatchling.");
 		setCorpseModel(Facebreyker.templateId, "riftogre.");
-		/*CreatureTemplate facebreyker = CreatureTemplateFactory.getInstance().getTemplate(Facebreyker.templateId);
-		if(facebreyker != null){
-			ReflectionUtil.setPrivateField(facebreyker, ReflectionUtil.getField(facebreyker.getClass(), "corpsename"), "riftogre.");
-		}*/
-		setCorpseModel(ForestSpider.templateId, "hugespider.");
-		/*CreatureTemplate forestSpider = CreatureTemplateFactory.getInstance().getTemplate(ForestSpider.templateId);
-		if(forestSpider != null){
-			ReflectionUtil.setPrivateField(forestSpider, ReflectionUtil.getField(forestSpider.getClass(), "corpsename"), "hugespider.");
-		}*/
+		setCorpseModel(ForestSpider.templateId, "fogspider.");
 		setCorpseModel(Giant.templateId, "forestgiant.");
-		/*CreatureTemplate giant = CreatureTemplateFactory.getInstance().getTemplate(Giant.templateId);
-		if(giant != null){
-			ReflectionUtil.setPrivateField(giant, ReflectionUtil.getField(giant.getClass(), "corpsename"), "forestgiant.");
-		}*/
 		setCorpseModel(LargeBoar.templateId, "wildboar.");
-		/*CreatureTemplate largeBoar = CreatureTemplateFactory.getInstance().getTemplate(LargeBoar.templateId);
-		if(largeBoar != null){
-			ReflectionUtil.setPrivateField(largeBoar, ReflectionUtil.getField(largeBoar.getClass(), "corpsename"), "wildboar.");
-		}*/
 		setCorpseModel(HornedPony.templateId, "unicorn.");
-		/*CreatureTemplate hornedPony = CreatureTemplateFactory.getInstance().getTemplate(HornedPony.templateId);
-		if(hornedPony != null){
-			ReflectionUtil.setPrivateField(hornedPony, ReflectionUtil.getField(hornedPony.getClass(), "corpsename"), "unicorn.");
-		}*/
 		setCorpseModel(IfritSpider.templateId, "lavaspider.");
-		/*CreatureTemplate ifritSpider = CreatureTemplateFactory.getInstance().getTemplate(IfritSpider.templateId);
-		if(ifritSpider != null){
-			ReflectionUtil.setPrivateField(ifritSpider, ReflectionUtil.getField(ifritSpider.getClass(), "corpsename"), "lavaspider.");
-		}*/
 		setCorpseModel(IfritFiend.templateId, "lavafiend.");
-		/*CreatureTemplate ifritFiend = CreatureTemplateFactory.getInstance().getTemplate(IfritFiend.templateId);
-		if(ifritFiend != null){
-			ReflectionUtil.setPrivateField(ifritFiend, ReflectionUtil.getField(ifritFiend.getClass(), "corpsename"), "lavafiend.");
-		}*/
 		// Also apply the ghost modifier
 		setGhost(SpiritTroll.templateId);
 		setGhost(Avenger.templateId);
 		setGhost(LilithWraith.templateId);
 		setGhost(Charger.templateId);
-		/*CreatureTemplate spiritTroll = CreatureTemplateFactory.getInstance().getTemplate(SpiritTroll.templateId);
-		if(spiritTroll != null){
-			ReflectionUtil.setPrivateField(spiritTroll, ReflectionUtil.getField(spiritTroll.getClass(), "ghost"), true);
-		}
-		CreatureTemplate avenger = CreatureTemplateFactory.getInstance().getTemplate(Avenger.templateId);
-		if(avenger != null){
-			ReflectionUtil.setPrivateField(avenger, ReflectionUtil.getField(avenger.getClass(), "ghost"), true);
-		}
-		CreatureTemplate lilithWight = CreatureTemplateFactory.getInstance().getTemplate(LilithWraith.templateId);
-		if(lilithWight != null){
-			ReflectionUtil.setPrivateField(lilithWight, ReflectionUtil.getField(lilithWight.getClass(), "ghost"), true);
-		}
-		CreatureTemplate charger = CreatureTemplateFactory.getInstance().getTemplate(Charger.templateId);
-		if(charger != null){
-			ReflectionUtil.setPrivateField(charger, ReflectionUtil.getField(charger.getClass(), "ghost"), true);
-		}*/
 		
 		// Dragon natural armour increases:
-		setNaturalArmour(CreatureTemplate.DRAGON_BLUE_CID, 0.04f);
-		/*CreatureTemplate dragonBlue = CreatureTemplateFactory.getInstance().getTemplate(CreatureTemplate.DRAGON_BLUE_CID);
-		ReflectionUtil.setPrivateField(dragonBlue, ReflectionUtil.getField(dragonBlue.getClass(), "naturalArmour"), 0.05f);*/
-		setNaturalArmour(CreatureTemplate.DRAGON_WHITE_CID, 0.04f);
-		/*CreatureTemplate dragonGreen = CreatureTemplateFactory.getInstance().getTemplate(CreatureTemplate.DRAGON_WHITE_CID);
-		ReflectionUtil.setPrivateField(dragonGreen, ReflectionUtil.getField(dragonGreen.getClass(), "naturalArmour"), 0.05f);*/
-		setNaturalArmour(CreatureTemplate.DRAGON_BLACK_CID, 0.055f);
-		/*CreatureTemplate dragonBlack = CreatureTemplateFactory.getInstance().getTemplate(CreatureTemplate.DRAGON_BLACK_CID);
-		ReflectionUtil.setPrivateField(dragonBlack, ReflectionUtil.getField(dragonBlack.getClass(), "naturalArmour"), 0.07f);*/
-		setNaturalArmour(CreatureTemplate.DRAGON_WHITE_CID, 0.04f);
-		/*CreatureTemplate dragonWhite = CreatureTemplateFactory.getInstance().getTemplate(CreatureTemplate.DRAGON_WHITE_CID);
-		ReflectionUtil.setPrivateField(dragonWhite, ReflectionUtil.getField(dragonWhite.getClass(), "naturalArmour"), 0.05f);*/
+		setNaturalArmour(CreatureTemplate.DRAGON_BLUE_CID, 0.035f);
+		setNaturalArmour(CreatureTemplate.DRAGON_WHITE_CID, 0.035f);
+		setNaturalArmour(CreatureTemplate.DRAGON_BLACK_CID, 0.045f);
+		setNaturalArmour(CreatureTemplate.DRAGON_WHITE_CID, 0.035f);
 		// Drake natural armour increases:
-		setNaturalArmour(CreatureTemplate.DRAKE_RED_CID, 0.075f);
-		/*CreatureTemplate drakeRed = CreatureTemplateFactory.getInstance().getTemplate(CreatureTemplate.DRAKE_RED_CID);
-		ReflectionUtil.setPrivateField(drakeRed, ReflectionUtil.getField(drakeRed.getClass(), "naturalArmour"), 0.085f);*/
-		setNaturalArmour(CreatureTemplate.DRAKE_BLUE_CID, 0.075f);
-		/*CreatureTemplate drakeBlue = CreatureTemplateFactory.getInstance().getTemplate(CreatureTemplate.DRAKE_BLUE_CID);
-		ReflectionUtil.setPrivateField(drakeBlue, ReflectionUtil.getField(drakeBlue.getClass(), "naturalArmour"), 0.085f);*/
-		setNaturalArmour(CreatureTemplate.DRAKE_WHITE_CID, 0.085f);
-		/*CreatureTemplate drakeWhite = CreatureTemplateFactory.getInstance().getTemplate(CreatureTemplate.DRAKE_WHITE_CID);
-		ReflectionUtil.setPrivateField(drakeWhite, ReflectionUtil.getField(drakeWhite.getClass(), "naturalArmour"), 0.1f);*/
-		setNaturalArmour(CreatureTemplate.DRAKE_GREEN_CID, 0.075f);
-		/*CreatureTemplate drakeGreen = CreatureTemplateFactory.getInstance().getTemplate(CreatureTemplate.DRAKE_GREEN_CID);
-		ReflectionUtil.setPrivateField(drakeGreen, ReflectionUtil.getField(drakeGreen.getClass(), "naturalArmour"), 0.085f);*/
-		setNaturalArmour(CreatureTemplate.DRAKE_BLACK_CID, 0.065f);
-		/*CreatureTemplate drakeBlack = CreatureTemplateFactory.getInstance().getTemplate(CreatureTemplate.DRAKE_BLACK_CID);
-		ReflectionUtil.setPrivateField(drakeBlack, ReflectionUtil.getField(drakeBlack.getClass(), "naturalArmour"), 0.065f);*/
+		setNaturalArmour(CreatureTemplate.DRAKE_RED_CID, 0.065f);
+		setNaturalArmour(CreatureTemplate.DRAKE_BLUE_CID, 0.065f);
+		setNaturalArmour(CreatureTemplate.DRAKE_WHITE_CID, 0.075f);
+		setNaturalArmour(CreatureTemplate.DRAKE_GREEN_CID, 0.065f);
+		setNaturalArmour(CreatureTemplate.DRAKE_BLACK_CID, 0.055f);
 		// Goblin leader natural armour increase:
-		setNaturalArmour(CreatureTemplate.GOBLIN_LEADER_CID, 0.075f);
-		/*CreatureTemplate goblinLeader = CreatureTemplateFactory.getInstance().getTemplate(CreatureTemplate.GOBLIN_LEADER_CID);
-		ReflectionUtil.setPrivateField(goblinLeader, ReflectionUtil.getField(goblinLeader.getClass(), "naturalArmour"), 0.085f);*/
+		setNaturalArmour(CreatureTemplate.GOBLIN_LEADER_CID, 0.055f);
+
+		// Make titan minions drop no corpse
+		setNoCorpse(IfritFiend.templateId);
+		setNoCorpse(IfritSpider.templateId);
+		setNoCorpse(LilithWraith.templateId);
+		setNoCorpse(LilithZombie.templateId);
+
+		setNoCorpse(IceCat.templateId);
+		setNoCorpse(FireCrab.templateId);
+		setNoCorpse(FireGiant.templateId);
+		setNoCorpse(Terror.templateId);
 		
 		// Set hens and roosters as grazers
 		setGrazer(CreatureTemplate.HEN_CID);
@@ -467,4 +574,211 @@ public class MethodsBestiary {
 		// Set worg fields
 		setWorgFields(CreatureTemplate.WORG_CID);
 	}
+
+	protected static void sendParticleEffect(Communicator comm, long creatureId, Creature creature, String particle, float duration){
+        comm.sendAddEffect(creatureId, (short) 27, creature.getPosX(), creature.getPosY(), creature.getPositionZ(), (byte) creature.getLayer(), particle, duration, 0);
+    }
+	protected static void sendAddEffect(Communicator comm, long creatureId, byte effectNum){
+	    comm.sendAttachEffect(creatureId, effectNum, (byte) 1, (byte) -1, (byte) -1, (byte) 1);
+    }
+    // - Good Effects -
+    // rift01 [large], rift02 [small]
+    // treasureP [light bubbles]
+    // spawneffect2 [sparkle fireworks]
+    // reindeer [light sparkles]
+    // iceBall_1_1 [clean ice effect]
+    // acidBall_1_1 [clean green ball effect]
+    // - Bad Effects -
+    // spawneffect [sparkle eye cancer]
+    // snow1emitter [disappears instantly}, snow2emitter [disappears instantly]
+    // spawneffectshort [disappears instantly]
+    // iceWispSpark [tiny and unnoticeable]
+    // iceBolt1 [very flickery]
+    // iceTail1 [small and points downwards]
+    // acidWispSpark [basically invisible]
+    // acidTail1 [inconsistent trail]
+    // acidBolt1 [very flickery]
+    // lightningTail1 [weird effect]
+	public static void addCreatureSpecialEffect(long creatureId, Communicator comm, Creature creature){
+	    int templateId = creature.getTemplate().getTemplateId();
+	    if(templateId == IceCat.templateId){
+            String particle = "iceBall_1_1";
+            sendParticleEffect(comm, creatureId, creature, particle, Float.MAX_VALUE);
+        }else if(templateId == FireCrab.templateId){
+	        sendAddEffect(comm, creatureId, (byte) 1);
+        }else if(templateId == FireGiant.templateId){
+            sendAddEffect(comm, creatureId, (byte) 1);
+        }
+    }
+
+	public static void preInit(){
+        try{
+            ClassPool classPool = HookManager.getInstance().getClassPool();
+            final Class<MethodsBestiary> thisClass = MethodsBestiary.class;
+            String replace;
+
+            Util.setReason("Disable sacrificing strong creatures.");
+            CtClass ctCreature = classPool.get("com.wurmonline.server.creatures.Creature");
+            CtClass ctItem = classPool.get("com.wurmonline.server.items.Item");
+            CtClass ctAction = classPool.get("com.wurmonline.server.behaviours.Action");
+            CtClass ctMethodsReligion = classPool.get("com.wurmonline.server.behaviours.MethodsReligion");
+            CtClass[] params1 = {
+                    ctCreature,
+                    ctCreature,
+                    ctItem,
+                    ctAction,
+                    CtClass.floatType
+            };
+            String desc1 = Descriptor.ofMethod(CtClass.booleanType, params1);
+            replace = "if("+MethodsBestiary.class.getName()+".isSacrificeImmune($2)){" +
+                    "  performer.getCommunicator().sendNormalServerMessage(\"This creature cannot be sacrificed.\");" +
+                    "  return true;" +
+                    "}";
+            Util.insertBeforeDescribed(thisClass, ctMethodsReligion, "sacrifice", desc1, replace);
+
+            Util.setReason("Disable afk training.");
+            CtClass ctCombatHandler = classPool.get("com.wurmonline.server.creatures.CombatHandler");
+            replace = "if("+MethodsBestiary.class.getName()+".blockSkillFrom($1, $0)){"+//"if($1.isPlayer() && $1.getTarget() != $0){" +
+                    //"  logger.info(\"Non-targeted mob detected - \" + $1.getName());" +
+                    "  $_ = true;" +
+                    "}else{" +
+                    "  $_ = $proceed($$);" +
+                    "}";
+            Util.instrumentDeclared(thisClass, ctCombatHandler, "setDamage", "isNoSkillFor", replace);
+            Util.instrumentDeclared(thisClass, ctCombatHandler, "checkDefenderParry", "isNoSkillFor", replace);
+            Util.instrumentDeclared(thisClass, ctCombatHandler, "checkShield", "isNoSkillFor", replace);
+            Util.instrumentDeclared(thisClass, ctCombatHandler, "setBonuses", "isNoSkillFor", replace);
+            CtMethod[] ctGetDamages = ctCombatHandler.getDeclaredMethods("getDamage");
+            for(CtMethod method : ctGetDamages){
+                method.instrument(new ExprEditor(){
+                    public void edit(MethodCall m) throws CannotCompileException {
+                        if (m.getMethodName().equals("isNoSkillFor")) {
+                            m.replace("if("+MethodsBestiary.class.getName()+".blockSkillFrom($1, $0)){" + //"if($1.isPlayer() && $1.getTarget() != $0){" +
+                                    //"  logger.info(\"Non-targeted mob detected - \" + $1.getName());" +
+                                    "  $_ = true;" +
+                                    "}else{" +
+                                    "  $_ = $proceed($$);" +
+                                    "}");
+                        }
+                    }
+                });
+            }
+
+            Util.setReason("Deny chargers walking through walls.");
+            CtClass ctPathFinder = classPool.get("com.wurmonline.server.creatures.ai.PathFinder");
+            replace = "if("+MethodsBestiary.class.getName()+".denyPathingOverride($0)){" +
+                    "  $_ = false;" +
+                    "}else{" +
+                    "  $_ = $proceed($$);" +
+                    "}";
+            Util.instrumentDeclared(thisClass, ctPathFinder, "canPass", "isGhost", replace);
+            Util.instrumentDeclared(thisClass, ctCreature, "setPathing", "isGhost", replace);
+            Util.instrumentDeclared(thisClass, ctCreature, "startPathingToTile", "isGhost", replace);
+            Util.instrumentDeclared(thisClass, ctCreature, "moveAlongPath", "isGhost", replace);
+            Util.instrumentDeclared(thisClass, ctCreature, "takeSimpleStep", "isGhost", replace);
+            Util.instrumentDeclared(thisClass, ctCreature, "die", "isGhost", replace);
+
+            Util.setReason("Apply random types to creatures in the wilderness.");
+            CtClass[] params2 = {
+                    CtClass.intType,
+                    CtClass.booleanType,
+                    CtClass.floatType,
+                    CtClass.floatType,
+                    CtClass.floatType,
+                    CtClass.intType,
+                    classPool.get("java.lang.String"),
+                    CtClass.byteType,
+                    CtClass.byteType,
+                    CtClass.byteType,
+                    CtClass.booleanType,
+                    CtClass.byteType,
+                    CtClass.intType
+            };
+            String desc2 = Descriptor.ofMethod(ctCreature, params2);
+            replace = "$10 = "+MethodsBestiary.class.getName()+".newCreatureType($1, $10);";
+            Util.insertBeforeDescribed(thisClass, ctCreature, "doNew", desc2, replace);
+
+            Util.setReason("Enable archery against ghost targets.");
+            CtClass ctArchery = classPool.get("com.wurmonline.server.combat.Archery");
+            CtMethod[] archeryAttacks = ctArchery.getDeclaredMethods("attack");
+            for(CtMethod method : archeryAttacks){
+                method.instrument(new ExprEditor(){
+                    public void edit(MethodCall m) throws CannotCompileException {
+                        if (m.getMethodName().equals("isGhost")) {
+                            m.replace("$_ = false;");
+                            logger.info("Enabled archery against ghost targets in archery attack method.");
+                        }
+                    }
+                });
+            }
+
+            Util.setReason("Disable archery altogether against certain creatures.");
+            CtClass[] params3 = {
+                    ctCreature,
+                    ctCreature,
+                    ctItem,
+                    CtClass.floatType,
+                    ctAction
+            };
+            String desc3 = Descriptor.ofMethod(CtClass.booleanType, params3);
+            replace = "if("+MethodsBestiary.class.getName()+".isArcheryImmune($1, $2)){"
+                    + "  return true;"
+                    + "}";
+            Util.insertBeforeDescribed(thisClass, ctArchery, "attack", desc3, replace);
+
+            Util.setReason("Auto-Genesis a creature born on enchanted grass");
+            replace = MethodsBestiary.class.getName()+".checkEnchantedBreed(newCreature);"
+                    + "$_ = $proceed($$);";
+            Util.instrumentDeclared(thisClass, ctCreature, "checkPregnancy", "saveCreatureName", replace);
+
+            Util.setReason("Set custom corpse sizes.");
+            replace = "$_ = $proceed($$);"
+                    + "if("+MethodsBestiary.class.getName()+".hasCustomCorpseSize(this)){"
+                    + "  "+MethodsBestiary.class.getName()+".setCorpseSizes(this, corpse);"
+                    + "}";
+            Util.instrumentDeclared(thisClass, ctCreature, "die", "addItem", replace);
+
+            Util.setReason("Add spell resistance to custom creatures.");
+            replace = "float cResist = "+MethodsBestiary.class.getName()+".getCustomSpellResistance(this);" +
+                    "if(cResist >= 0f){" +
+                    "  return cResist;" +
+                    "}";
+            Util.insertBeforeDeclared(thisClass, ctCreature, "addSpellResistance", replace);
+
+            Util.setReason("Allow custom creatures to have breeding names.");
+            replace = "$_ = "+MethodsBestiary.class.getName()+".shouldBreedName(this);";
+            Util.instrumentDeclared(thisClass, ctCreature, "checkPregnancy", "isHorse", replace);
+
+            Util.setReason("Allow ghost creatures to breed (Chargers).");
+            CtClass ctMethodsCreatures = classPool.get("com.wurmonline.server.behaviours.MethodsCreatures");
+            replace = "$_ = false;";
+            Util.instrumentDeclared(thisClass, ctMethodsCreatures, "breed", "isGhost", replace);
+
+            Util.setReason("Allow ghost creatures to drop corpses.");
+            replace = "if("+MethodsBestiary.class.getName()+".isGhostCorpse(this)){"
+                    + "  $_ = false;"
+                    + "}else{"
+                    + "  $_ = $proceed($$);"
+                    + "}";
+            Util.instrumentDeclared(thisClass, ctCreature, "die", "isGhost", replace);
+
+            Util.setReason("Attach special effects to creatures.");
+            CtClass ctVirtualZone = classPool.get("com.wurmonline.server.zones.VirtualZone");
+            CtClass[] params4 = {
+                    CtClass.longType,
+                    CtClass.booleanType,
+                    CtClass.longType,
+                    CtClass.floatType,
+                    CtClass.floatType,
+                    CtClass.floatType
+            };
+            String desc4 = Descriptor.ofMethod(CtClass.booleanType, params4);
+            replace = "$_ = $proceed($$);" +
+                    MethodsBestiary.class.getName()+".addCreatureSpecialEffect(copyId != -10 ? copyId : creatureId, $0, creature);";
+            Util.instrumentDescribed(thisClass, ctVirtualZone, "addCreature", desc4, "sendNewCreature", replace);
+
+    } catch ( CannotCompileException | NotFoundException | IllegalArgumentException | ClassCastException e) {
+        throw new HookException(e);
+    }
+    }
 }

@@ -57,17 +57,17 @@ public class Knuckles implements ItemTypes, MiscConstants {
 		logger.info("initCreationEntry()");
 		if(templateId > 0){
 			logger.info("Creating "+name+" creation entry, ID = "+templateId);
-			CreationEntryCreator.createSimpleEntry(SkillList.GROUP_SMITHING_WEAPONSMITHING, ItemList.anvilSmall, ItemList.brassBar,
+			CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_HEADS, ItemList.anvilSmall, ItemList.brassBar,
 					templateId, false, true, 0.0f, false, false, CreationCategories.WEAPONS);
-			CreationEntryCreator.createSimpleEntry(SkillList.GROUP_SMITHING_WEAPONSMITHING, ItemList.anvilSmall, ItemList.ironBar,
+			CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_HEADS, ItemList.anvilSmall, ItemList.ironBar,
 					templateId, false, true, 0.0f, false, false, CreationCategories.WEAPONS);
-			CreationEntryCreator.createSimpleEntry(SkillList.GROUP_SMITHING_WEAPONSMITHING, ItemList.anvilSmall, ItemList.steelBar,
+			CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_HEADS, ItemList.anvilSmall, ItemList.steelBar,
 					templateId, false, true, 0.0f, false, false, CreationCategories.WEAPONS);
-			CreationEntryCreator.createSimpleEntry(SkillList.GROUP_SMITHING_WEAPONSMITHING, ItemList.anvilSmall, ItemList.adamantineBar,
+			CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_HEADS, ItemList.anvilSmall, ItemList.adamantineBar,
 					templateId, false, true, 0.0f, false, false, CreationCategories.WEAPONS);
-			CreationEntryCreator.createSimpleEntry(SkillList.GROUP_SMITHING_WEAPONSMITHING, ItemList.anvilSmall, ItemList.glimmerSteelBar,
+			CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_HEADS, ItemList.anvilSmall, ItemList.glimmerSteelBar,
 					templateId, false, true, 0.0f, false, false, CreationCategories.WEAPONS);
-			CreationEntryCreator.createSimpleEntry(SkillList.GROUP_SMITHING_WEAPONSMITHING, ItemList.anvilSmall, ItemList.seryllBar,
+			CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_HEADS, ItemList.anvilSmall, ItemList.seryllBar,
 					templateId, false, true, 0.0f, false, false, CreationCategories.WEAPONS);
 			//final AdvancedCreationEntry entry = CreationEntryCreator.createAdvancedEntry(SkillList.SMITHING_WEAPON_HEADS,
 			//		ItemList.ironBand, ItemList.shaft, templateId, false, false, 0f, true, false, CreationCategories.TOOLS);

@@ -1,5 +1,6 @@
 package mod.sin.creatures.titans;
 
+import com.wurmonline.server.Servers;
 import org.gotti.wurmunlimited.modsupport.CreatureTemplateBuilder;
 import org.gotti.wurmunlimited.modsupport.creatures.ModCreature;
 
@@ -15,11 +16,12 @@ public class Ifrit implements ModCreature, CreatureTypes {
 	@Override
 	public CreatureTemplateBuilder createCreateTemplateBuilder() {
 		int[] types = {
-			CreatureTypes.C_TYPE_MOVE_LOCAL,
-			CreatureTypes.C_TYPE_AGG_HUMAN,
-			CreatureTypes.C_TYPE_CARNIVORE,
-			CreatureTypes.C_TYPE_HUNTING,
-			CreatureTypes.C_TYPE_NON_NEWBIE
+				CreatureTypes.C_TYPE_MOVE_LOCAL,
+				CreatureTypes.C_TYPE_AGG_HUMAN,
+				CreatureTypes.C_TYPE_CARNIVORE,
+				CreatureTypes.C_TYPE_HUNTING,
+				CreatureTypes.C_TYPE_NON_NEWBIE,
+				CreatureTypes.C_TYPE_NO_REBIRTH
 		};
 		
 		//public CreatureTemplateBuilder(final String identifier, final String name, final String description,
@@ -30,7 +32,7 @@ public class Ifrit implements ModCreature, CreatureTypes {
 		CreatureTemplateBuilder builder = new CreatureTemplateBuilder("mod.creature.raid.ifrit", "Ifrit", "A valiant warrior of the flame. You feel the presence of Magranon.",
 				"model.creature.humanoid.giant.juggernaut", types, BodyTemplate.TYPE_HUMAN, (short) 5, (byte) 0, (short) 350, (short) 100, (short) 60,
 				"sound.death.magranon.juggernaut", "sound.death.magranon.juggernaut", "sound.combat.hit.magranon.juggernaut", "sound.combat.hit.magranon.juggernaut",
-				0.014f, 10.0f, 13.0f, 0.0f, 0.0f, 0.0f, 0.5f, 400,
+                Servers.localServer.PVPSERVER ? 0.028f :0.014f, 10.0f, 13.0f, 0.0f, 0.0f, 0.0f, 0.5f, 400,
 				new int[]{}, 40, 100, Materials.MATERIAL_MEAT_HUMANOID);
 		
 		builder.skill(SkillList.BODY_STRENGTH, 99.0f);

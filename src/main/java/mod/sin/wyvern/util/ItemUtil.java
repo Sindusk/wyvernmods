@@ -5,11 +5,7 @@ import java.util.logging.Logger;
 
 import com.wurmonline.server.FailedException;
 import com.wurmonline.server.Server;
-import com.wurmonline.server.items.Item;
-import com.wurmonline.server.items.ItemFactory;
-import com.wurmonline.server.items.ItemList;
-import com.wurmonline.server.items.ItemSpellEffects;
-import com.wurmonline.server.items.NoSuchTemplateException;
+import com.wurmonline.server.items.*;
 import com.wurmonline.server.spells.SpellEffect;
 import com.wurmonline.shared.constants.Enchants;
 
@@ -29,14 +25,110 @@ public class ItemUtil {
 			ItemList.cherryRed,
 			ItemList.cherryGreen,
 			ItemList.giantWalnut,
-			ItemList.tomeEruption,
-			ItemList.wandOfTheSeas,
+			//ItemList.tomeEruption,
+			//ItemList.wandOfTheSeas,
 			ItemList.libramNight,
 			ItemList.tomeMagicGreen,
 			ItemList.tomeMagicBlack,
 			ItemList.tomeMagicBlue,
 			ItemList.tomeMagicWhite
 	};
+	public static int[] plateChainTemplates = {
+			ItemList.plateBoot,
+			ItemList.plateGauntlet,
+			ItemList.plateHose,
+			ItemList.plateJacket,
+			ItemList.plateSleeve,
+			ItemList.chainBoot,
+			ItemList.chainCoif,
+			ItemList.chainGlove,
+			ItemList.chainHose,
+			ItemList.chainJacket,
+			ItemList.chainSleeve,
+			ItemList.helmetBasinet,
+			ItemList.helmetGreat,
+			ItemList.helmetOpen
+	};
+	public static int[] toolWeaponTemplates = {
+			ItemList.axeSmall,
+			ItemList.shieldMedium,
+			ItemList.hatchet,
+			ItemList.knifeCarving,
+			ItemList.pickAxe,
+			ItemList.swordLong,
+			ItemList.saw,
+			ItemList.shovel,
+			ItemList.rake,
+			ItemList.hammerMetal,
+			ItemList.hammerWood,
+			ItemList.anvilSmall,
+			ItemList.cheeseDrill,
+			ItemList.swordShort,
+			ItemList.swordTwoHander,
+			ItemList.shieldSmallWood,
+			ItemList.shieldSmallMetal,
+			ItemList.shieldMediumWood,
+			ItemList.shieldLargeWood,
+			ItemList.shieldLargeMetal,
+			ItemList.axeHuge,
+			ItemList.axeMedium,
+			ItemList.knifeButchering,
+			ItemList.fishingRodIronHook,
+			ItemList.stoneChisel,
+            ItemList.spindle,
+            ItemList.anvilLarge,
+            ItemList.grindstone,
+            ItemList.needleIron,
+            ItemList.knifeFood,
+            ItemList.sickle,
+            ItemList.scythe,
+            ItemList.maulLarge,
+            ItemList.maulSmall,
+            ItemList.maulMedium,
+            ItemList.file,
+            ItemList.awl,
+            ItemList.leatherKnife,
+            ItemList.scissors,
+            ItemList.clayShaper,
+            ItemList.spatula,
+            ItemList.fruitpress,
+            ItemList.bowShortNoString,
+            ItemList.bowMediumNoString,
+            ItemList.bowLongNoString,
+            ItemList.trowel,
+            ItemList.groomingBrush,
+            ItemList.spearLong,
+            ItemList.halberd,
+            ItemList.spearSteel,
+            ItemList.staffSteel
+	};
+	// 3,4,7,8,20,21,24,25,27,62,63,64,65,80,81,82,83,84,85,86,87,90,93,94,97,
+	// 103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,135,139,143,152,185,
+	// 202,215,257,258,259,267,268,274,275,276,277,278,279,280,281,282,283,284,285,286,287,290,291,292,296,
+	// 314,350,351,374,376,378,380,382,388,390,392,394,396,397,413,447,448,449,463,480,581,
+	// 621,623,623,623,623,640,641,642,643,647,702,703,704,705,706,707,710,711,747,749,774,922
+    public static void applyEnchant(Item item, byte enchant, float power){
+        ItemSpellEffects effs = item.getSpellEffects();
+        if(effs == null){
+            effs = new ItemSpellEffects(item.getWurmId());
+        }
+        SpellEffect eff = new SpellEffect(item.getWurmId(), enchant, power, 20000000);
+        effs.addSpellEffect(eff);
+        if(item.getDescription().length() > 0){
+            item.setDescription(item.getDescription()+" ");
+        }
+        item.setDescription(item.getDescription()+eff.getName().substring(0,1)+Math.round(power));
+    }
+	public static Item createRandomSorcery(byte charges){
+		try {
+			Item sorcery = ItemFactory.createItem(sorceryIds[Server.rand.nextInt(sorceryIds.length)], 90+(10*Server.rand.nextFloat()), null);
+			sorcery.setAuxData((byte) (3-charges));
+			return sorcery;
+		} catch (FailedException | NoSuchTemplateException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 	public static Item createEnchantOrb(float power){
 		byte[] enchantOrbEnchants = {
 				Enchants.BUFF_CIRCLE_CUNNING,
@@ -67,27 +159,74 @@ public class ItemUtil {
 		}
 		return null;
 	}
+    public static Item createRandomPlateChain(float minQL, float maxQL, byte material, String creator){
+        try {
+            Item armour = ItemFactory.createItem(plateChainTemplates[Server.rand.nextInt(plateChainTemplates.length)], minQL+((maxQL-minQL)*Server.rand.nextFloat()), creator);
+            armour.setMaterial(material);
+            return armour;
+        } catch (FailedException | NoSuchTemplateException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    public static Item createRandomToolWeapon(float minQL, float maxQL, String creator){
+        try {
+            return ItemFactory.createItem(toolWeaponTemplates[Server.rand.nextInt(toolWeaponTemplates.length)], minQL+((maxQL-minQL)*Server.rand.nextFloat()), creator);
+        } catch (FailedException | NoSuchTemplateException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 	public static Item createRandomLootTool(){
 		try{
-		    int[] templates = {7, 8, 20, 24, 25, 27, 62, 93, 97};
+		    int[] templates = {
+		    		ItemList.hatchet,
+					ItemList.knifeCarving,
+					ItemList.pickAxe,
+					ItemList.saw,
+					ItemList.shovel,
+					ItemList.rake,
+					ItemList.hammerMetal,
+					ItemList.knifeButchering,
+					ItemList.stoneChisel,
+					ItemList.anvilSmall
+		    };
 		    int template = templates[random.nextInt(templates.length)];
 		    float quality = 100;
-		    for(int i = 0; i < 3; i++){
-		    	quality = java.lang.Math.min(quality, java.lang.Math.max((float)10, 90*random.nextFloat()));
+		    for(int i = 0; i < 2; i++){
+		    	quality = Math.min(quality, Math.max((float)10, 70*random.nextFloat()));
 		    }
-		    byte[] materials = {7, 8, 9, 9, 9, 10, 10, 11, 11, 11, 11, 12, 12, 13, 13, 30, 30, 31, 31, 34, 34, 56, 57, 67};
+		    byte[] materials = {
+		    		Materials.MATERIAL_GOLD,
+					Materials.MATERIAL_SILVER,
+					Materials.MATERIAL_STEEL, Materials.MATERIAL_STEEL, Materials.MATERIAL_STEEL,
+					Materials.MATERIAL_COPPER, Materials.MATERIAL_COPPER,
+					Materials.MATERIAL_IRON, Materials.MATERIAL_IRON, Materials.MATERIAL_IRON, Materials.MATERIAL_IRON,
+					Materials.MATERIAL_LEAD, Materials.MATERIAL_LEAD,
+					Materials.MATERIAL_ZINC, Materials.MATERIAL_ZINC,
+					Materials.MATERIAL_BRASS, Materials.MATERIAL_BRASS,
+					Materials.MATERIAL_BRONZE, Materials.MATERIAL_BRONZE,
+					Materials.MATERIAL_TIN, Materials.MATERIAL_TIN,
+					Materials.MATERIAL_ADAMANTINE,
+					Materials.MATERIAL_GLIMMERSTEEL,
+					Materials.MATERIAL_SERYLL
+		    };
 		    byte material = materials[random.nextInt(materials.length)];
 		    byte rarity = 0;
-		    if(random.nextInt(50) <= 2){
+		    if(random.nextInt(80) <= 2){
 		    	rarity = 1;
-		    }else if(random.nextInt(200) <= 2){
+		    }else if(random.nextInt(250) <= 2){
 	    		rarity = 2;
 		    }
-		    byte[] enchants = {13, 13, 16, 16, 47};
+		    byte[] enchants = {
+                    Enchants.BUFF_WIND_OF_AGES, Enchants.BUFF_WIND_OF_AGES,
+                    Enchants.BUFF_CIRCLE_CUNNING, Enchants.BUFF_CIRCLE_CUNNING,
+                    Enchants.BUFF_BLESSINGDARK
+		    };
 		    byte enchant = enchants[random.nextInt(enchants.length)];
-		    float power = 130;
+		    float power = 100;
 		    for(int i = 0; i < 2; i++){
-		    	power = java.lang.Math.min(power, 30+(100*random.nextFloat()));
+		    	power = Math.min(power, 20+(60*random.nextFloat()));
 		    }
 			Item tool = ItemFactory.createItem(template, quality, material, rarity, "");
 		    ItemSpellEffects effs = tool.getSpellEffects();
@@ -115,7 +254,6 @@ public class ItemUtil {
 			}
 			return treasureBox;
 		} catch (FailedException | NoSuchTemplateException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return null;

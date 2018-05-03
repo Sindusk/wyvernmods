@@ -1,5 +1,6 @@
 package mod.sin.creatures;
 
+import com.wurmonline.server.Servers;
 import org.gotti.wurmunlimited.modsupport.CreatureTemplateBuilder;
 import org.gotti.wurmunlimited.modsupport.creatures.EncounterBuilder;
 import org.gotti.wurmunlimited.modsupport.creatures.ModCreature;
@@ -46,24 +47,24 @@ public class Charger implements ModCreature, CreatureTypes {
 		CreatureTemplateBuilder builder = new CreatureTemplateBuilder("mod.creature.charger", "Charger", "A blazing-fast stallion.",
 				"model.creature.quadraped.horse.hell", types, BodyTemplate.TYPE_HORSE, (short) 5, (byte) 0, (short) 85, (short) 50, (short) 85,
 				"sound.death.horse", "sound.death.horse", "sound.combat.hit.horse", "sound.combat.hit.horse",
-				1.1f, 12f, 10f, 10.0f, 0.0f, 0.0f, 1.6f, 1000,
+				1.1f, 9f, 7f, 7f, 0.0f, 0.0f, 1.6f, 1000,
 				new int[]{}, 10, 74, Materials.MATERIAL_MEAT_HORSE);
 		
-		builder.skill(SkillList.BODY_STRENGTH, 37.0f);
+		builder.skill(SkillList.BODY_STRENGTH, 32.0f);
 		builder.skill(SkillList.BODY_STAMINA, 30.0f);
 		builder.skill(SkillList.BODY_CONTROL, 25.0f);
 		builder.skill(SkillList.MIND_LOGICAL, 30.0f);
 		builder.skill(SkillList.MIND_SPEED, 20.0f);
 		builder.skill(SkillList.SOUL_STRENGTH, 30.0f);
 		builder.skill(SkillList.SOUL_DEPTH, 30.0f);
-		builder.skill(SkillList.WEAPONLESS_FIGHTING, 25.0f);
-		builder.skill(SkillList.GROUP_FIGHTING, 20.0f);
+		builder.skill(SkillList.WEAPONLESS_FIGHTING, 20.0f);
+		builder.skill(SkillList.GROUP_FIGHTING, 16.0f);
 		
 		builder.boundsValues(-0.5f, -1.0f, 0.5f, 1.42f);
 		builder.handDamString("burn");
 		builder.maxAge(100);
 		builder.armourType(ArmourTypes.ARMOUR_LEATHER);
-		builder.baseCombatRating(13.0f);
+		builder.baseCombatRating(6.5f);
 		builder.combatDamageType(Wound.TYPE_BURN);
 		builder.denMaterial(Materials.MATERIAL_WOOD_BIRCH);
 		builder.denName("charger lair");
@@ -87,13 +88,13 @@ public class Charger implements ModCreature, CreatureTypes {
 
 				vehicle.createPassengerSeats(0);
 				vehicle.setSeatFightMod(0, 0.8f, 1.1f);
-				vehicle.setSeatOffset(0, 0.0f, 0.0f, 0.3f);
+				vehicle.setSeatOffset(0, 0.0f, 0.0f, 0.0f);
 				vehicle.setCreature(true);
-				vehicle.setSkillNeeded(37.0f);
+				vehicle.setSkillNeeded(Servers.localServer.PVPSERVER ? 25.0f : 37.0f);
 				vehicle.setName(creature.getName());
-				vehicle.setMaxHeightDiff(0.09f);
+				vehicle.setMaxHeightDiff(0.06f);
 				vehicle.setMaxDepth(-1.7f);
-				vehicle.setMaxSpeed(46.0f);
+				vehicle.setMaxSpeed(Servers.localServer.PVPSERVER ? 32.0f : 34.0f);
 				vehicle.setCommandType((byte) 3);
 				vehicle.setCanHaveEquipment(true);
 			}
@@ -105,12 +106,14 @@ public class Charger implements ModCreature, CreatureTypes {
 		if (templateId == 0)
 			return;
 
-		new EncounterBuilder(Tiles.Tile.TILE_STEPPE.id)
-			.addCreatures(templateId, 1)
-			.build(3);
+		if(!Servers.localServer.PVPSERVER) {
+			new EncounterBuilder(Tiles.Tile.TILE_STEPPE.id)
+					.addCreatures(templateId, 1)
+					.build(3);
 
-		new EncounterBuilder(Tiles.Tile.TILE_STEPPE.id)
-			.addCreatures(templateId, 1)
-			.build(1);
+			new EncounterBuilder(Tiles.Tile.TILE_STEPPE.id)
+					.addCreatures(templateId, 1)
+					.build(1);
+		}
 	}
 }

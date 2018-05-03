@@ -1,5 +1,6 @@
 package mod.sin.creatures;
 
+import com.wurmonline.server.Servers;
 import org.gotti.wurmunlimited.modsupport.CreatureTemplateBuilder;
 import org.gotti.wurmunlimited.modsupport.creatures.EncounterBuilder;
 import org.gotti.wurmunlimited.modsupport.creatures.ModCreature;
@@ -19,26 +20,44 @@ public class SpiritTroll implements ModCreature, CreatureTypes {
 		// {C_TYPE_MOVE_LOCAL, C_TYPE_VEHICLE, C_TYPE_ANIMAL, C_TYPE_LEADABLE, C_TYPE_GRAZER, C_TYPE_OMNIVORE, C_TYPE_DOMINATABLE, C_TYPE_AGG_HUMAN, C_TYPE_NON_NEWBIE, C_TYPE_BURNING}; - Hell Horse
 		// new int[]{7, 6, 40, 13, 16, 18, 29, 30, 32, 36, 39, 45, 60, 61}; - Troll
 		int[] types = {
-			CreatureTypes.C_TYPE_MOVE_LOCAL,
-			CreatureTypes.C_TYPE_AGG_HUMAN,
-			CreatureTypes.C_TYPE_FENCEBREAKER,
-			CreatureTypes.C_TYPE_HUNTING,
-			CreatureTypes.C_TYPE_MONSTER,
-			CreatureTypes.C_TYPE_REGENERATING,
-			CreatureTypes.C_TYPE_CARNIVORE,
-			CreatureTypes.C_TYPE_CLIMBER,
-			CreatureTypes.C_TYPE_UNDEAD,
-			CreatureTypes.C_TYPE_DETECTINVIS,
-			CreatureTypes.C_TYPE_NON_NEWBIE
+				CreatureTypes.C_TYPE_MOVE_LOCAL,
+				CreatureTypes.C_TYPE_AGG_HUMAN,
+				CreatureTypes.C_TYPE_FENCEBREAKER,
+				CreatureTypes.C_TYPE_HUNTING,
+				CreatureTypes.C_TYPE_MONSTER,
+				CreatureTypes.C_TYPE_REGENERATING,
+				CreatureTypes.C_TYPE_CARNIVORE,
+				CreatureTypes.C_TYPE_CLIMBER,
+				CreatureTypes.C_TYPE_UNDEAD,
+				CreatureTypes.C_TYPE_DETECTINVIS,
+				CreatureTypes.C_TYPE_NON_NEWBIE,
+				CreatureTypes.C_TYPE_MISSION_OK,
+				CreatureTypes.C_TYPE_MISSION_TRAITOR_OK
 		};
-		
+		int[] pvpTypes = {
+				CreatureTypes.C_TYPE_MOVE_LOCAL,
+				CreatureTypes.C_TYPE_AGG_HUMAN,
+				CreatureTypes.C_TYPE_FENCEBREAKER,
+				CreatureTypes.C_TYPE_HUNTING,
+				CreatureTypes.C_TYPE_MONSTER,
+				CreatureTypes.C_TYPE_REGENERATING,
+				CreatureTypes.C_TYPE_CARNIVORE,
+				CreatureTypes.C_TYPE_CLIMBER,
+				CreatureTypes.C_TYPE_UNDEAD,
+				CreatureTypes.C_TYPE_DETECTINVIS,
+				CreatureTypes.C_TYPE_NON_NEWBIE,
+				CreatureTypes.C_TYPE_NO_REBIRTH,
+				CreatureTypes.C_TYPE_MISSION_OK,
+				CreatureTypes.C_TYPE_MISSION_TRAITOR_OK
+		};
+
 		//public CreatureTemplateBuilder(final String identifier, final String name, final String description,
 		//       final String modelName, final int[] types, final byte bodyType, final short vision, final byte sex, final short centimetersHigh, final short centimetersLong, final short centimetersWide,
 		//       final String deathSndMale, final String deathSndFemale, final String hitSndMale, final String hitSndFemale,
 		//       final float naturalArmour, final float handDam, final float kickDam, final float biteDam, final float headDam, final float breathDam, final float speed, final int moveRate,
 		//       final int[] itemsButchered, final int maxHuntDist, final int aggress) {
 		CreatureTemplateBuilder builder = new CreatureTemplateBuilder("mod.creature.spirit.troll", "Spirit troll", "A spirit troll.",
-				"model.creature.humanoid.troll.standard", types, BodyTemplate.TYPE_HUMAN, (short) 5, (byte) 0, (short) 85, (short) 50, (short) 85,
+				"model.creature.humanoid.troll.standard", Servers.localServer.PVPSERVER ? pvpTypes : types, BodyTemplate.TYPE_HUMAN, (short) 5, (byte) 0, (short) 85, (short) 50, (short) 85,
 				"sound.death.troll", "sound.death.troll", "sound.combat.hit.troll", "sound.combat.hit.troll", 
 				0.15f, 15f, 17f, 19.0f, 0.0f, 0.0f, 1.2f, 500,
 				new int[]{}, 10, 74, (byte) 82);

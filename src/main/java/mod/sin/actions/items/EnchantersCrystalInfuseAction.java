@@ -1,6 +1,7 @@
 package mod.sin.actions.items;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,7 +57,7 @@ public class EnchantersCrystalInfuseAction implements ModAction {
 			public List<ActionEntry> getBehavioursFor(Creature performer, Item source, Item object)
 			{
 				if(performer instanceof Player && source != null && object != null && source.getTemplateId() == EnchantersCrystal.templateId && object.getTemplateId() != EnchantersCrystal.templateId){
-					return Arrays.asList(actionEntry);
+					return Collections.singletonList(actionEntry);
 				}
 				return null;
 			}
@@ -96,7 +97,7 @@ public class EnchantersCrystalInfuseAction implements ModAction {
 							double power = -100;
 							int i = source.getRarity();
 							while(i >= 0){
-								power = Math.max(power, performer.getSkills().getSkill(SkillList.ARCHAEOLOGY).skillCheck(diff, source, 0d, false, 1));
+								power = Math.max(power, performer.getSkills().getSkill(SkillList.SOUL_DEPTH).skillCheck(diff, source, 0d, false, 1));
 								i--;
 							}
 							ItemSpellEffects effs = target.getSpellEffects();

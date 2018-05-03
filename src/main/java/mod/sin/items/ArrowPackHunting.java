@@ -39,7 +39,7 @@ public class ArrowPackHunting {
 		itemBuilder.bodySpaces(MiscConstants.EMPTY_BYTE_PRIMITIVE_ARRAY);
 		itemBuilder.modelName("model.container.quiver.");
 		itemBuilder.difficulty(55.0f);
-		itemBuilder.weightGrams(2500);
+		itemBuilder.weightGrams(4500);
 		itemBuilder.material(Materials.MATERIAL_WOOD_BIRCH);
 		itemBuilder.value(1000);
 		itemBuilder.isTraded(true);

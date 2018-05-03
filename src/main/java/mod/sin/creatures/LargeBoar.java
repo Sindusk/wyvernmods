@@ -1,5 +1,6 @@
 package mod.sin.creatures;
 
+import com.wurmonline.server.Servers;
 import org.gotti.wurmunlimited.modsupport.CreatureTemplateBuilder;
 import org.gotti.wurmunlimited.modsupport.creatures.EncounterBuilder;
 import org.gotti.wurmunlimited.modsupport.creatures.ModCreature;
@@ -20,12 +21,14 @@ public class LargeBoar implements ModCreature, CreatureTypes {
 		// {C_TYPE_MOVE_LOCAL, C_TYPE_VEHICLE, C_TYPE_ANIMAL, C_TYPE_LEADABLE, C_TYPE_GRAZER, C_TYPE_OMNIVORE, C_TYPE_DOMINATABLE, C_TYPE_AGG_HUMAN, C_TYPE_NON_NEWBIE, C_TYPE_BURNING}; - Hell Horse
 		// int[] types = new int[]{7, 6, 13, 3, 29, 39, 60, 61}; - Spider
 		int[] types = {
-			CreatureTypes.C_TYPE_MOVE_LOCAL,
-			CreatureTypes.C_TYPE_AGG_HUMAN,
-			CreatureTypes.C_TYPE_HUNTING,
-			CreatureTypes.C_TYPE_ANIMAL,
-			CreatureTypes.C_TYPE_CARNIVORE,
-			CreatureTypes.C_TYPE_NON_NEWBIE
+				CreatureTypes.C_TYPE_MOVE_LOCAL,
+				CreatureTypes.C_TYPE_AGG_HUMAN,
+				CreatureTypes.C_TYPE_HUNTING,
+				CreatureTypes.C_TYPE_ANIMAL,
+				CreatureTypes.C_TYPE_CARNIVORE,
+				CreatureTypes.C_TYPE_NON_NEWBIE,
+				CreatureTypes.C_TYPE_MISSION_OK,
+				CreatureTypes.C_TYPE_MISSION_TRAITOR_OK
 		};
 		
 		//public CreatureTemplateBuilder(final String identifier, final String name, final String description,
@@ -71,10 +74,10 @@ public class LargeBoar implements ModCreature, CreatureTypes {
 
 		new EncounterBuilder(Tiles.Tile.TILE_SAND.id)
 			.addCreatures(templateId, 1)
-			.build(2);
+			.build(Servers.localServer.PVPSERVER ? 1 : 2);
 		
 		new EncounterBuilder(Tiles.Tile.TILE_GRASS.id)
 			.addCreatures(templateId, 1)
-			.build(3);
+			.build(Servers.localServer.PVPSERVER ? 1 : 3);
 	}
 }

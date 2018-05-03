@@ -1,5 +1,6 @@
 package mod.sin.creatures;
 
+import com.wurmonline.server.Server;
 import org.gotti.wurmunlimited.modsupport.CreatureTemplateBuilder;
 import org.gotti.wurmunlimited.modsupport.creatures.EncounterBuilder;
 import org.gotti.wurmunlimited.modsupport.creatures.ModCreature;
@@ -52,7 +53,7 @@ public class HornedPony implements ModCreature, CreatureTypes {
 				Servers.localServer.PVPSERVER ? 0.75f : 0.4f, 17f, 13f, 15.0f, 0.0f, 0.0f, 1.4f, 800,
 				new int[]{ItemList.heart}, 10, 74, Materials.MATERIAL_MEAT_HORSE);
 		
-		builder.skill(SkillList.BODY_STRENGTH, Servers.localServer.PVPSERVER ? 40.0f : 60.0f);
+		builder.skill(SkillList.BODY_STRENGTH, 40.0f);
 		builder.skill(SkillList.BODY_STAMINA, 60.0f);
 		builder.skill(SkillList.BODY_CONTROL, 55.0f);
 		builder.skill(SkillList.MIND_LOGICAL, 40.0f);
@@ -107,8 +108,10 @@ public class HornedPony implements ModCreature, CreatureTypes {
 		if (templateId == 0)
 			return;
 
-		new EncounterBuilder(Tiles.Tile.TILE_ENCHANTED_GRASS.id)
-			.addCreatures(templateId, 1)
-			.build(2);
+		if(!Servers.localServer.PVPSERVER) {
+            new EncounterBuilder(Tiles.Tile.TILE_ENCHANTED_GRASS.id)
+                    .addCreatures(templateId, 1)
+                    .build(2);
+        }
 	}
 }

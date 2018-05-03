@@ -96,7 +96,7 @@ public class ChaosCrystalInfuseAction implements ModAction {
 							performer.sendActionControl("Infusing", true, act.getTimeLeft());
 						}else if(counter * 10f > performer.getCurrentAction().getTimeLeft()){
 							double diff = Crystals.getInfusionDifficulty(performer, source, target);
-							double power = performer.getSkills().getSkill(SkillList.ARCHAEOLOGY).skillCheck(diff, source, 0d, false, 1);
+							double power = performer.getSkills().getSkill(SkillList.SOUL_DEPTH).skillCheck(diff, source, 0d, false, 1);
 							if(power > 90){
 								performer.getCommunicator().sendNormalServerMessage("You handle the crystals expertly and infuse the "+target.getName()+ ", increasing its rarity!");
 								target.setRarity(source.getRarity());

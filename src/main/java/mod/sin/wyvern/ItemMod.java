@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import com.wurmonline.server.Servers;
 import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
 import org.gotti.wurmunlimited.modloader.classhooks.InvocationHandlerFactory;
@@ -41,6 +42,7 @@ public class ItemMod {
 	public static ArrowPackHunting ARROW_PACK_HUNTING = new ArrowPackHunting();
 	public static ArrowPackWar ARROW_PACK_WAR = new ArrowPackWar();
 	public static BattleYoyo BATTLE_YOYO = new BattleYoyo();
+	public static BookOfConversion BOOK_OF_CONVERSION = new BookOfConversion();
 	public static Club CLUB = new Club();
 	public static CoinDecoration COIN_DECORATION = new CoinDecoration();
 	public static CorpseDecoration CORPSE_DECORATION = new CorpseDecoration();
@@ -61,6 +63,10 @@ public class ItemMod {
 	public static TreasureBox TREASURE_BOX = new TreasureBox();
 	public static Warhammer WARHAMMER = new Warhammer();
 	public static WarhammerHead WARHAMMER_HEAD = new WarhammerHead();
+
+	// Arena Fragments
+	public static KeyFragment KEY_FRAGMENT = new KeyFragment();
+	public static SorceryFragment SORCERY_FRAGMENT = new SorceryFragment();
 	
 	// Crystals
 	public static ChaosCrystal CHAOS_CRYSTAL = new ChaosCrystal();
@@ -99,6 +105,7 @@ public class ItemMod {
 			ARROW_PACK_HUNTING.createTemplate();
 			ARROW_PACK_WAR.createTemplate();
 			BATTLE_YOYO.createTemplate();
+            BOOK_OF_CONVERSION.createTemplate();
 			CLUB.createTemplate();
 			COIN_DECORATION.createTemplate();
 			CORPSE_DECORATION.createTemplate();
@@ -119,6 +126,10 @@ public class ItemMod {
 			TREASURE_BOX.createTemplate();
 			WARHAMMER.createTemplate();
 			WARHAMMER_HEAD.createTemplate();
+
+			// Arena Fragments
+			KEY_FRAGMENT.createTemplate();
+			SORCERY_FRAGMENT.createTemplate();
 			
 			// Crystals
 			CHAOS_CRYSTAL.createTemplate();
@@ -156,6 +167,7 @@ public class ItemMod {
 		ModActions.registerAction(new AffinityOrbAction());
 		ModActions.registerAction(new ArenaCacheOpenAction());
 		ModActions.registerAction(new ArrowPackUnpackAction());
+		ModActions.registerAction(new BookConversionAction());
 		ModActions.registerAction(new CrystalCombineAction());
 		ModActions.registerAction(new ChaosCrystalInfuseAction());
 		ModActions.registerAction(new DepthDrillAction());
@@ -174,21 +186,21 @@ public class ItemMod {
 		ARROW_PACK_WAR.initCreationEntry();
 		BATTLE_YOYO.initCreationEntry();
 		CLUB.initCreationEntry();
-		COIN_DECORATION.initCreationEntry();
-		CORPSE_DECORATION.initCreationEntry();
+		//COIN_DECORATION.initCreationEntry();
+		//CORPSE_DECORATION.initCreationEntry();
 		DEPTH_DRILL.initCreationEntry();
 		EVISCERATOR.initCreationEntry();
 		KNUCKLES.initCreationEntry();
 		MASS_STORAGE_UNIT.initCreationEntry();
-		SKELETON_DECORATION.initCreationEntry();
+		//SKELETON_DECORATION.initCreationEntry();
 		SOUL_FORGE.initCreationEntry();
-		STATUETTE_BREYK.initCreationEntry();
-		STATUETTE_CYBERHUSKY.initCreationEntry();
+		//STATUETTE_BREYK.initCreationEntry();
+		//STATUETTE_CYBERHUSKY.initCreationEntry();
 		WARHAMMER.initCreationEntry();
 		WARHAMMER_HEAD.initCreationEntry();
 
 		// Spectral set
-		SPECTRAL_BOOT.initCreationEntry();
+		/*SPECTRAL_BOOT.initCreationEntry();
 		SPECTRAL_CAP.initCreationEntry();
 		SPECTRAL_GLOVE.initCreationEntry();
 		SPECTRAL_HOSE.initCreationEntry();
@@ -202,7 +214,7 @@ public class ItemMod {
 		GLIMMERSCALE_HELMET.initCreationEntry();
 		GLIMMERSCALE_HOSE.initCreationEntry();
 		GLIMMERSCALE_SLEEVE.initCreationEntry();
-		GLIMMERSCALE_VEST.initCreationEntry();
+		GLIMMERSCALE_VEST.initCreationEntry();*/
 		
 		// Allow sickle heads from steel & moon metals:
 		// [3/28/18] Disabled: Implemented in WU 1.6.
@@ -251,17 +263,17 @@ public class ItemMod {
 	public static void createCustomWeapons(){
 		try {
 			logger.info("Beginning custom weapon creation.");
-			new Weapon(BattleYoyo.templateId, 7.75f, 3.5f, 0.008f, 2, 2, 0.0f, 0d);
-			new Weapon(Club.templateId, 8.5f, 4.1f, 0.002f, 3, 3, 0.4f, 0.5d);
-			new Weapon(Knuckles.templateId, 4.1f, 1f, 0.002f, 1, 1, 0.2f, 0.5d);
-			new Weapon(Warhammer.templateId, 9.75f, 5.2f, 0.008f, 4, 3, 1f, 0d);
+			new Weapon(BattleYoyo.templateId, 6.85f, 3.85f, 0.008f, 2, 2, 0.0f, 0d);
+			new Weapon(Club.templateId, 8.1f, 4.5f, 0.002f, 3, 3, 0.4f, 0.5d);
+			new Weapon(Knuckles.templateId, 3.6f, 2.2f, 0.002f, 1, 1, 0.2f, 0.5d);
+			new Weapon(Warhammer.templateId, 9.55f, 5.5f, 0.008f, 4, 3, 1f, 0d);
 			// Titan weaponry
 			new Weapon(MaartensMight.templateId, 11, 5, 0.02f, 4, 4, 1.0f, 0d);
 			new Weapon(RaffehsRage.templateId, 9.5f, 4.25f, 0.02f, 3, 3, 1.0f, 0d);
 			new Weapon(VindictivesVengeance.templateId, 9, 4f, 0.02f, 3, 3, 0.5f, 0d);
 			new Weapon(WilhelmsWrath.templateId, 6f, 4.5f, 0.02f, 6, 6, 0.5f, 0d);
 			// Genocide weapon
-			new Weapon(Eviscerator.templateId, 11, 4.5f, 0.02f, 5, 5, 0.4f, 0.5d);
+			new Weapon(Eviscerator.templateId, 100, 3f, 0.02f, 5, 5, 0.4f, 0.5d);
 		} catch (IllegalArgumentException | ClassCastException e) {
 			e.printStackTrace();
 		}
@@ -301,30 +313,32 @@ public class ItemMod {
 		ItemTemplate leather = ItemTemplateFactory.getInstance().getTemplate(ItemList.leather);
 		ReflectionUtil.setPrivateField(leather, ReflectionUtil.getField(leather.getClass(), "combine"), true);
 
+        // Make logs able to be combined.
+        ItemTemplate log = ItemTemplateFactory.getInstance().getTemplate(ItemList.log);
+        ReflectionUtil.setPrivateField(log, ReflectionUtil.getField(log.getClass(), "combine"), true);
+
 		// Set silver mirror price to 10 silver instead of 1 iron.
 		ItemTemplate handMirror = ItemTemplateFactory.getInstance().getTemplate(ItemList.handMirror);
-		ReflectionUtil.setPrivateField(handMirror, ReflectionUtil.getField(handMirror.getClass(), "value"), 500000);
+		ReflectionUtil.setPrivateField(handMirror, ReflectionUtil.getField(handMirror.getClass(), "value"), 200000);
 		ItemTemplate goldMirror = ItemTemplateFactory.getInstance().getTemplate(ItemList.goldenMirror);
-		ReflectionUtil.setPrivateField(goldMirror, ReflectionUtil.getField(goldMirror.getClass(), "value"), 3000000);
+		ReflectionUtil.setPrivateField(goldMirror, ReflectionUtil.getField(goldMirror.getClass(), "value"), 1000000);
 
 		// Set transmutation rod to 2 gold instead of 50 silver.
 		//ItemTemplate transmutationRod = ItemTemplateFactory.getInstance().getTemplate(668);
 		//ReflectionUtil.setPrivateField(transmutationRod, ReflectionUtil.getField(transmutationRod.getClass(), "value"), 2000000);
-		
-		// Make logs able to be combined.
-		ItemTemplate log = ItemTemplateFactory.getInstance().getTemplate(ItemList.log);
-		ReflectionUtil.setPrivateField(log, ReflectionUtil.getField(log.getClass(), "combine"), true);
-		
+
 		// "  return this.isTransportable || (this.getTemplateId() >= 510 && this.getTemplateId() <= 513) || this.getTemplateId() == 722 || this.getTemplateId() == 670;"
-		// Make mailboxes loadable
-		ItemTemplate mailboxWood = ItemTemplateFactory.getInstance().getTemplate(ItemList.mailboxWood);
-		ReflectionUtil.setPrivateField(mailboxWood, ReflectionUtil.getField(mailboxWood.getClass(), "isTransportable"), true);
-		ItemTemplate mailboxStone = ItemTemplateFactory.getInstance().getTemplate(ItemList.mailboxStone);
-		ReflectionUtil.setPrivateField(mailboxStone, ReflectionUtil.getField(mailboxStone.getClass(), "isTransportable"), true);
-		ItemTemplate mailboxWood2 = ItemTemplateFactory.getInstance().getTemplate(ItemList.mailboxWoodTwo);
-		ReflectionUtil.setPrivateField(mailboxWood2, ReflectionUtil.getField(mailboxWood2.getClass(), "isTransportable"), true);
-		ItemTemplate mailboxStone2 = ItemTemplateFactory.getInstance().getTemplate(ItemList.mailboxStoneTwo);
-		ReflectionUtil.setPrivateField(mailboxStone2, ReflectionUtil.getField(mailboxStone2.getClass(), "isTransportable"), true);
+		// Make mailboxes loadable (PvE Only)
+        if(!Servers.localServer.PVPSERVER) {
+            ItemTemplate mailboxWood = ItemTemplateFactory.getInstance().getTemplate(ItemList.mailboxWood);
+            ReflectionUtil.setPrivateField(mailboxWood, ReflectionUtil.getField(mailboxWood.getClass(), "isTransportable"), true);
+            ItemTemplate mailboxStone = ItemTemplateFactory.getInstance().getTemplate(ItemList.mailboxStone);
+            ReflectionUtil.setPrivateField(mailboxStone, ReflectionUtil.getField(mailboxStone.getClass(), "isTransportable"), true);
+            ItemTemplate mailboxWood2 = ItemTemplateFactory.getInstance().getTemplate(ItemList.mailboxWoodTwo);
+            ReflectionUtil.setPrivateField(mailboxWood2, ReflectionUtil.getField(mailboxWood2.getClass(), "isTransportable"), true);
+            ItemTemplate mailboxStone2 = ItemTemplateFactory.getInstance().getTemplate(ItemList.mailboxStoneTwo);
+            ReflectionUtil.setPrivateField(mailboxStone2, ReflectionUtil.getField(mailboxStone2.getClass(), "isTransportable"), true);
+        }
 		
 		// Make bell towers and trash bins loadable
 		ItemTemplate bellTower = ItemTemplateFactory.getInstance().getTemplate(ItemList.bellTower);
@@ -355,6 +369,14 @@ public class ItemMod {
 
         ItemTemplate sandstone = ItemTemplateFactory.getInstance().getTemplate(ItemList.sandstone);
         ReflectionUtil.setPrivateField(sandstone, ReflectionUtil.getField(sandstone.getClass(), "difficulty"), 50.0f);
+
+        // Make some useless items decorations for added interior design.
+        ItemTemplate stoneKeystone = ItemTemplateFactory.getInstance().getTemplate(ItemList.stoneKeystone);
+        ReflectionUtil.setPrivateField(stoneKeystone, ReflectionUtil.getField(stoneKeystone.getClass(), "decoration"), true);
+        ItemTemplate marbleKeystone = ItemTemplateFactory.getInstance().getTemplate(ItemList.marbleKeystone);
+        ReflectionUtil.setPrivateField(marbleKeystone, ReflectionUtil.getField(marbleKeystone.getClass(), "decoration"), true);
+        ItemTemplate skull = ItemTemplateFactory.getInstance().getTemplate(ItemList.skull);
+        ReflectionUtil.setPrivateField(skull, ReflectionUtil.getField(skull.getClass(), "decoration"), true);
 		
 		createCustomWeapons();
 		createCustomArmours();

@@ -1,14 +1,5 @@
 package mod.sin.actions;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.gotti.wurmunlimited.modsupport.actions.ActionPerformer;
-import org.gotti.wurmunlimited.modsupport.actions.BehaviourProvider;
-import org.gotti.wurmunlimited.modsupport.actions.ModAction;
-import org.gotti.wurmunlimited.modsupport.actions.ModActions;
-
 import com.wurmonline.server.Server;
 import com.wurmonline.server.ServerEntry;
 import com.wurmonline.server.Servers;
@@ -18,6 +9,15 @@ import com.wurmonline.server.creatures.Creature;
 import com.wurmonline.server.items.Item;
 import com.wurmonline.server.items.ItemList;
 import com.wurmonline.server.players.Player;
+import org.gotti.wurmunlimited.modsupport.actions.ActionPerformer;
+import org.gotti.wurmunlimited.modsupport.actions.BehaviourProvider;
+import org.gotti.wurmunlimited.modsupport.actions.ModAction;
+import org.gotti.wurmunlimited.modsupport.actions.ModActions;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ArenaEscapeAction implements ModAction {
 	private static Logger logger = Logger.getLogger(ArenaEscapeAction.class.getName());
@@ -55,7 +55,7 @@ public class ArenaEscapeAction implements ModAction {
 			public List<ActionEntry> getBehavioursFor(Creature performer, Item object)
 			{
 				if(performer instanceof Player && object != null && (object.getTemplateId() == ItemList.bodyBody || object.getTemplateId() == ItemList.bodyHand) && Servers.localServer.PVPSERVER) {
-					return Arrays.asList(actionEntry);
+					return Collections.singletonList(actionEntry);
 				}
 				
 				return null;
@@ -93,10 +93,10 @@ public class ArenaEscapeAction implements ModAction {
 						}
 						if(counter == 1.0f){
 							performer.getCommunicator().sendNormalServerMessage("You prepare your body and mind to transfer to another realm.");
-							act.setTimeLeft(1200);
+							act.setTimeLeft(1800);
 							performer.sendActionControl("Preparing", true, act.getTimeLeft());
 						}else if(counter * 10f > performer.getCurrentAction().getTimeLeft()){
-							ServerEntry targetserver = Servers.localServer.serverWest;
+							ServerEntry targetserver = Servers.localServer.serverSouth;
 							if(targetserver == null){
 			                    performer.getCommunicator().sendNormalServerMessage("Error: Something went wrong [TARGETSERVER=NULL].");
 			                    return true;
@@ -108,8 +108,8 @@ public class ArenaEscapeAction implements ModAction {
 							performer.getCommunicator().sendNormalServerMessage("You successfully escape the arena.");
 			                performer.getCommunicator().sendNormalServerMessage("You transfer to " + targetserver.name + ".");
 			                Server.getInstance().broadCastAction(performer.getName() + " transfers to " + targetserver.name + ".", performer, 5);
-			                int tilex = targetserver.SPAWNPOINTJENNX;
-			                int tiley = targetserver.SPAWNPOINTJENNY;
+			                int tilex = 1010;
+			                int tiley = 1010;
 			                ((Player)performer).sendTransfer(Server.getInstance(), targetserver.INTRASERVERADDRESS, Integer.parseInt(targetserver.INTRASERVERPORT), targetserver.INTRASERVERPASSWORD, targetserver.id, tilex, tiley, true, false, performer.getKingdomId());
 			                ((Player)performer).transferCounter = 30;
 							return true;

@@ -36,7 +36,7 @@ public class AffinityOrb implements ItemTypes, MiscConstants {
 		itemBuilder.difficulty(5.0f);
 		itemBuilder.weightGrams(500);
 		itemBuilder.material(Materials.MATERIAL_CRYSTAL);
-		itemBuilder.value(3000000);
+		itemBuilder.value(1000000);
 		itemBuilder.isTraded(true);
 		
 		ItemTemplate template = itemBuilder.build();

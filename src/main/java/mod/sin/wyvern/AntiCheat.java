@@ -1,9 +1,16 @@
 package mod.sin.wyvern;
 
 import java.nio.ByteBuffer;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import com.wurmonline.server.skills.SkillList;
+import mod.sin.lib.Util;
+import mod.sin.wyvern.bounty.PlayerBounty;
 import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 import org.gotti.wurmunlimited.modloader.classhooks.HookException;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
@@ -25,14 +32,47 @@ import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.NotFoundException;
+import org.gotti.wurmunlimited.modsupport.ModSupportDb;
 
 public class AntiCheat {
 	private static Logger logger = Logger.getLogger(AntiCheat.class.getName());
 	private static final int emptyRock = Tiles.encode((short)-100, (byte)Tiles.Tile.TILE_CAVE_WALL.id, (byte)0);
+
+    public static void mapPlayerSteamId(String name, String steamId){
+        Connection dbcon;
+        PreparedStatement ps;
+        boolean foundSteamIdMap = false;
+        try {
+            dbcon = ModSupportDb.getModSupportDb();
+            ps = dbcon.prepareStatement("SELECT * FROM SteamIdMap");
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                if (!rs.getString("NAME").equals(name)) continue;
+                foundSteamIdMap = true;
+            }
+            rs.close();
+            ps.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        if (!foundSteamIdMap) {
+            logger.info("No steam id entry for " + name + ". Creating one.");
+            try {
+                dbcon = ModSupportDb.getModSupportDb();
+                ps = dbcon.prepareStatement("INSERT INTO SteamIdMap (NAME, STEAMID) VALUES(\"" + name + "\", " + steamId + ")");
+                ps.executeUpdate();
+                ps.close();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        PlayerBounty.steamIdMap.put(name, Long.valueOf(steamId));
+    }
+
 	private static boolean isCaveWall(int xx, int yy){
 		if (xx < 0 || xx >= Zones.worldTileSizeX || yy < 0 || yy >= Zones.worldTileSizeY) {
             return true;
-        } else if (Tiles.isSolidCave((byte)Tiles.decodeType((int)Server.caveMesh.data[xx | yy << Constants.meshSize]))) {
+        } else if (Tiles.isSolidCave(Tiles.decodeType(Server.caveMesh.data[xx | yy << Constants.meshSize]))) {
         	return true;
         }
 		return false;
@@ -58,8 +98,23 @@ public class AntiCheat {
 		}
 		return true;
 	}
+	private static boolean playerCanSeeVein(int tilex, int tiley, int distance){
+	    int xx = tilex-distance;
+	    int yy;
+	    while(xx <= tilex+distance){
+	        yy = tiley-distance;
+	        while(yy <= tiley+distance){
+                if(!isCaveWall(xx, yy)){
+                    return true;
+                }
+	            yy++;
+            }
+            xx++;
+        }
+	    return false;
+    }
 	private static int getDummyWallAntiCheat(int tilex, int tiley){
-		return Tiles.encode((short)Tiles.decodeHeight((int)Server.caveMesh.data[tilex | tiley << Constants.meshSize]), (byte)Tiles.Tile.TILE_CAVE_WALL.id, (byte)Tiles.decodeData((int)Server.caveMesh.data[tilex | tiley << Constants.meshSize]));
+		return Tiles.encode(Tiles.decodeHeight(Server.caveMesh.data[tilex | tiley << Constants.meshSize]), Tiles.Tile.TILE_CAVE_WALL.id, Tiles.decodeData((int)Server.caveMesh.data[tilex | tiley << Constants.meshSize]));
 	}
 	public static void sendCaveStripAntiCheat(Communicator comm, short xStart, short yStart, int width, int height){
 		if (comm.player != null && comm.player.hasLink()) {
@@ -73,6 +128,8 @@ public class AntiCheat {
                 bb.putShort((short)width);
                 bb.putShort((short)height);
                 boolean onSurface = comm.player.isOnSurface();
+                double prospecting = comm.player.getSkills().getSkill(SkillList.PROSPECT).getKnowledge();
+                int distance = (int) prospecting / 18;
                 for (int x = 0; x < width; ++x) {
                     for (int y = 0; y < height; ++y) {
                         int xx = xStart + x;
@@ -82,12 +139,20 @@ public class AntiCheat {
                             xx = 0;
                             yy = 0;
                         } else if (!onSurface) {
-                        	if(!(Tiles.decodeType((int)Server.caveMesh.getTile(xx, yy)) == Tiles.Tile.TILE_CAVE_EXIT.id) && isSurroundedByCaveWalls(xx, yy)){
-                                bb.putInt(getDummyWallAntiCheat(xx, yy));
+                        	if(!(Tiles.decodeType(Server.caveMesh.getTile(xx, yy)) == Tiles.Tile.TILE_CAVE_EXIT.id)){
+                        	    if(prospecting < 20 && isSurroundedByCaveWalls(xx, yy)){
+                                    bb.putInt(getDummyWallAntiCheat(xx, yy));
+                                }else if(prospecting > 20 && playerCanSeeVein(xx, yy, distance)){
+                                    bb.putInt(Server.caveMesh.data[xx | yy << Constants.meshSize]);
+                                }else if(!isSurroundedByCaveWalls(xx, yy)){
+                                    bb.putInt(Server.caveMesh.data[xx | yy << Constants.meshSize]);
+                                }else {
+                                    bb.putInt(getDummyWallAntiCheat(xx, yy));
+                                }
                         	}else{
                         		bb.putInt(Server.caveMesh.data[xx | yy << Constants.meshSize]);
                         	}
-                        } else if (Tiles.isSolidCave((byte)Tiles.decodeType((int)Server.caveMesh.data[xx | yy << Constants.meshSize]))) {
+                        } else if (Tiles.isSolidCave(Tiles.decodeType(Server.caveMesh.data[xx | yy << Constants.meshSize]))) {
                             bb.putInt(getDummyWallAntiCheat(xx, yy));
                         } else {
                             bb.putInt(Server.caveMesh.data[xx | yy << Constants.meshSize]);
@@ -123,7 +188,7 @@ public class AntiCheat {
             double dx = (double)(targetHeight - initialHeight) / dist;
             while (!path.isEmpty()) {
                 PathTile p = path.getFirst();
-                if(Tiles.getTile((byte)Tiles.decodeType((int)p.getTile())).isTree()){
+                if(Tiles.getTile(Tiles.decodeType(p.getTile())).isTree()){
                 	trees++;
                 }
                 /*if (Tiles.getTile((byte)Tiles.decodeType((int)p.getTile())).isTree() && treetilex == -1 && Server.rand.nextInt(10) < ++trees) {
@@ -200,15 +265,24 @@ public class AntiCheat {
 	public static void preInit(){
 		try{
 			ClassPool classPool = HookManager.getInstance().getClassPool();
+			Class<AntiCheat> thisClass = AntiCheat.class;
+			String replace;
 
             // - Change the caveStrip method to the custom one, so we can edit what the clients see! - //
 			CtClass ctCommunicator = classPool.get("com.wurmonline.server.creatures.Communicator");
-        	ctCommunicator.getDeclaredMethod("sendCaveStrip").setBody("{"
+			replace = "{ mod.sin.wyvern.AntiCheat.sendCaveStripAntiCheat(this, $$); }";
+			Util.setBodyDeclared(thisClass, ctCommunicator, "sendCaveStrip", replace);
+        	/*ctCommunicator.getDeclaredMethod("sendCaveStrip").setBody("{"
         			+ "  mod.sin.wyvern.AntiCheat.sendCaveStripAntiCheat(this, $$);"
-        			+ "}");
+        			+ "}");*/
+
+            Util.setReason("Map Steam ID's to Modsupport table.");
+            CtClass ctLoginHandler = classPool.get("com.wurmonline.server.LoginHandler");
+            replace = AntiCheat.class.getName()+".mapPlayerSteamId($1, $2);";
+            Util.insertBeforeDeclared(thisClass, ctLoginHandler, "preValidateLogin", replace);
 
             // - Change the creature isVisibleTo method to the custom one, so we can edit what the clients see! - //
-			CtClass ctCreature = classPool.get("com.wurmonline.server.creatures.Creature");
+			/*CtClass ctCreature = classPool.get("com.wurmonline.server.creatures.Creature");
         	ctCreature.getDeclaredMethod("isVisibleTo").setBody("{"
         			+ "  return mod.sin.wyvern.AntiCheat.isVisibleToAntiCheat(this, $$);"
         			+ "}");
@@ -219,11 +293,11 @@ public class AntiCheat {
         			+ "if(!this.covers($1.getTileX(), $1.getTileY())){"
         			+ "  return false;"
         			+ "}"
-        			+ "if(!mod.sin.wyvern.AntiCheat.isVisibleToAntiCheat($1, this.watcher)){"
+        			+ "if(!mod.sin.wyvern.AntiCheat.isVisibleToAntiCheat(this.watcher, $1)){"
         			+ "  return false;"
-        			+ "}");
+        			+ "}");*/
 
-        } catch (CannotCompileException | NotFoundException | IllegalArgumentException | ClassCastException e) {
+        } catch ( NotFoundException | IllegalArgumentException | ClassCastException e) {
             throw new HookException((Throwable)e);
         }
 	}

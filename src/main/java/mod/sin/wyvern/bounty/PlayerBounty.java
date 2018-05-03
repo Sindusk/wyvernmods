@@ -1,6 +1,8 @@
 package mod.sin.wyvern.bounty;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.logging.Logger;
@@ -21,13 +23,17 @@ import mod.sin.armour.SpectralHide;
 import mod.sin.creatures.Reaper;
 import mod.sin.creatures.SpectralDrake;
 import mod.sin.items.AffinityOrb;
+import mod.sin.items.caches.TitanCache;
 import mod.sin.wyvern.Bounty;
-import mod.sin.wyvern.arena.Arena;
+import mod.sin.wyvern.Arena;
+import mod.sin.wyvern.Titans;
 import mod.sin.wyvern.util.ItemUtil;
 
 public class PlayerBounty {
 	public static final Logger logger = Logger.getLogger(PlayerBounty.class.getName());
 	protected static final Random random = new Random();
+	public static HashMap<String, Long> steamIdMap = new HashMap<>();
+	public static HashMap<Long, ArrayList<Long>> playersRewarded = new HashMap<>();
 	
 	public static double getTypeBountyMod(Creature mob, String mobType){
 		if(!mob.isUnique()){
@@ -110,10 +116,21 @@ public class PlayerBounty {
 	
 	public static void checkPlayerReward(Player player, Creature mob){
 		try{
+			if(mob.isReborn() || mob.isBred()){
+				return;
+			}
 			int mobTemplateId = mob.getTemplate().getTemplateId();
-    		if(Bounty.dealtDamage.containsKey(mob.getWurmId()) && Bounty.dealtDamage.get(mob.getWurmId()).containsKey(player.getWurmId())){
+			long mobWurmId = mob.getWurmId();
+			if(playersRewarded.containsKey(mobWurmId)){
+				ArrayList<Long> steamArray = playersRewarded.get(mobWurmId);
+				if(steamArray.contains(steamIdMap.get(player.getName()))){
+					player.getCommunicator().sendSafeServerMessage("Another character has claimed the reward from this bounty.");
+					return;
+				}
+			}
+    		if(Bounty.dealtDamage.containsKey(mobWurmId) && Bounty.dealtDamage.get(mobWurmId).containsKey(player.getWurmId())){
     			// -- Damage Dealt Rewards -- //
-				if(mob.isUnique()){
+				/*if(mob.isUnique()){
 					// Treasure boxes awarded to players who deal damage:
 					Item treasureBox = ItemUtil.createTreasureBox();
 					if(treasureBox != null){
@@ -121,18 +138,23 @@ public class PlayerBounty {
 					}else{
 						logger.warning("Error: Treasure box was not created properly!");
 					}
-				}
-				if(Arena.isTitan(mob)){
+				}*/
+				if(Titans.isTitan(mob)){
 					player.addTitle(Title.getTitle(700));
+					Item affinityOrb = ItemFactory.createItem(AffinityOrb.templateId, 99f, mob.getName());
+					player.getInventory().insertItem(affinityOrb, true);
+					Item titanCache = ItemFactory.createItem(TitanCache.templateId, 99f, mob.getName());
+					player.getInventory().insertItem(titanCache, true);
+					return;
 				}
-				double fightskill = player.getFightingSkill().getKnowledge();
-		    	if((mobTemplateId == Reaper.templateId || mobTemplateId == SpectralDrake.templateId) && fightskill >= 50){
+				//double fightskill = player.getFightingSkill().getKnowledge();
+		    	/*if((mobTemplateId == Reaper.templateId || mobTemplateId == SpectralDrake.templateId) && fightskill >= 50){
 		    		rewardPowerfulLoot(player, mob); // Reward affinity orb and enchant orb:
 		    		if(mob.getTemplate().getTemplateId() == SpectralDrake.templateId){
 			    		rewardSpectralLoot(player); // Reward spectral hide for spectral drakes
 		    		}
 		    		return; // If the player receives powerful loot, break the method completely and skip bounty.
-		    	}
+		    	}*/
 		    	// -- End Damage Dealt Rewards -- //
     		}
     		String mobName = mob.getTemplate().getName().toLowerCase();
@@ -143,66 +165,44 @@ public class PlayerBounty {
     		if(Bounty.reward.containsKey(mobName)){
     			iron = Bounty.reward.get(mobName); // Prioritize hardcoded values in the Bounty.reward list first
     		}else{
-    		    iron = java.lang.Math.round(cretStr); // Calculate bounty from creature strength if they do not exist in the reward list.
+    		    iron = Math.round(cretStr); // Calculate bounty from creature strength if they do not exist in the reward list.
     		}
     		if(Servers.localServer.PVPSERVER){
     			if(!mob.isUnique() && mob.getTemplate().getTemplateId() != SpectralDrake.templateId && mob.getTemplate().getTemplateId() != Reaper.templateId){
-    				iron *= 2.5d;
+    				iron *= 1.2d;
     			}
-    			try {
+    			/*try {
 					player.getSkills().getSkill(SkillList.MEDITATING).skillCheck(10, 0, false, 1); // Meditation skill gain
 					float faithMod = 1-(player.getFaith()/200f);
 					player.modifyFaith((((float)cretStr)*faithMod)/200000f); // Faith skill gain
 				} catch (NoSuchSkillException e) {
 					e.printStackTrace();
-				}
+				}*/
     		}
     		
     		// Multiply bounty based on type
-    		iron *= getTypeBountyMod(mob, mobType);
-    		/*if(!mob.isUnique()){
-	    		if (mobType.endsWith("fierce ")){
-	    			iron *= 1.5;
-	    		}else if (mobType.endsWith("angry ")){
-	    			iron *= 1.4;
-	    		}else if (mobType.endsWith("raging ")){
-	    			iron *= 1.6;
-	    		}else if (mobType.endsWith("slow ")){
-	    			iron *= 0.95;
-	    		}else if (mobType.endsWith("alert ")){
-	    			iron *= 1.2;
-	    		}else if (mobType.endsWith("greenish ")){
-	    			iron *= 1.7;
-	    		}else if (mobType.endsWith("lurking ")){
-	    			iron *= 1.1;
-	    		}else if (mobType.endsWith("sly ")){
-	    			iron *= 0.8;
-	    		}else if (mobType.endsWith("hardened ")){
-	    			iron *= 1.3;
-	    		}else if (mobType.endsWith("scared ")){
-	    			iron *= 0.85;
-	    		}else if (mobType.endsWith("diseased ")){
-	    			iron *= 0.9;
-	    		}else if (mobType.endsWith("champion ")){
-	    			iron *= 2.0;
-	    		}
-    		}*/
-    		
-    		player.addMoney(iron);
-		    Item inventory = player.getInventory();
-    		String coinMessage = Economy.getEconomy().getChangeFor(iron).getChangeString();
-    		String strBuilder = "You are awarded " + coinMessage;
-		    if((mob.isAggHuman() || mob.isMonster()) && !mob.isUnique() && !Servers.localServer.PVPSERVER){
-	    		Item creatureToken = ItemFactory.createItem(22765, 1+(99*random.nextFloat()), ""); // Creature Token ID: 22765
-	    		inventory.insertItem(creatureToken);
-	    		strBuilder += " and a "+creatureToken.getTemplate().getName();
-		    }
-		    strBuilder += " for slaying the "+mob.getName()+".";
+			//if(mob.isAggHuman() || mob.getBaseCombatRating() > 10) {
+			iron *= getTypeBountyMod(mob, mobType);
+
+			player.addMoney(iron);
+			Item inventory = player.getInventory();
+			String coinMessage = Economy.getEconomy().getChangeFor(iron).getChangeString();
+			String strBuilder = "You are awarded " + coinMessage;
+			strBuilder += " for slaying the " + mob.getName() + ".";
 			player.getCommunicator().sendSafeServerMessage(strBuilder);
-    	}catch (NoSuchTemplateException | FailedException | IOException e) {
+			long playerSteamId = steamIdMap.get(player.getName());
+			if(playersRewarded.containsKey(mobWurmId)){
+				playersRewarded.get(mobWurmId).add(playerSteamId);
+			}else{
+				ArrayList<Long> steamArray = new ArrayList<>();
+				steamArray.add(playerSteamId);
+				playersRewarded.put(mobWurmId, steamArray);
+			}
+			//}
+    	}catch (IOException | FailedException | NoSuchTemplateException e) {
 			e.printStackTrace();
 		}
-    } // checkPlayerReward
+	} // checkPlayerReward
 	
 	public static void checkPlayerBounty(Player player, Creature creature){
 		try {
@@ -214,7 +214,6 @@ public class PlayerBounty {
 			logger.info(player.getName()+" killed "+creature.getName());
 			checkPlayerReward(player, creature);
 		} catch (IllegalArgumentException | ClassCastException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

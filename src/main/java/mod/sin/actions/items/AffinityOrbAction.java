@@ -1,15 +1,5 @@
 package mod.sin.actions.items;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.gotti.wurmunlimited.modsupport.actions.ActionPerformer;
-import org.gotti.wurmunlimited.modsupport.actions.BehaviourProvider;
-import org.gotti.wurmunlimited.modsupport.actions.ModAction;
-import org.gotti.wurmunlimited.modsupport.actions.ModActions;
-
 import com.wurmonline.server.Items;
 import com.wurmonline.server.behaviours.Action;
 import com.wurmonline.server.behaviours.ActionEntry;
@@ -19,8 +9,16 @@ import com.wurmonline.server.players.Player;
 import com.wurmonline.server.skills.Affinities;
 import com.wurmonline.server.skills.Affinity;
 import com.wurmonline.server.skills.SkillSystem;
-
 import mod.sin.items.AffinityOrb;
+import org.gotti.wurmunlimited.modsupport.actions.ActionPerformer;
+import org.gotti.wurmunlimited.modsupport.actions.BehaviourProvider;
+import org.gotti.wurmunlimited.modsupport.actions.ModAction;
+import org.gotti.wurmunlimited.modsupport.actions.ModActions;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class AffinityOrbAction implements ModAction {
 	private static Logger logger = Logger.getLogger(AffinityOrbAction.class.getName());
@@ -58,7 +56,7 @@ public class AffinityOrbAction implements ModAction {
 			public List<ActionEntry> getBehavioursFor(Creature performer, Item object)
 			{
 				if(performer instanceof Player && object != null && object.getTemplateId() == AffinityOrb.templateId) {
-					return Arrays.asList(actionEntry);
+					return Collections.singletonList(actionEntry);
 				}
 				
 				return null;

@@ -40,7 +40,7 @@ public class EternalReservoir implements ItemTypes, MiscConstants {
 		itemBuilder.primarySkill((int)MiscConstants.NOID);
 		itemBuilder.bodySpaces(EMPTY_BYTE_PRIMITIVE_ARRAY);
 		itemBuilder.modelName("model.structure.rift.altar.1.");
-		itemBuilder.difficulty(50.0f);
+		itemBuilder.difficulty(40.0f);
 		itemBuilder.weightGrams(200000);
 		itemBuilder.material(Materials.MATERIAL_STONE);
 		itemBuilder.value(10000);
@@ -59,14 +59,8 @@ public class EternalReservoir implements ItemTypes, MiscConstants {
 
 	        massStorage.addRequirement(new CreationRequirement(1, ItemList.dirtPile, 99, true));
 	        massStorage.addRequirement(new CreationRequirement(2, ItemList.brickPottery, 200, true));
-	        massStorage.addRequirement(new CreationRequirement(3, ItemList.peat, 50, true));
-	        massStorage.addRequirement(new CreationRequirement(4, ChaosCrystal.templateId, 50, true));
-	        massStorage.addRequirement(new CreationRequirement(5, ItemList.heart, 20, true));
-	        massStorage.addRequirement(new CreationRequirement(6, ItemList.emerald, 5, true));
-	        massStorage.addRequirement(new CreationRequirement(7, ItemList.diamond, 5, true));
-	        massStorage.addRequirement(new CreationRequirement(8, ItemList.opal, 5, true));
-	        massStorage.addRequirement(new CreationRequirement(9, ItemList.sapphire, 5, true));
-	        massStorage.addRequirement(new CreationRequirement(10, ItemList.ruby, 5, true));
+	        massStorage.addRequirement(new CreationRequirement(3, ChaosCrystal.templateId, 30, true));
+	        massStorage.addRequirement(new CreationRequirement(4, ItemList.heart, 20, true));
 		}
     }
 }

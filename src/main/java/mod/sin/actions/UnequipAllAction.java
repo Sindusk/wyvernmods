@@ -1,6 +1,7 @@
 package mod.sin.actions;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,7 +33,7 @@ public class UnequipAllAction implements ModAction {
 			actionId,
 			"Unequip all armour",
 			"unequipping",
-			new int[0]
+			new int[] { 0 }
 			//new int[] { 6 /* ACTION_TYPE_NOMOVE */ }	// 6 /* ACTION_TYPE_NOMOVE */, 48 /* ACTION_TYPE_ENEMY_ALWAYS */, 36 /* ACTION_TYPE_ALWAYS_USE_ACTIVE_ITEM */
 		);
 		ModActions.registerAction(actionEntry);
@@ -56,7 +57,7 @@ public class UnequipAllAction implements ModAction {
 			{
 				try {
 					if(performer instanceof Player && object != null && object.getParentOrNull() != null && object.getParent().isBodyPart() && object.getParent().getOwnerId() == performer.getWurmId()) {
-						return Arrays.asList(actionEntry);
+						return Collections.singletonList(actionEntry);
 					}
 				} catch (NoSuchItemException e) {
 					e.printStackTrace();
@@ -93,7 +94,7 @@ public class UnequipAllAction implements ModAction {
 						    return true;
 						}
 						for(Item equip : player.getBody().getAllItems()){
-							if(equip.isArmour()){
+							if(equip.isArmour() && equip.getParent().getWurmId() != player.getBody().getId()){
 								AutoEquipMethods.unequip(equip, player);
 							}
 						}

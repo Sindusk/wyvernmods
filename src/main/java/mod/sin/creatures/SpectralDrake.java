@@ -22,17 +22,18 @@ public class SpectralDrake implements ModCreature {
 				CreatureTypes.C_TYPE_HUNTING,
 				CreatureTypes.C_TYPE_MONSTER,
 				CreatureTypes.C_TYPE_HERBIVORE,
-				CreatureTypes.C_TYPE_FENCEBREAKER,
+				//CreatureTypes.C_TYPE_FENCEBREAKER,
 				CreatureTypes.C_TYPE_NON_NEWBIE,
-				CreatureTypes.C_TYPE_NO_REBIRTH
+				CreatureTypes.C_TYPE_NO_REBIRTH,
+				CreatureTypes.C_TYPE_REGENERATING
 		};
 		
 		CreatureTemplateBuilder builder = new CreatureTemplateBuilder("mod.creature.spectraldrake", "Spectral drake", 
 				"The spectral incarnation of a defeated dragon.", "model.creature.drake.spirit", types, BodyTemplate.TYPE_DRAGON, 
 				(short) 20, (byte) 0, (short) 350, (short) 100, (short) 60, "sound.death.dragon", "sound.death.dragon", 
 				"sound.combat.hit.dragon", "sound.combat.hit.dragon",
-				0.06f, 45.0f, 50.0f, 22.0f, 45.0f, 0.0f, 2.0f, 500, 
-				new int[]{ItemList.boneCollar}, 40, 100, Materials.MATERIAL_MEAT_DRAGON);
+				0.08f, 45.0f, 50.0f, 27.0f, 45.0f, 0.0f, 1.0f, 500,
+				new int[]{}, 20, 70, Materials.MATERIAL_MEAT_DRAGON);
 		
 		builder.skill(SkillList.BODY_STRENGTH, 60.0f);
 		builder.skill(SkillList.BODY_STAMINA, 70.0f);

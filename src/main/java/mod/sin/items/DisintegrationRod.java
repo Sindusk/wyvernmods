@@ -33,7 +33,7 @@ public class DisintegrationRod implements ItemTypes, MiscConstants {
 		itemBuilder.difficulty(300.0f);
 		itemBuilder.weightGrams(1000);
 		itemBuilder.material(Materials.MATERIAL_STONE);
-		itemBuilder.value(50000);
+		itemBuilder.value(20000);
 		itemBuilder.isTraded(true);
 		
 		ItemTemplate template = itemBuilder.build();

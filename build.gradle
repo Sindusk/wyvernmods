@@ -12,8 +12,8 @@ repositories {
 
 dependencies {
     compile 'org.gotti.wurmunlimited:server-modlauncher:0.33-beta1'
-    compile 'com.github.Sindusk:sindusklibrary:v1.0'
-    compile 'com.github.Sindusk:DiscordRelay:v1.1'
+    compile 'com.github.Sindusk:sindusklibrary:v1.1'
+    compile 'com.github.Sindusk:DiscordRelay:v1.2'
     compile 'com.github.Sindusk:TreasureHunting:1.1.4'
 }
 

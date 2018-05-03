@@ -1,25 +1,19 @@
 package mod.sin.wyvern.mastercraft;
 
-import java.util.Objects;
-import java.util.logging.Logger;
-
-import org.gotti.wurmunlimited.modloader.ReflectionUtil;
-import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
-
 import com.wurmonline.server.Server;
 import com.wurmonline.server.items.Item;
 import com.wurmonline.server.players.Titles;
 import com.wurmonline.server.skills.Skill;
-
-import javassist.CannotCompileException;
-import javassist.ClassPool;
-import javassist.CtClass;
-import javassist.CtMethod;
-import javassist.NotFoundException;
+import javassist.*;
 import javassist.bytecode.BadBytecode;
 import javassist.expr.ExprEditor;
 import javassist.expr.MethodCall;
 import mod.sin.lib.Util;
+import org.gotti.wurmunlimited.modloader.ReflectionUtil;
+import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
+
+import java.util.Objects;
+import java.util.logging.Logger;
 
 public class Mastercraft {
 	private static Logger logger = Logger.getLogger(Mastercraft.class.getName());
@@ -86,6 +80,8 @@ public class Mastercraft {
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("Drama_Queen", 551, "Drama Queen", "Drama Queen", -1, "NORMAL");
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("Zergling", 552, "Zergling", "Zergling", -1, "NORMAL");
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("Special_Title", 553, "Special Guy", "Special Girl", -1, "NORMAL");
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("Prophet_Ear", 554, "Prophet Ear", "Prophet Ear", -1, "NORMAL");
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("Koza", 555, "Koza", "Koza", -1, "NORMAL");
             
             // Contest Titles
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("Home_Decorator", 600, "Home Decorator", "Home Decorator", -1, "NORMAL");
@@ -94,9 +90,17 @@ public class Mastercraft {
             // Special Event Titles
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("Titan_Slayer", 700, "Titanslayer", "Titanslayer", -1, "NORMAL");
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("Spectral_Slayer", 701, "Spectral Warrior", "Spectral Warrior", -1, "NORMAL");
-            ExtendTitleEnum.getSingletonInstance().addExtendEntry("Holdstrong_Architect", 701, "Holdstrong Architect", "Holdstrong Architect", -1, "NORMAL");
-            ExtendTitleEnum.getSingletonInstance().addExtendEntry("Stronghold_Architect", 701, "Stronghold Architect", "Stronghold Architect", -1, "NORMAL");
-            
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("Holdstrong_Architect", 702, "Holdstrong Architect", "Holdstrong Architect", -1, "NORMAL");
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("Stronghold_Architect", 703, "Stronghold Architect", "Stronghold Architect", -1, "NORMAL");
+
+            // Donation titles
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("Donator", 800, "Donator", "Donator", -1, "NORMAL");
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("Pazza_FavoriteGM", 801, "Sindusks Favourite GM", "Sindusks Favourite GM", -1, "NORMAL");
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("Warriorgen_ThatGuy", 802, "That Guy", "That Guy", -1, "NORMAL");
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("Eternallove_WarriorgensWife", 803, "Warriorgens Wife", "Warriorgens Wife", -1, "NORMAL");
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("Bambam_ThornOne", 804, "Thorn One", "Thorn One", -1, "NORMAL");
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("Svenja_CareDependant", 805, "The care-dependant", "The care-dependant", -1, "NORMAL");
+
             // Characteristic Titles
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("MindLogic_Normal", 1000, "Logical", "Logical", 100, "NORMAL");
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("MindLogic_Minor", 1001, "Intelligent", "Intelligent", 100, "MINOR");
@@ -207,7 +211,9 @@ public class Mastercraft {
     		
 			/*ctSkill.getDeclaredMethod("checkAdvance").insertBefore(""
 					+ "$1 = "+Mastercraft.class.getName()+".getNewDifficulty(this, $1, $2);");*/
-			Util.insertBeforeDeclared(thisClass, ctSkill, "checkAdvance", "$1 = "+Mastercraft.class.getName()+".getNewDifficulty(this, $1, $2);");
+			Util.setReason("Modify difficulty for skill checks in MasterCraft.");
+			String replace = "$1 = "+Mastercraft.class.getName()+".getNewDifficulty(this, $1, $2);";
+			Util.insertBeforeDeclared(thisClass, ctSkill, "checkAdvance", replace);
 			
 			// - Increase spellcasting power for skilled channelers - //
 			CtClass ctSpell = classPool.get("com.wurmonline.server.spells.Spell");
@@ -219,7 +225,6 @@ public class Mastercraft {
 	                        m.replace("$2 += "+Mastercraft.class.getName()+".getCastPowerIncrease(castSkill);"
 	                        		+ "$_ = $proceed($$);");
 	                        logger.info("Instrumented doEffect in run()");
-	                        return;
 	                    }
 	                }
 	            });
@@ -229,12 +234,10 @@ public class Mastercraft {
 	                        m.replace("$1 *= "+Mastercraft.class.getName()+".getFavorCostMultiplier(castSkill);"
 	                        		+ "$_ = $proceed($$);");
 	                        logger.info("Instrumented depleteFavor in run()");
-	                        return;
 	                    }
 	                }
 	            });
 			}
-			
 		} catch (CannotCompileException | NotFoundException e) {
 			e.printStackTrace();
 		}

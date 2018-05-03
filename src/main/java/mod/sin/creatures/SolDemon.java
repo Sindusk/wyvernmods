@@ -1,5 +1,6 @@
 package mod.sin.creatures;
 
+import com.wurmonline.server.Servers;
 import org.gotti.wurmunlimited.modsupport.CreatureTemplateBuilder;
 import org.gotti.wurmunlimited.modsupport.creatures.EncounterBuilder;
 import org.gotti.wurmunlimited.modsupport.creatures.ModCreature;
@@ -35,9 +36,11 @@ public class SolDemon implements ModCreature {
 		if (templateId == 0)
 			return;
 
-		new EncounterBuilder(Tiles.Tile.TILE_SAND.id)
-			.addCreatures(templateId, 2)
-			.build(1);
+		if(Servers.localServer.PVPSERVER) {
+			new EncounterBuilder(Tiles.Tile.TILE_SAND.id)
+					.addCreatures(templateId, 2)
+					.build(1);
+		}
 
 		new EncounterBuilder(Tiles.Tile.TILE_MYCELIUM.id)
 			.addCreatures(templateId, 2)

@@ -20,12 +20,14 @@ public class ForestSpider implements ModCreature, CreatureTypes {
 		// {C_TYPE_MOVE_LOCAL, C_TYPE_VEHICLE, C_TYPE_ANIMAL, C_TYPE_LEADABLE, C_TYPE_GRAZER, C_TYPE_OMNIVORE, C_TYPE_DOMINATABLE, C_TYPE_AGG_HUMAN, C_TYPE_NON_NEWBIE, C_TYPE_BURNING}; - Hell Horse
 		// int[] types = new int[]{7, 6, 13, 3, 29, 39, 60, 61}; - Spider
 		int[] types = {
-			CreatureTypes.C_TYPE_MOVE_LOCAL,
-			CreatureTypes.C_TYPE_AGG_HUMAN,
-			CreatureTypes.C_TYPE_HUNTING,
-			CreatureTypes.C_TYPE_ANIMAL,
-			CreatureTypes.C_TYPE_CARNIVORE,
-			CreatureTypes.C_TYPE_NON_NEWBIE
+				CreatureTypes.C_TYPE_MOVE_LOCAL,
+				CreatureTypes.C_TYPE_AGG_HUMAN,
+				CreatureTypes.C_TYPE_HUNTING,
+				CreatureTypes.C_TYPE_ANIMAL,
+				CreatureTypes.C_TYPE_CARNIVORE,
+				CreatureTypes.C_TYPE_NON_NEWBIE,
+				CreatureTypes.C_TYPE_MISSION_OK,
+				CreatureTypes.C_TYPE_MISSION_TRAITOR_OK
 		};
 		
 		//public CreatureTemplateBuilder(final String identifier, final String name, final String description,
@@ -34,7 +36,7 @@ public class ForestSpider implements ModCreature, CreatureTypes {
 		//       final float naturalArmour, final float handDam, final float kickDam, final float biteDam, final float headDam, final float breathDam, final float speed, final int moveRate,
 		//       final int[] itemsButchered, final int maxHuntDist, final int aggress) {
 		CreatureTemplateBuilder builder = new CreatureTemplateBuilder("mod.creature.forest.spider", "Forest spider", "Found amongst trees, these spiders are dangerous and poisonous.",
-				"model.creature.multiped.spider.huge", types, BodyTemplate.TYPE_SPIDER, (short) 5, (byte) 0, (short) 85, (short) 50, (short) 85,
+				"model.creature.multiped.spider.fog", types, BodyTemplate.TYPE_SPIDER, (short) 5, (byte) 0, (short) 85, (short) 50, (short) 85,
 				"sound.death.spider", "sound.death.spider", "sound.combat.hit.spider", "sound.combat.hit.spider", 
 				0.6f, 10f, 0f, 13.0f, 0.0f, 0.0f, 1.2f, 500,
 				new int[]{ItemList.heart}, 10, 74, Materials.MATERIAL_MEAT_INSECT);

@@ -59,7 +59,7 @@ public class Warhammer implements ItemTypes, MiscConstants {
 		logger.info("initCreationEntry()");
 		if(templateId > 0){
 			logger.info("Creating "+name+" creation entry, ID = "+templateId);
-			CreationEntryCreator.createSimpleEntry(SkillList.GROUP_SMITHING_WEAPONSMITHING, ItemList.shaft, WarhammerHead.templateId,
+			CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_HEADS, ItemList.shaft, WarhammerHead.templateId,
 					templateId, true, true, 0.0f, false, false, CreationCategories.WEAPONS);
 			//final AdvancedCreationEntry entry = CreationEntryCreator.createAdvancedEntry(SkillList.SMITHING_WEAPON_HEADS,
 			//		ItemList.ironBand, ItemList.shaft, templateId, false, false, 0f, true, false, CreationCategories.TOOLS);

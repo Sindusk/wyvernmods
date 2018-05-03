@@ -1,15 +1,5 @@
 package mod.sin.actions.items;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.gotti.wurmunlimited.modsupport.actions.ActionPerformer;
-import org.gotti.wurmunlimited.modsupport.actions.BehaviourProvider;
-import org.gotti.wurmunlimited.modsupport.actions.ModAction;
-import org.gotti.wurmunlimited.modsupport.actions.ModActions;
-
 import com.wurmonline.server.Items;
 import com.wurmonline.server.Server;
 import com.wurmonline.server.behaviours.Action;
@@ -17,9 +7,17 @@ import com.wurmonline.server.behaviours.ActionEntry;
 import com.wurmonline.server.creatures.Creature;
 import com.wurmonline.server.items.Item;
 import com.wurmonline.server.players.Player;
-
 import mod.sin.items.ArenaCache;
-import mod.sin.wyvern.arena.SupplyDepots;
+import mod.sin.wyvern.SupplyDepots;
+import org.gotti.wurmunlimited.modsupport.actions.ActionPerformer;
+import org.gotti.wurmunlimited.modsupport.actions.BehaviourProvider;
+import org.gotti.wurmunlimited.modsupport.actions.ModAction;
+import org.gotti.wurmunlimited.modsupport.actions.ModActions;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ArenaCacheOpenAction implements ModAction {
 	private static Logger logger = Logger.getLogger(ArenaCacheOpenAction.class.getName());
@@ -57,7 +55,7 @@ public class ArenaCacheOpenAction implements ModAction {
 			public List<ActionEntry> getBehavioursFor(Creature performer, Item object)
 			{
 				if(performer instanceof Player && object != null && object.getTemplateId() == ArenaCache.templateId) {
-					return Arrays.asList(actionEntry);
+					return Collections.singletonList(actionEntry);
 				}
 				
 				return null;

@@ -28,7 +28,8 @@ public class Crystals {
 			Enchants.BUFF_VENOM,
 			Enchants.BUFF_WEBARMOUR,
 			Enchants.BUFF_WIND_OF_AGES,
-			110, 111 // Harden and Phasing
+			110 // Harden
+			//110, 111 // Harden and Phasing
 	};
 	public static byte getNewRandomEnchant(Item target){
 		int i = 0;
@@ -42,22 +43,16 @@ public class Crystals {
 		return -10;
 	}
 	public static double getInfusionDifficulty(Creature performer, Item source, Item target){
-		double diff = (Servers.localServer.PVPSERVER ? 150 : 120)-source.getCurrentQualityLevel();
-		diff += source.getRarity()*(Servers.localServer.PVPSERVER ? 50 : 30);
+		double diff = 100-source.getCurrentQualityLevel();
+		diff += source.getRarity()*20;
 		diff += 40f - (target.getCurrentQualityLevel()*0.4f);
-		diff -= performer.getSoulDepth().getKnowledge();
-		if(Servers.localServer.PVPSERVER){ // Added difficulty to account for PvP epic curve:
-			diff *= 1.4f;
-		}
+		diff -= performer.getMindLogical().getKnowledge()*0.3f;
 		return diff;
 	}
 	public static double getEnchantersInfusionDifficulty(Creature performer, Item source, Item target){
-		double diff = (Servers.localServer.PVPSERVER ? 220 : 180)-source.getCurrentQualityLevel();
+		double diff = 160-source.getCurrentQualityLevel();
 		diff += 40f - (target.getCurrentQualityLevel()*0.4f);
-		diff -= performer.getSoulDepth().getKnowledge();
-		if(Servers.localServer.PVPSERVER){ // Added difficulty to account for PvP epic curve:
-			diff *= 1.4f;
-		}
+		diff -= performer.getMindLogical().getKnowledge()*0.3f;
 		return diff;
 	}
 	public static boolean shouldCancelEnchantersInfusion(Creature performer, Item target){

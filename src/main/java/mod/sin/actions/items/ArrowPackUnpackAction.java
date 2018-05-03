@@ -1,6 +1,7 @@
 package mod.sin.actions.items;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
@@ -62,7 +63,7 @@ public class ArrowPackUnpackAction implements ModAction {
 			public List<ActionEntry> getBehavioursFor(Creature performer, Item object)
 			{
 				if(performer instanceof Player && object != null && (object.getTemplateId() == ArrowPackHunting.templateId || object.getTemplateId() == ArrowPackWar.templateId)) {
-					return Arrays.asList(actionEntry);
+					return Collections.singletonList(actionEntry);
 				}
 				
 				return null;
@@ -108,7 +109,7 @@ public class ArrowPackUnpackAction implements ModAction {
 							if(target.getRarity() > 0){
 								quality = Math.min(100f, target.getCurrentQualityLevel()+target.getRarity());
 							}
-							HashMap<Byte, Float> spellEffects = new HashMap<Byte, Float>();
+							HashMap<Byte, Float> spellEffects = new HashMap<>();
 							ItemSpellEffects effs = target.getSpellEffects();
 							if(effs != null){
 								for(SpellEffect eff : effs.getEffects()){
@@ -123,6 +124,7 @@ public class ArrowPackUnpackAction implements ModAction {
 							int i = 0;
 							while(i < 40){
 								arrow = ItemFactory.createItem(arrowTemplate, quality, performer.getName());
+								arrow.setMaterial(target.getMaterial());
 								arrow.setRarity(target.getRarity());
 								if(!spellEffects.isEmpty()){
 									for(byte b : spellEffects.keySet()){

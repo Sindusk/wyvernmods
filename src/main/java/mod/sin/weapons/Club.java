@@ -57,7 +57,7 @@ public class Club implements ItemTypes, MiscConstants {
 		logger.info("initCreationEntry()");
 		if(templateId > 0){
 			logger.info("Creating "+name+" creation entry, ID = "+templateId);
-			CreationEntryCreator.createSimpleEntry(SkillList.CARPENTRY_FINE, ItemList.knifeCarving, ItemList.log,
+			CreationEntryCreator.createSimpleEntry(SkillList.CARPENTRY, ItemList.knifeCarving, ItemList.log,
 					templateId, false, true, 0.0f, false, false, CreationCategories.WEAPONS);
 			//final AdvancedCreationEntry entry = CreationEntryCreator.createAdvancedEntry(SkillList.SMITHING_WEAPON_HEADS,
 			//		ItemList.ironBand, ItemList.shaft, templateId, false, false, 0f, true, false, CreationCategories.TOOLS);

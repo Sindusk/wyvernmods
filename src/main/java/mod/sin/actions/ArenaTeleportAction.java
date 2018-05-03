@@ -1,6 +1,7 @@
 package mod.sin.actions;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,8 +55,8 @@ public class ArenaTeleportAction implements ModAction {
 			@Override
 			public List<ActionEntry> getBehavioursFor(Creature performer, Item object)
 			{
-				if(performer instanceof Player && object != null && (object.getTemplateId() == ItemList.bodyBody || object.getTemplateId() == ItemList.bodyHand) && Servers.localServer.id == 567) {
-					return Arrays.asList(actionEntry);
+				if(performer instanceof Player && object != null && (object.getTemplateId() == ItemList.bodyBody || object.getTemplateId() == ItemList.bodyHand) && !Servers.localServer.PVPSERVER) {
+					return Collections.singletonList(actionEntry);
 				}
 				
 				return null;
@@ -79,7 +80,7 @@ public class ArenaTeleportAction implements ModAction {
 			{
 				try{
 					if(performer instanceof Player){
-						if(Servers.localServer.id != 567){
+						if(Servers.localServer.PVPSERVER){
 							performer.getCommunicator().sendNormalServerMessage("You cannot enter the arena from here.");
 							return true;
 						}
@@ -98,7 +99,7 @@ public class ArenaTeleportAction implements ModAction {
 						}else if(act.currentSecond() == 55){
 							performer.getCommunicator().sendNormalServerMessage("It appears you have accepted these conditions. Transferring to the arena. Good luck.", (byte) 3);
 						}else if(counter * 10f > performer.getCurrentAction().getTimeLeft()){
-							ServerEntry targetserver = Servers.localServer.serverEast;
+							ServerEntry targetserver = Servers.localServer.serverNorth;
 							if(targetserver == null){
 			                    performer.getCommunicator().sendNormalServerMessage("Error: Something went wrong [TARGETSERVER=NULL].");
 			                    return true;
@@ -109,8 +110,8 @@ public class ArenaTeleportAction implements ModAction {
 			                }
 			                performer.getCommunicator().sendNormalServerMessage("You transfer to " + targetserver.name + ".");
 			                Server.getInstance().broadCastAction(performer.getName() + " transfers to " + targetserver.name + ".", performer, 5);
-			                int tilex = 128+Server.rand.nextInt(768);
-			                int tiley = 128+Server.rand.nextInt(768);
+			                int tilex = 1010;
+			                int tiley = 1010;
 			                ((Player)performer).sendTransfer(Server.getInstance(), targetserver.INTRASERVERADDRESS, Integer.parseInt(targetserver.INTRASERVERPORT), targetserver.INTRASERVERPASSWORD, targetserver.id, tilex, tiley, true, false, performer.getKingdomId());
 			                ((Player)performer).transferCounter = 30;
 							return true;

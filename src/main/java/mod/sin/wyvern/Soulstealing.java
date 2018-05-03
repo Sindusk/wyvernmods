@@ -71,7 +71,6 @@ public class Soulstealing {
         }
 	}
 	public static void pollSoulForges(){
-		logger.info("Polling eternal reservoirs...");
 		for(Item item : Items.getAllItems()){
 			if(item.getTemplateId() == EternalReservoir.templateId){
 				if(!soulForges.contains(item)){

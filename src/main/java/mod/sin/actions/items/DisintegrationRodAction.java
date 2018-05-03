@@ -5,6 +5,10 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.wurmonline.server.Servers;
+import com.wurmonline.server.villages.Village;
+import com.wurmonline.server.villages.VillageRole;
+import com.wurmonline.server.villages.Villages;
 import org.gotti.wurmunlimited.modsupport.actions.ActionPerformer;
 import org.gotti.wurmunlimited.modsupport.actions.BehaviourProvider;
 import org.gotti.wurmunlimited.modsupport.actions.ModAction;
@@ -83,6 +87,20 @@ public class DisintegrationRodAction implements ModAction {
 						if(source.getTemplate().getTemplateId() != DisintegrationRod.templateId){
 							performer.getCommunicator().sendSafeServerMessage("You must use a Disintegration Rod to do this.");
 							return true;
+						}
+						Village v = Villages.getVillage(tilex, tiley, true);
+						if (v != null) {
+							boolean ok = false;
+							VillageRole r = v.getRoleFor(performer);
+                            if (r == null || !r.mayMineRock() || !r.mayReinforce()) {
+                                if (Servers.localServer.PVPSERVER && System.currentTimeMillis() - v.plan.getLastDrained() > 7200000) {
+                                    performer.getCommunicator().sendNormalServerMessage("The settlement has not been drained during the last two hours and the wall still stands this time.", (byte) 3);
+                                    return true;
+                                }else if(!Servers.localServer.PVPSERVER) {
+                                    performer.getCommunicator().sendNormalServerMessage("You do not have permission to use that here.");
+                                    return true;
+                                }
+                            }
 						}
 						byte type = Tiles.decodeType(newTile);
 						if (Tiles.isSolidCave(type)) {

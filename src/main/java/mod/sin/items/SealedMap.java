@@ -35,7 +35,7 @@ public class SealedMap implements ItemTypes, MiscConstants {
 		itemBuilder.difficulty(5.0f);
 		itemBuilder.weightGrams(500);
 		itemBuilder.material(Materials.MATERIAL_MAGIC);
-		itemBuilder.value(5000000);
+		itemBuilder.value(2000000);
 		itemBuilder.isTraded(true);
 		
 		ItemTemplate template = itemBuilder.build();

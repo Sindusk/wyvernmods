@@ -1,5 +1,6 @@
 package mod.sin.creatures;
 
+import com.wurmonline.server.Servers;
 import org.gotti.wurmunlimited.modsupport.CreatureTemplateBuilder;
 import org.gotti.wurmunlimited.modsupport.creatures.EncounterBuilder;
 import org.gotti.wurmunlimited.modsupport.creatures.ModCreature;
@@ -19,14 +20,28 @@ public class Avenger implements ModCreature, CreatureTypes {
 		// {C_TYPE_MOVE_LOCAL, C_TYPE_VEHICLE, C_TYPE_ANIMAL, C_TYPE_LEADABLE, C_TYPE_GRAZER, C_TYPE_OMNIVORE, C_TYPE_DOMINATABLE, C_TYPE_AGG_HUMAN, C_TYPE_NON_NEWBIE, C_TYPE_BURNING}; - Hell Horse
 		// int[] types = new int[]{7, 6, 13, 3, 29, 39, 60, 61}; - Spider
 		int[] types = {
-			CreatureTypes.C_TYPE_MOVE_LOCAL,
-			CreatureTypes.C_TYPE_AGG_HUMAN,
-			CreatureTypes.C_TYPE_HUNTING,
-			CreatureTypes.C_TYPE_MONSTER,
-			CreatureTypes.C_TYPE_CARNIVORE,
-			CreatureTypes.C_TYPE_DOMINATABLE,
-			CreatureTypes.C_TYPE_DETECTINVIS,
-			CreatureTypes.C_TYPE_NON_NEWBIE
+				CreatureTypes.C_TYPE_MOVE_LOCAL,
+				CreatureTypes.C_TYPE_AGG_HUMAN,
+				CreatureTypes.C_TYPE_HUNTING,
+				CreatureTypes.C_TYPE_MONSTER,
+				CreatureTypes.C_TYPE_CARNIVORE,
+				CreatureTypes.C_TYPE_DOMINATABLE,
+				CreatureTypes.C_TYPE_DETECTINVIS,
+				CreatureTypes.C_TYPE_NON_NEWBIE,
+				CreatureTypes.C_TYPE_MISSION_OK,
+				CreatureTypes.C_TYPE_MISSION_TRAITOR_OK
+		};
+		int[] pvpTypes = {
+				CreatureTypes.C_TYPE_MOVE_LOCAL,
+				CreatureTypes.C_TYPE_AGG_HUMAN,
+				CreatureTypes.C_TYPE_HUNTING,
+				CreatureTypes.C_TYPE_MONSTER,
+				CreatureTypes.C_TYPE_CARNIVORE,
+				CreatureTypes.C_TYPE_DETECTINVIS,
+				CreatureTypes.C_TYPE_NON_NEWBIE,
+				CreatureTypes.C_TYPE_NO_REBIRTH,
+				CreatureTypes.C_TYPE_MISSION_OK,
+				CreatureTypes.C_TYPE_MISSION_TRAITOR_OK
 		};
 		
 		//public CreatureTemplateBuilder(final String identifier, final String name, final String description,
@@ -35,7 +50,7 @@ public class Avenger implements ModCreature, CreatureTypes {
 		//       final float naturalArmour, final float handDam, final float kickDam, final float biteDam, final float headDam, final float breathDam, final float speed, final int moveRate,
 		//       final int[] itemsButchered, final int maxHuntDist, final int aggress) {
 		CreatureTemplateBuilder builder = new CreatureTemplateBuilder("mod.creature.avenger", "Avenger", "Sent from the heavens to purge the unworthy.",
-				"model.creature.humanoid.avenger.light", types, BodyTemplate.TYPE_HUMAN, (short) 5, (byte) 0, (short) 85, (short) 50, (short) 85,
+				"model.creature.humanoid.avenger.light", Servers.localServer.PVPSERVER ? pvpTypes : types, BodyTemplate.TYPE_HUMAN, (short) 5, (byte) 0, (short) 85, (short) 50, (short) 85,
 				"sound.death.giant", "sound.death.giant", "sound.combat.hit.giant", "sound.combat.hit.giant",
 				0.3f, 25f, 0f, 0f, 0.0f, 0.0f, 1.2f, 500,
 				new int[]{}, 15, 70, Materials.MATERIAL_MEAT_HUMANOID);

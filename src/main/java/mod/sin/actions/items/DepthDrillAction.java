@@ -1,10 +1,6 @@
 package mod.sin.actions.items;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -55,7 +51,7 @@ public class DepthDrillAction implements ModAction {
 			public List<ActionEntry> getBehavioursFor(Creature performer, Item object, int tilex, int tiley, boolean onSurface, boolean corner, int tile)
 			{
 				if(performer instanceof Player && object != null && object.getTemplateId() == DepthDrill.templateId){
-					return Arrays.asList(actionEntry);
+					return Collections.singletonList(actionEntry);
 				}
 				return null;
 			}

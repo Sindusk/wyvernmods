@@ -23,10 +23,10 @@ import mod.sin.wyvern.bounty.PlayerBounty;
 public class Bounty {
 	public static final Logger logger = Logger.getLogger(Bounty.class.getName());
 	//protected static WyvernMods mod;
-	public static HashMap<String, Integer> reward = new HashMap<String, Integer>();
+	public static HashMap<String, Integer> reward = new HashMap<>();
 
 	// Using a hook in CombatEngine.addWound, we call this function to create a list of creatures that actually inflicted damage.
-	public static HashMap<Long, Map<Long, Double>> dealtDamage = new HashMap<Long, Map<Long, Double>>();
+	public static HashMap<Long, Map<Long, Double>> dealtDamage = new HashMap<>();
 	public static void addDealtDamage(long defender, long attacker, double damage){
 		if(dealtDamage.containsKey(defender)){
 			Map<Long, Double> dealers = dealtDamage.get(defender);
@@ -38,7 +38,7 @@ public class Bounty {
 				dealers.put(attacker, newDam);
 			}
 		}else{
-			Map<Long, Double> dealers = new HashMap<Long, Double>();
+			Map<Long, Double> dealers = new HashMap<>();
 			dealers.put(attacker, damage);
 			dealtDamage.put(defender, dealers);
 		}
@@ -76,21 +76,25 @@ public class Bounty {
 	    double weaponlessFighting = mob.getWeaponLessFightingSkill().getKnowledge();
 	    double fs = Math.max(fighting, weaponlessFighting);
 	    double bodyStr = mob.getBodyStrength().getKnowledge();
-	    double cretStr = 2000D + ((double)combatRating*(double)maxDmg*Math.sqrt(fs)*bodyStr);
+	    //double cretStr = 2000D + ((double)combatRating*(double)maxDmg*Math.sqrt(fs)*bodyStr);
 	    //logger.info("pre-armour: "+cretStr);
 	    //cretStr /= Math.max(mob.getArmourMod(), 0.001d);
 	    fs /= mob.getArmourMod();
-	    cretStr = 500D + ((double)combatRating*Math.cbrt(maxDmg)*Math.sqrt(fs)*Math.cbrt(bodyStr));
-	    cretStr *= 2d;
+	    double cretStr = 100D + (combatRating*Math.cbrt(maxDmg)*Math.cbrt(fs)*Math.cbrt(bodyStr));
+	    cretStr *= 0.8d;
 	    //logger.info("post-armour: "+cretStr);
 	    //cretStr *= 1-(Math.min(Math.max(mob.getArmourMod(), 0.001d), 0.8f));
 	    //cretStr = 2000D + ((double)combatRating*(double)maxDmg*Math.sqrt(fs)*bodyStr);
-	    double k = 100000000d;
+	    double k = 100000d;
 	    cretStr = (cretStr*Math.pow(2, (-(cretStr/k)))+k*(1-Math.pow(2, -cretStr/k)))/(1+Math.pow(2, -cretStr/k));
-	    if(cretStr < 500D){
+	    if(mob.isAggHuman() && cretStr < 100D){
 	    	cretStr *= 1+(Server.rand.nextFloat()*0.2f);
-	    	cretStr = Math.max(cretStr, 500D);
-	    }
+	    	cretStr = Math.max(cretStr, 100D);
+	    }else if(!mob.isAggHuman() && cretStr < 300D){
+			cretStr *= 0.4f;
+	    	cretStr *= 1+(Server.rand.nextFloat()*0.2f);
+	    	cretStr = Math.max(cretStr, 10D);
+		}
 	    //logger.info("capped: "+cretStr);
 	    return cretStr;
 	}
@@ -106,7 +110,7 @@ public class Bounty {
             final Class<Bounty> thisClass = Bounty.class;
             
             CtClass ctCreature = classPool.get("com.wurmonline.server.creatures.Creature");
-            
+
             /*CtMethod ctCheckBounty = CtMethod.make((String)
             		  "public void checkBounty(com.wurmonline.server.players.Player player, com.wurmonline.server.creatures.Creature mob){"
             		+ "  if(!mod.sin.wyvernmods.bounty.MethodsBounty.isCombatant(this.attackers, player.getWurmId()) || mob.isPlayer() || mob.isReborn()){"
@@ -115,7 +119,7 @@ public class Bounty {
             		+ (mod.bDebug ? "logger.info(player.getName()+\" killed \"+mob.getName());" : "")
             		+ "  mod.sin.wyvernmods.bounty.MethodsBounty.checkPlayerReward(player, mob);"
             		+ "}", ctCreature);
-          ctCreature.addMethod(ctCheckBounty);*/
+            ctCreature.addMethod(ctCheckBounty);*/
             String replace;
             replace = ""
             		//+ "mod.sin.wyvern.bounty.MethodsBounty.checkBounty(player, this);"
@@ -131,12 +135,12 @@ public class Bounty {
                         return;
                     }
                 }
-          });*/
+            });*/
             replace = "$_ = $proceed($$);"
           		  	//+ "mod.sin.wyvern.bounty.MethodsBounty.checkLootTable(this, corpse);";
           		  	+ LootBounty.class.getName()+".checkLootTable(this, corpse);";
             Util.instrumentDeclared(thisClass, ctCreature, "die", "setRotation", replace);
-          /*ctCreature.getDeclaredMethod("die").instrument(new ExprEditor(){
+            /*ctCreature.getDeclaredMethod("die").instrument(new ExprEditor(){
               public void edit(MethodCall m) throws CannotCompileException {
                   if (m.getMethodName().equals("setRotation")) {
                       m.replace("$_ = $proceed($$);"
@@ -145,7 +149,7 @@ public class Bounty {
                       return;
                   }
               }
-          });*/
+            });*/
 
             // doNew(int templateid, boolean createPossessions, float aPosX, float aPosY, float aRot, int layer, String name, byte gender, byte kingdom, byte ctype, boolean reborn, byte age)
             CtClass[] params = {

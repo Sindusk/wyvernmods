@@ -22,7 +22,7 @@ import com.wurmonline.server.players.Player;
 import mod.sin.items.ArenaCache;
 import mod.sin.items.ArenaSupplyDepot;
 import mod.sin.wyvern.MiscChanges;
-import mod.sin.wyvern.arena.SupplyDepots;
+import mod.sin.wyvern.SupplyDepots;
 
 public class SupplyDepotAction implements ModAction {
 	private static Logger logger = Logger.getLogger(SupplyDepotAction.class.getName());
@@ -112,9 +112,10 @@ public class SupplyDepotAction implements ModAction {
 							inv.insertItem(cache, true);
 							performer.getCommunicator().sendSafeServerMessage("You have successfully captured the depot!");
 							Server.getInstance().broadCastAction(performer.getName() + " successfully captures the depot!", performer, 50);
-							MiscChanges.sendImportantMessage(performer, performer.getName()+" has claimed an Arena depot!", 255, 128, 0);
+							SupplyDepots.broadcastCapture(performer);
 							SupplyDepots.removeSupplyDepot(target);
 							Items.destroyItem(target.getWurmId());
+							SupplyDepots.addPlayerStatsDepot(performer.getName());
 							return true;
 						}
 					}else{
