@@ -148,6 +148,22 @@ public class QualityOfLife {
             replace = "$_ = false;";
             Util.instrumentDeclared(thisClass, ctMethodsCreatures, "tame", "isPriest", replace);
 
+            Util.setReason("Send gems, source crystals, flint, etc. into vehicle.");
+            CtClass[] params2 = {
+                    CtClass.intType,
+                    CtClass.intType,
+                    CtClass.intType,
+                    CtClass.intType,
+                    ctCreature,
+                    CtClass.doubleType,
+                    CtClass.booleanType,
+                    ctAction
+            };
+            String desc2 = Descriptor.ofMethod(ctItem, params2);
+            replace = "$_ = null;" +
+                    QualityOfLife.class.getName()+".vehicleHook(performer, $0);";
+            Util.instrumentDescribed(thisClass, ctTileRockBehaviour, "createGem", desc2, "putItemInfrontof", replace);
+
         } catch ( NotFoundException | IllegalArgumentException | ClassCastException e) {
             throw new HookException(e);
         }

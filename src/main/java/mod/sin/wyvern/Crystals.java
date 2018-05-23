@@ -1,13 +1,13 @@
 package mod.sin.wyvern;
 
 import com.wurmonline.server.Server;
-import com.wurmonline.server.Servers;
 import com.wurmonline.server.creatures.Creature;
 import com.wurmonline.server.items.Item;
 import com.wurmonline.server.items.ItemSpellEffects;
 import com.wurmonline.server.items.NotOwnedException;
+import com.wurmonline.server.skills.NoSuchSkillException;
+import com.wurmonline.server.skills.SkillList;
 import com.wurmonline.shared.constants.Enchants;
-
 import mod.sin.items.ChaosCrystal;
 import mod.sin.items.EnchantersCrystal;
 
@@ -43,16 +43,27 @@ public class Crystals {
 		return -10;
 	}
 	public static double getInfusionDifficulty(Creature performer, Item source, Item target){
-		double diff = 100-source.getCurrentQualityLevel();
-		diff += source.getRarity()*20;
-		diff += 40f - (target.getCurrentQualityLevel()*0.4f);
-		diff -= performer.getMindLogical().getKnowledge()*0.3f;
+		double diff = 80-source.getCurrentQualityLevel();
+		diff += source.getRarity()*25;
+		diff += 30f - (target.getCurrentQualityLevel()*0.3f);
+		try {
+			diff -= performer.getSkills().getSkill(SkillList.MIND).getKnowledge()*0.3f;
+		} catch (NoSuchSkillException e) {
+			e.printStackTrace();
+		}
 		return diff;
 	}
 	public static double getEnchantersInfusionDifficulty(Creature performer, Item source, Item target){
-		double diff = 160-source.getCurrentQualityLevel();
+		double diff = 120-source.getCurrentQualityLevel();
 		diff += 40f - (target.getCurrentQualityLevel()*0.4f);
-		diff -= performer.getMindLogical().getKnowledge()*0.3f;
+		try {
+			diff -= performer.getSkills().getSkill(SkillList.MIND).getKnowledge()*0.3f;
+		} catch (NoSuchSkillException e) {
+			e.printStackTrace();
+		}
+		if(target.getSpellEffects() != null){
+			diff += target.getSpellEffects().getEffects().length*10;
+		}
 		return diff;
 	}
 	public static boolean shouldCancelEnchantersInfusion(Creature performer, Item target){

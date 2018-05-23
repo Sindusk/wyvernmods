@@ -266,7 +266,7 @@ public class ItemMod {
 			new Weapon(BattleYoyo.templateId, 6.85f, 3.85f, 0.008f, 2, 2, 0.0f, 0d);
 			new Weapon(Club.templateId, 8.1f, 4.5f, 0.002f, 3, 3, 0.4f, 0.5d);
 			new Weapon(Knuckles.templateId, 3.6f, 2.2f, 0.002f, 1, 1, 0.2f, 0.5d);
-			new Weapon(Warhammer.templateId, 9.55f, 5.5f, 0.008f, 4, 3, 1f, 0d);
+			new Weapon(Warhammer.templateId, 9.40f, 5.6f, 0.008f, 4, 3, 1f, 0d);
 			// Titan weaponry
 			new Weapon(MaartensMight.templateId, 11, 5, 0.02f, 4, 4, 1.0f, 0d);
 			new Weapon(RaffehsRage.templateId, 9.5f, 4.25f, 0.02f, 3, 3, 1.0f, 0d);
@@ -315,7 +315,10 @@ public class ItemMod {
 
         // Make logs able to be combined.
         ItemTemplate log = ItemTemplateFactory.getInstance().getTemplate(ItemList.log);
-        ReflectionUtil.setPrivateField(log, ReflectionUtil.getField(log.getClass(), "combine"), true);
+		ReflectionUtil.setPrivateField(log, ReflectionUtil.getField(log.getClass(), "combine"), true);
+		ReflectionUtil.setPrivateField(log, ReflectionUtil.getField(log.getClass(), "centimetersZ"), 50);
+		int newVolume = log.getSizeX()*log.getSizeY()*log.getSizeZ();
+		ReflectionUtil.setPrivateField(log, ReflectionUtil.getField(log.getClass(), "volume"), newVolume);
 
 		// Set silver mirror price to 10 silver instead of 1 iron.
 		ItemTemplate handMirror = ItemTemplateFactory.getInstance().getTemplate(ItemList.handMirror);

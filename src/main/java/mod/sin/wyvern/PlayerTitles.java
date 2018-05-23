@@ -6,8 +6,11 @@ import com.wurmonline.server.players.Titles;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Logger;
 
 public class PlayerTitles {
+    public static Logger logger = Logger.getLogger(PlayerTitles.class.getName());
+
     protected static ArrayList<String> donatorTitles = new ArrayList<>();
     protected static HashMap<String,Integer> customTitles = new HashMap<>();
     protected static HashMap<String,String> playerTitles = new HashMap<>();
@@ -45,14 +48,27 @@ public class PlayerTitles {
 
         donatorTitles.add("Pazza");
         customTitles.put("Pazza", 801); // Sindusks Favorite GM
+
         donatorTitles.add("Warriorgen");
-        customTitles.put("Warriorgen", 802);
+        customTitles.put("Warriorgen", 802); // That Guy
+
         donatorTitles.add("Eternallove");
-        customTitles.put("Eternallove", 803);
+        customTitles.put("Eternallove", 803); // Warriorgens Wife
+
         donatorTitles.add("Bambam");
-        customTitles.put("Bambam", 804);
+        customTitles.put("Bambam", 804); // Thorn One
+
         donatorTitles.add("Svenja");
-        customTitles.put("Svenja", 805);
+        customTitles.put("Svenja", 805); // The care-dependent
         playerTitles.put("Svenja", "Akuma");
+
+        donatorTitles.add("Alexiaselena");
+        customTitles.put("Alexiaselena", 806); // The Treasuring
+        playerTitles.put("Alexiaselena", "Kami");
+
+        donatorTitles.add("Reevi");
+        customTitles.put("Reevi", 807); // Science Guy
+
+        customTitles.put("Genocide", 808); // Grand Designer
     }
 }

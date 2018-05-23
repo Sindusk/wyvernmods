@@ -22,14 +22,17 @@ import java.util.logging.Logger;
 
 public class RareSpawns {
     public static Logger logger = Logger.getLogger(RareSpawns.class.getName());
-    public static boolean isRareCreature(Creature creature){
-        int templateId = creature.getTemplate().getTemplateId();
+
+    public static boolean isRareCreature(int templateId){
         if(templateId == SpectralDrake.templateId){
             return true;
         }else if(templateId == Reaper.templateId){
             return true;
         }
         return false;
+    }
+    public static boolean isRareCreature(Creature creature){
+        return isRareCreature(creature.getTemplate().getTemplateId());
     }
 
     public static void spawnRandomLocationCreature(int templateId){
@@ -61,7 +64,7 @@ public class RareSpawns {
         }
         try {
             logger.info("Spawning new rare creature at "+(spawnX*0.25f)+", "+(spawnY*0.25f));
-            Creature.doNew(templateId, spawnX, spawnY, 360f*Server.rand.nextFloat(), 0, "", (byte)0);
+            Creature.doNew(templateId, spawnX, spawnY, 360f*Server.rand.nextFloat(), 0, "", Server.rand.nextBoolean() ? (byte) 0 : (byte) 1);
         } catch (Exception e) {
             logger.severe("Failed to create Rare Spawn.");
             e.printStackTrace();

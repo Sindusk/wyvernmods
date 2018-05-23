@@ -1,6 +1,7 @@
 package mod.sin.actions.items;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,7 +58,7 @@ public class SealedMapAction implements ModAction {
 			public List<ActionEntry> getBehavioursFor(Creature performer, Item object)
 			{
 				if(performer instanceof Player && object != null && object.getTemplateId() == SealedMap.templateId) {
-					return Arrays.asList(actionEntry);
+					return Collections.singletonList(actionEntry);
 				}
 				
 				return null;

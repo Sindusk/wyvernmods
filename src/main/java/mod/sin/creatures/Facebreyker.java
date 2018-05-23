@@ -1,10 +1,10 @@
 package mod.sin.creatures;
 
+import com.wurmonline.shared.constants.CreatureTypes;
 import org.gotti.wurmunlimited.modsupport.CreatureTemplateBuilder;
 import org.gotti.wurmunlimited.modsupport.creatures.ModCreature;
 
 import com.wurmonline.server.bodys.Wound;
-import com.wurmonline.server.creatures.CreatureTypes;
 import com.wurmonline.server.skills.SkillList;
 
 public class Facebreyker implements ModCreature, CreatureTypes {
@@ -13,14 +13,15 @@ public class Facebreyker implements ModCreature, CreatureTypes {
 	@Override
 	public CreatureTemplateBuilder createCreateTemplateBuilder() {
 		int[] types = {
-			CreatureTypes.C_TYPE_MOVE_LOCAL,
-			CreatureTypes.C_TYPE_UNIQUE,
-			CreatureTypes.C_TYPE_REGENERATING,
-			CreatureTypes.C_TYPE_AGG_HUMAN,
-			CreatureTypes.C_TYPE_MONSTER,
-			CreatureTypes.C_TYPE_FENCEBREAKER,
-			CreatureTypes.C_TYPE_HERBIVORE,
-			CreatureTypes.C_TYPE_NON_NEWBIE
+				CreatureTypes.C_TYPE_MOVE_LOCAL,
+				CreatureTypes.C_TYPE_UNIQUE,
+				CreatureTypes.C_TYPE_REGENERATING,
+				CreatureTypes.C_TYPE_AGG_HUMAN,
+				CreatureTypes.C_TYPE_MONSTER,
+				CreatureTypes.C_TYPE_FENCEBREAKER,
+				CreatureTypes.C_TYPE_CARNIVORE,
+				CreatureTypes.C_TYPE_NON_NEWBIE,
+				CreatureTypes.C_TYPE_NO_REBIRTH
 		};
 		
 		//public CreatureTemplateBuilder(final String identifier, final String name, final String description,

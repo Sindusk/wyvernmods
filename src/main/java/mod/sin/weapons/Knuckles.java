@@ -63,6 +63,20 @@ public class Knuckles implements ItemTypes, MiscConstants {
 					templateId, false, true, 0.0f, false, false, CreationCategories.WEAPONS);
 			CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_HEADS, ItemList.anvilSmall, ItemList.steelBar,
 					templateId, false, true, 0.0f, false, false, CreationCategories.WEAPONS);
+			CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_HEADS, ItemList.anvilSmall, ItemList.goldBar,
+					templateId, false, true, 0.0f, false, false, CreationCategories.WEAPONS);
+			CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_HEADS, ItemList.anvilSmall, ItemList.silverBar,
+					templateId, false, true, 0.0f, false, false, CreationCategories.WEAPONS);
+			CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_HEADS, ItemList.anvilSmall, ItemList.zincBar,
+					templateId, false, true, 0.0f, false, false, CreationCategories.WEAPONS);
+			CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_HEADS, ItemList.anvilSmall, ItemList.tinBar,
+					templateId, false, true, 0.0f, false, false, CreationCategories.WEAPONS);
+			CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_HEADS, ItemList.anvilSmall, ItemList.bronzeBar,
+					templateId, false, true, 0.0f, false, false, CreationCategories.WEAPONS);
+			CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_HEADS, ItemList.anvilSmall, ItemList.leadBar,
+					templateId, false, true, 0.0f, false, false, CreationCategories.WEAPONS);
+			CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_HEADS, ItemList.anvilSmall, ItemList.copperBar,
+					templateId, false, true, 0.0f, false, false, CreationCategories.WEAPONS);
 			CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_HEADS, ItemList.anvilSmall, ItemList.adamantineBar,
 					templateId, false, true, 0.0f, false, false, CreationCategories.WEAPONS);
 			CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_HEADS, ItemList.anvilSmall, ItemList.glimmerSteelBar,

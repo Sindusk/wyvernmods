@@ -130,8 +130,7 @@ public class Titans {
         return isTitan(creature.getTemplate().getTemplateId());
     }
 
-    public static boolean isTitanMinion(Creature creature){
-        int templateId = creature.getTemplate().getTemplateId();
+    public static boolean isTitanMinion(int templateId){
         if(templateId == LilithWraith.templateId){
             return true;
         }else if(templateId == LilithZombie.templateId){
@@ -142,6 +141,10 @@ public class Titans {
             return true;
         }
         return false;
+    }
+
+    public static boolean isTitanMinion(Creature creature){
+        return isTitanMinion(creature.getTemplate().getTemplateId());
     }
 
     // --- Advanced Abilities --- //

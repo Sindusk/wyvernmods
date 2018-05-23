@@ -8,7 +8,6 @@ import com.wurmonline.server.players.PlayerInfo;
 import com.wurmonline.server.players.PlayerInfoFactory;
 import com.wurmonline.server.villages.Village;
 import com.wurmonline.server.villages.Villages;
-import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.NotFoundException;

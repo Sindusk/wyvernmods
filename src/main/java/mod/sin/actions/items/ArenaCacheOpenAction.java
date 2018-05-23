@@ -6,8 +6,10 @@ import com.wurmonline.server.behaviours.Action;
 import com.wurmonline.server.behaviours.ActionEntry;
 import com.wurmonline.server.creatures.Creature;
 import com.wurmonline.server.items.Item;
+import com.wurmonline.server.items.ItemFactory;
 import com.wurmonline.server.players.Player;
 import mod.sin.items.ArenaCache;
+import mod.sin.items.SorceryFragment;
 import mod.sin.wyvern.SupplyDepots;
 import org.gotti.wurmunlimited.modsupport.actions.ActionPerformer;
 import org.gotti.wurmunlimited.modsupport.actions.BehaviourProvider;
@@ -96,6 +98,9 @@ public class ArenaCacheOpenAction implements ModAction {
 							performer.getCommunicator().sendNormalServerMessage("You open your "+target.getName()+".");
 							Server.getInstance().broadCastAction(performer.getName() + " opens "+performer.getHisHerItsString()+" "+target.getName()+".", performer, 5);
 							logger.info("Player "+performer.getName()+" opened arena cache.");
+							// Sorcery fragment.
+							Item sorceryFragment = ItemFactory.createItem(SorceryFragment.templateId, 90f, null);
+							performer.getInventory().insertItem(sorceryFragment, true);
 							SupplyDepots.giveCacheReward(performer);
 							Items.destroyItem(target.getWurmId());
 							return true;

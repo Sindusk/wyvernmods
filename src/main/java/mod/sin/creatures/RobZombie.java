@@ -1,10 +1,9 @@
 package mod.sin.creatures;
 
+import com.wurmonline.server.skills.SkillList;
+import com.wurmonline.shared.constants.CreatureTypes;
 import org.gotti.wurmunlimited.modsupport.CreatureTemplateBuilder;
 import org.gotti.wurmunlimited.modsupport.creatures.ModCreature;
-
-import com.wurmonline.server.creatures.CreatureTypes;
-import com.wurmonline.server.skills.SkillList;
 
 public class RobZombie implements ModCreature, CreatureTypes {
 	@Override
@@ -14,7 +13,8 @@ public class RobZombie implements ModCreature, CreatureTypes {
 				CreatureTypes.C_TYPE_HERBIVORE,
 				CreatureTypes.C_TYPE_UNDEAD,
 				CreatureTypes.C_TYPE_TRADER,
-				CreatureTypes.C_TYPE_NPC_TRADER};
+				CreatureTypes.C_TYPE_NPC_TRADER
+		};
 		
 		CreatureTemplateBuilder builder = new CreatureTemplateBuilder("mod.creature.zombie.rob", "Rob Zombie",
 				"This is Rob Zombie. He is known to eat brains when you do not buy things from him.", "model.creature.humanoid.human.player.zombie",

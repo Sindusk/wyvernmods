@@ -116,12 +116,6 @@ public class SupplyDepots {
 		return item.getTemplateId() == ArenaSupplyDepot.templateId;
 	}
 	public static void pollDepotSpawn(){
-		if(!Servers.localServer.PVPSERVER && !WyvernMods.enableDepots){
-			return;
-		}
-		if(!initalizedSupplyDepot){
-		    return;
-        }
 		for(int i = 0; i < depots.size(); i++){
 			Item depot = depots.get(i);
 			if(!Items.exists(depot)){
@@ -137,6 +131,12 @@ public class SupplyDepots {
 				sendDepotEffectsToPlayers(item);
 			}
 		}
+        if(!Servers.localServer.PVPSERVER && !WyvernMods.enableDepots){
+            return;
+        }
+        if(!initalizedSupplyDepot){
+            return;
+        }
 		if(depots.isEmpty()){
 			if(host == null){
 				ArrayList<Creature> uniques = new ArrayList<>();
@@ -227,9 +227,6 @@ public class SupplyDepots {
             inv.insertItem(enchantOrb);
         }
 		try {
-			// Sorcery fragment.
-			Item sorceryFragment = ItemFactory.createItem(SorceryFragment.templateId, 90f, "Depot");
-			inv.insertItem(sorceryFragment, true);
 			// Add a special caches as a reward.
 			int[] cacheIds = {
 					ArmourCache.templateId,

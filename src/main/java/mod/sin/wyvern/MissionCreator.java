@@ -1,11 +1,11 @@
 package mod.sin.wyvern;
 
 import com.wurmonline.server.Server;
+import com.wurmonline.server.creatures.CreatureTemplate;
 import com.wurmonline.server.deities.Deities;
 import com.wurmonline.server.epic.EpicMission;
 import com.wurmonline.server.epic.EpicServerStatus;
 import com.wurmonline.server.players.PlayerInfo;
-import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.NotFoundException;
@@ -81,17 +81,72 @@ public class MissionCreator {
         }
     }
 
+    public static boolean isMissionOkaySlayable(CreatureTemplate template){
+        if(template.isSubmerged()){
+            return false;
+        }
+        if(template.isUnique()){
+            return false;
+        }
+        if(RareSpawns.isRareCreature(template.getTemplateId())){
+            return false;
+        }
+        if(Titans.isTitan(template.getTemplateId()) || Titans.isTitanMinion(template.getTemplateId())){
+            return false;
+        }
+        return template.isEpicMissionSlayable();
+    }
+    public static boolean isMissionOkayHerbivore(CreatureTemplate template){
+        if(template.isSubmerged()){
+            return false;
+        }
+        if(template.isUnique()){
+            return false;
+        }
+        if(RareSpawns.isRareCreature(template.getTemplateId())){
+            return false;
+        }
+        if(Titans.isTitan(template.getTemplateId()) || Titans.isTitanMinion(template.getTemplateId())){
+            return false;
+        }
+        return template.isHerbivore();
+    }
+
     public static void preInit(){
         try{
             ClassPool classPool = HookManager.getInstance().getClassPool();
             final Class<MissionCreator> thisClass = MissionCreator.class;
             String replace;
 
-            CtClass ctTriggerEffect = classPool.get("com.wurmonline.server.tutorial.TriggerEffect");
             Util.setReason("Give players currency for completing a mission.");
+            CtClass ctTriggerEffect = classPool.get("com.wurmonline.server.tutorial.TriggerEffect");
             replace = "$_ = $proceed($$);" +
                     MissionCreator.class.getName()+".awardMissionBonus($0);";
             Util.instrumentDeclared(thisClass, ctTriggerEffect, "effect", "addToSleep", replace);
+
+            Util.setReason("Prevent mission creatures from spawning in water.");
+            CtClass ctEpicServerStatus = classPool.get("com.wurmonline.server.epic.EpicServerStatus");
+            replace = "$_ = false;";
+            Util.instrumentDeclared(thisClass, ctEpicServerStatus, "spawnSingleCreature", "isSwimming", replace);
+
+            Util.setReason("Modify which templates are allowed to spawn on herbivore-only epic missions.");
+            replace = "$_ = "+MissionCreator.class.getName()+".isMissionOkayHerbivore($0);";
+            Util.instrumentDeclared(thisClass, ctEpicServerStatus, "createSlayCreatureMission", "isHerbivore", replace);
+            Util.instrumentDeclared(thisClass, ctEpicServerStatus, "createSlayTraitorMission", "isHerbivore", replace);
+            Util.instrumentDeclared(thisClass, ctEpicServerStatus, "createSacrificeCreatureMission", "isHerbivore", replace);
+
+            Util.setReason("Modify which templates are allowed to spawn on slay missions.");
+            replace = "$_ = "+MissionCreator.class.getName()+".isMissionOkaySlayable($0);";
+            Util.instrumentDeclared(thisClass, ctEpicServerStatus, "createSlayCreatureMission", "isEpicMissionSlayable", replace);
+            Util.instrumentDeclared(thisClass, ctEpicServerStatus, "createSacrificeCreatureMission", "isEpicMissionSlayable", replace);
+
+            Util.setReason("Adjust which epic missions are available..");
+            CtClass ctEpicMissionEnum = classPool.get("com.wurmonline.server.epic.EpicMissionEnum");
+            replace = "{ if($0.getMissionType() == 108 || $0.getMissionType() == 120 || $0.getMissionType() == 124){" +
+                    "  return 0;" +
+                    "}" +
+                    "return $0.missionChance; }";
+            Util.setBodyDeclared(thisClass, ctEpicMissionEnum, "getMissionChance", replace);
 
         } catch ( NotFoundException | IllegalArgumentException | ClassCastException e) {
             throw new HookException(e);

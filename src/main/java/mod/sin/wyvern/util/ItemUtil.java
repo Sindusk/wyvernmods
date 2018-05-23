@@ -137,11 +137,19 @@ public class ItemUtil {
 				Enchants.BUFF_ROTTING_TOUCH,
 				Enchants.BUFF_LIFETRANSFER, Enchants.BUFF_LIFETRANSFER, // 2 rolls for LT
 				Enchants.BUFF_NIMBLENESS,
+                Enchants.BUFF_MINDSTEALER,
 				Enchants.BUFF_FROSTBRAND,
 				Enchants.BUFF_WEBARMOUR,
 				Enchants.BUFF_BLESSINGDARK, Enchants.BUFF_BLESSINGDARK, // 2 rolls for BotD
 				Enchants.BUFF_VENOM,
-				Enchants.BUFF_WIND_OF_AGES
+				Enchants.BUFF_WIND_OF_AGES,
+				110, 110, //Harden
+                114, //Efficiency
+                115, //Quarry
+                116, //Prowess
+                117, //Industry
+                118, //Endurance
+                119, //Acuity
 			};
 		try {
 			Item enchantOrb = ItemFactory.createItem(EnchantOrb.templateId, 99+(1*Server.rand.nextFloat()), "");

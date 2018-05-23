@@ -19,14 +19,14 @@ import mod.sin.items.EternalReservoir;
 
 public class Soulstealing {
 	public static final Logger logger = Logger.getLogger(Soulstealing.class.getName());
-	public static ArrayList<Item> soulForges = new ArrayList<Item>();
+	public static ArrayList<Item> soulForges = new ArrayList<>();
 	public static void pollSoulForge(Item soulForge){
 		int tilex = soulForge.getTileX();
 		int tiley = soulForge.getTileY();
 		int range = (int) (soulForge.getCurrentQualityLevel()/10f);
         int fuel = soulForge.getData1();
 		logger.info("Polling eternal reservoir at ("+tilex+", "+tiley+") [range "+range+"] <fuel "+fuel+">");
-        if(fuel > 15){
+        if(fuel >= 1){
     		int sx = Zones.safeTileX(tilex - range);
             int sy = Zones.safeTileY(tiley - range);
             int ex = Zones.safeTileX(tilex + range);

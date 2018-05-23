@@ -1,45 +1,30 @@
 package mod.sin.wyvern;
 
-import com.wurmonline.mesh.Tiles;
-import com.wurmonline.server.*;
-import com.wurmonline.server.bodys.Wound;
+import com.wurmonline.server.Server;
+import com.wurmonline.server.ServerEntry;
 import com.wurmonline.server.creatures.Creature;
-import com.wurmonline.server.creatures.Creatures;
-import com.wurmonline.server.creatures.MineDoorPermission;
-import com.wurmonline.server.creatures.SpellEffects;
 import com.wurmonline.server.economy.Economy;
 import com.wurmonline.server.epic.Hota;
 import com.wurmonline.server.items.*;
 import com.wurmonline.server.players.Player;
 import com.wurmonline.server.questions.NewSpawnQuestion;
 import com.wurmonline.server.questions.SpawnQuestion;
-import com.wurmonline.server.spells.SpellEffect;
 import com.wurmonline.server.villages.Citizen;
 import com.wurmonline.server.villages.Village;
-import com.wurmonline.server.zones.AreaSpellEffect;
-import com.wurmonline.server.zones.VolaTile;
 import com.wurmonline.server.zones.Zone;
 import com.wurmonline.server.zones.Zones;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.NotFoundException;
 import javassist.bytecode.Descriptor;
-import mod.sin.creatures.titans.*;
 import mod.sin.items.AffinityOrb;
 import mod.sin.items.KeyFragment;
 import mod.sin.items.caches.*;
 import mod.sin.lib.Util;
 import org.gotti.wurmunlimited.modloader.classhooks.HookException;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
-import org.gotti.wurmunlimited.modsupport.ModSupportDb;
 import org.nyxcode.wurm.discordrelay.DiscordRelay;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.logging.Logger;
 
 public class Arena {
@@ -156,14 +141,14 @@ public class Arena {
 			for (x = 0; x < 5; ++x) {
 				lump = ItemFactory.createItem(ItemList.adamantineBar, Math.min(99, 50 + winStreak), null);
 				float baseWeight = lump.getWeightGrams();
-				float multiplier = 1f+(winStreak*0.4f*Server.rand.nextFloat());
+				float multiplier = 1f;//+(winStreak*0.4f*Server.rand.nextFloat());
 				lump.setWeight((int) (baseWeight*multiplier), true);
 				statue.insertItem(lump, true);
 			}
 			for (x = 0; x < 5; ++x) {
 				lump = ItemFactory.createItem(ItemList.glimmerSteelBar, Math.min(99, 50 + winStreak), null);
                 float baseWeight = lump.getWeightGrams();
-                float multiplier = 1f+(winStreak*0.2f*Server.rand.nextFloat());
+                float multiplier = 1f;//+(winStreak*0.2f*Server.rand.nextFloat());
                 lump.setWeight((int) (baseWeight*multiplier), true);
 				statue.insertItem(lump, true);
 			}
@@ -232,14 +217,12 @@ public class Arena {
 
             // - Allow horse gear to be added/removed from horses without branding or taming (PvP Only) - //
             CtClass ctCommunicator = classPool.get("com.wurmonline.server.creatures.Communicator");
-            replace = "if(com.wurmonline.server.Servers.isThisAPvpServer() && owner.getDominator() != this.player){"
+            replace = "if(this.player.getPower() > 0){" +
+                    "  $_ = this.player;" +
+                    "}else if(com.wurmonline.server.Servers.isThisAPvpServer() && owner.getDominator() != this.player){"
             		+ "  $_ = owner.getLeader();"
             		+ "}else{"
-            		+ "  if(this.player.getPower() > 0){"
-            		+ "    $_ = this.player;"
-            		+ "  }else{"
-            		+ "    $_ = $proceed($$);"
-            		+ "  }"
+            		+ "  $_ = $proceed($$);"
             		+ "}";
             Util.instrumentDeclared(thisClass, ctCommunicator, "reallyHandle_CMD_MOVE_INVENTORY", "getDominator", replace);
             /*ctCommunicator.getDeclaredMethod("reallyHandle_CMD_MOVE_INVENTORY").instrument(new ExprEditor(){
@@ -348,11 +331,11 @@ public class Arena {
             		CtClass.floatType
             };
             String desc2 = Descriptor.ofMethod(CtClass.booleanType, params2);
-            replace = "if(this.watcher.isPlayer() && creature.isPlayer()){" +
+            replace = "if(this.watcher.isPlayer()){" +
                     "  if("+PlayerTitles.class.getName()+".hasCustomTitle(creature)){" +
                     "    suff = suff + "+PlayerTitles.class.getName()+".getCustomTitle(creature);" +
                     "  }" +
-                    "  if(com.wurmonline.server.Servers.localServer.PVPSERVER && "+Arena.class.getName()+".getArenaAttitude((com.wurmonline.server.players.Player)this.watcher, creature) == 2){"
+                    "  if(com.wurmonline.server.Servers.localServer.PVPSERVER && creature.isPlayer() && "+Arena.class.getName()+".getArenaAttitude((com.wurmonline.server.players.Player)this.watcher, creature) == 2){"
             		+ "  suff = suff + \" (ENEMY)\";"
             		+ "  enemy = true;" +
                     "  }"
@@ -747,6 +730,46 @@ public class Arena {
             CtClass ctDeity = classPool.get("com.wurmonline.server.deities.Deity");
             replace = "{ return (byte) 4; }";
             Util.setBodyDeclared(thisClass, ctDeities, "getFavoredKingdom", replace);
+
+            /*Util.setReason("Decrease PvP combat damage.");
+            CtClass ctString = classPool.get("java.lang.String");
+            CtClass ctBattle = classPool.get("com.wurmonline.server.combat.Battle");
+            CtClass ctCombatEngine = classPool.get("com.wurmonline.server.combat.CombatEngine");
+            // @Nullable Creature performer, Creature defender, byte type, int pos, double damage, float armourMod,
+            // String attString, @Nullable Battle battle, float infection, float poison, boolean archery, boolean alreadyCalculatedResist
+            CtClass[] params8 = {
+                    ctCreature,
+                    ctCreature,
+                    CtClass.byteType,
+                    CtClass.intType,
+                    CtClass.doubleType,
+                    CtClass.floatType,
+                    ctString,
+                    ctBattle,
+                    CtClass.floatType,
+                    CtClass.floatType,
+                    CtClass.booleanType,
+                    CtClass.booleanType
+            };
+            String desc8 = Descriptor.ofMethod(CtClass.booleanType, params8);
+            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER && ($2.isDominated() || $2.isPlayer()) && $1 != null && $1.isPlayer()){" +
+                    "  logger.info(\"Detected player hit against player/pet opponent. Halving damage.\");" +
+                    "  $5 = $5 * 0.5d;" +
+                    "}";
+            Util.insertBeforeDescribed(thisClass, ctCombatEngine, "addWound", desc8, replace);*/
+
+            Util.setReason("Reduce player vs player damage by half.");
+            CtClass ctCombatHandler = classPool.get("com.wurmonline.server.creatures.CombatHandler");
+            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER && ($1.isDominated() || $1.isPlayer()) && $0.creature.isPlayer()){" +
+                    "  logger.info(\"Detected player hit against player/pet opponent. Halving damage.\");" +
+                    "  $3 = $3 * 0.5d;" +
+                    "}";
+            Util.insertBeforeDeclared(thisClass, ctCombatHandler, "setDamage", replace);
+
+            Util.setReason("Disable crown influence from spreading to enemies.");
+            replace = "$_ = $0.getAttitude(this) == 1;";
+            Util.instrumentDeclared(thisClass, ctPlayer, "spreadCrownInfluence", "isFriendlyKingdom", replace);
+
 
 		}catch (NotFoundException e) {
 			throw new HookException(e);

@@ -97,7 +97,7 @@ public class EnchantersCrystalInfuseAction implements ModAction {
 							double power = -100;
 							int i = source.getRarity();
 							while(i >= 0){
-								power = Math.max(power, performer.getSkills().getSkill(SkillList.SOUL_DEPTH).skillCheck(diff, source, 0d, false, 1));
+								power = Math.max(power, performer.getSkills().getSkill(SkillList.SOUL).skillCheck(diff, source, 0d, false, 1));
 								i--;
 							}
 							ItemSpellEffects effs = target.getSpellEffects();
@@ -134,8 +134,14 @@ public class EnchantersCrystalInfuseAction implements ModAction {
 									performer.getCommunicator().sendNormalServerMessage("However, something goes wrong and the "+target.getName()+ " instead loses the property!");
 								}
 								Items.destroyItem(source.getWurmId());
-							}else if(power > 40){
-								performer.getCommunicator().sendNormalServerMessage("You manage to infuse the "+target.getName()+ ", destroying a magical property but increasing the rest.");
+							}else if(power > 35){
+								performer.getCommunicator().sendNormalServerMessage("You manage to infuse the "+target.getName()+ ", shifting its magical properties.");
+								for(SpellEffect eff : effs.getEffects()){
+									eff.setPower(eff.getPower()+((eff.getPower()*Server.rand.nextFloat()*0.4f) * (Server.rand.nextBoolean() ? 1 : -1)));
+								}
+								Items.destroyItem(source.getWurmId());
+							}else if(power > 0){
+								performer.getCommunicator().sendNormalServerMessage("You barely manage to infuse the "+target.getName()+ ", destroying a magical property but increasing the rest.");
 								SpellEffect oldEff = effs.getEffects()[Server.rand.nextInt(effs.getEffects().length)];
 								effs.removeSpellEffect(oldEff.type);
 								if(effs.getEffects().length >= 1){
@@ -144,12 +150,6 @@ public class EnchantersCrystalInfuseAction implements ModAction {
 									}
 								}else{
 									performer.getCommunicator().sendNormalServerMessage("However, the "+target.getName()+ " does not have any other properties, and the effect is wasted!");
-								}
-								Items.destroyItem(source.getWurmId());
-							}else if(power > 0){
-								performer.getCommunicator().sendNormalServerMessage("You barely manage to infuse the "+target.getName()+ ", shifting its magical properties.");
-								for(SpellEffect eff : effs.getEffects()){
-									eff.setPower(eff.getPower()+((eff.getPower()*Server.rand.nextFloat()*0.4f) * (Server.rand.nextBoolean() ? 1 : -1)));
 								}
 								Items.destroyItem(source.getWurmId());
 							}else if(power > -30){

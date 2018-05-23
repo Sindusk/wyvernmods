@@ -8,7 +8,6 @@ import com.wurmonline.server.items.ItemList;
 import com.wurmonline.server.items.NoSpaceException;
 import com.wurmonline.shared.constants.BodyPartConstants;
 import com.wurmonline.shared.constants.Enchants;
-import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.NotFoundException;
@@ -26,26 +25,25 @@ public class MountedChanges {
         ArrayList<Item> gear = new ArrayList<>();
         try {
             Item leftFoot = creature.getEquippedItem(BodyPartConstants.LEFT_FOOT);
+            leftFoot.setDamage(leftFoot.getDamage()+(leftFoot.getDamageModifier()*0.002f));
             gear.add(leftFoot);
         } catch (NoSuchItemException | NoSpaceException ignored) {
         }
         try {
             Item rightFoot = creature.getEquippedItem(BodyPartConstants.RIGHT_FOOT);
+            rightFoot.setDamage(rightFoot.getDamage()+(rightFoot.getDamageModifier()*0.002f));
             gear.add(rightFoot);
         } catch (NoSuchItemException | NoSpaceException ignored) {
         }
         try {
             Item leftHand = creature.getEquippedItem(BodyPartConstants.LEFT_HAND);
+            leftHand.setDamage(leftHand.getDamage()+(leftHand.getDamageModifier()*0.002f));
             gear.add(leftHand);
         } catch (NoSuchItemException | NoSpaceException ignored) {
         }
         try {
             Item rightHand = creature.getEquippedItem(BodyPartConstants.RIGHT_HAND);
-            gear.add(rightHand);
-        } catch (NoSuchItemException | NoSpaceException ignored) {
-        }
-        try {
-            Item rightHand = creature.getEquippedItem(BodyPartConstants.RIGHT_HAND);
+            rightHand.setDamage(rightHand.getDamage()+(rightHand.getDamageModifier()*0.002f));
             gear.add(rightHand);
         } catch (NoSuchItemException | NoSpaceException ignored) {
         }
@@ -76,12 +74,12 @@ public class MountedChanges {
                     if(barding.getTemplateId() == ItemList.clothBarding){
                         factor *= 0.9f;
                     }else if(barding.getTemplateId() == ItemList.leatherBarding){
-                        factor *= 0.75f;
+                        factor *= 0.82f;
                     }else if(barding.getTemplateId() == ItemList.chainBarding){
-                        factor *= 0.6f;
+                        factor *= 0.75f;
                     }
                 }
-            } catch (NoArmourException | NoSpaceException e) {
+            } catch (NoArmourException | NoSpaceException ignored) {
             }
         }
         if (creature.getBonusForSpellEffect(Enchants.CRET_OAKSHELL) > 0.0f) {
@@ -92,6 +90,7 @@ public class MountedChanges {
                 float saddleFactor = 1.0f;
                 Item saddle = creature.getEquippedItem(BodyPartConstants.TORSO);
                 if(saddle != null) {
+                    saddle.setDamage(saddle.getDamage()+(saddle.getDamageModifier()*0.001f));
                     saddleFactor += Math.max(10f, saddle.getCurrentQualityLevel()) / 2000f;
                     saddleFactor += saddle.getSpellSpeedBonus() / 2000f;
                     saddleFactor += saddle.getRarity() * 0.03f;
@@ -99,6 +98,7 @@ public class MountedChanges {
                 }
             } catch (NoSuchItemException | NoSpaceException ignored) {
             }
+            factor *= creature.getMovementScheme().getSpeedModifier();
         }
         return factor;
     }

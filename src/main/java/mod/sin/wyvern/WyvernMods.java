@@ -15,10 +15,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
-import com.wurmonline.server.Servers;
-import com.wurmonline.server.items.CreationEntry;
-import com.wurmonline.server.items.CreationMatrix;
-import com.wurmonline.server.items.ItemList;
+import com.wurmonline.server.Items;
+import com.wurmonline.server.creatures.Communicator;
+import com.wurmonline.server.creatures.Creature;
+import com.wurmonline.server.items.*;
+import mod.sin.lib.Util;
 import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 import org.gotti.wurmunlimited.modloader.classhooks.HookException;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
@@ -29,9 +30,6 @@ import org.gotti.wurmunlimited.modsupport.creatures.ModCreatures;
 import org.gotti.wurmunlimited.modsupport.vehicles.ModVehicleBehaviours;
 
 import com.wurmonline.server.TimeConstants;
-import com.wurmonline.server.deities.Deities;
-import com.wurmonline.server.deities.Deity;
-import com.wurmonline.server.items.NoSuchTemplateException;
 import com.wurmonline.server.players.Player;
 import com.wurmonline.server.skills.SkillList;
 import com.wurmonline.server.skills.SkillSystem;
@@ -112,6 +110,23 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
         }
     }
 
+    /*public static void handleExamine(Creature performer, Item target) {
+        // Im just not a smart man.
+        if(target.isContainerLiquid()){
+            boolean found = false;
+            for(Item i : Items.getAllItems()){
+                if(i == target){
+                    found = true;
+                }
+            }
+            if(found){
+                logger.info("Item exists!");
+            }else{
+                logger.info("Item not found.");
+            }
+        }
+    }*/
+
     public void preInit() {
     	logger.info("Pre-Initializing.");
         try {
@@ -131,12 +146,19 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
             MountedChanges.preInit();
             EconomicChanges.preInit();
             QualityOfLife.preInit();
+            Bloodlust.preInit();
             AntiCheat.preInit();
             Mastercraft.preInit();
             Mastercraft.addNewTitles();
             SupplyDepots.preInit();
-            
+
+            Class<WyvernMods> thisClass = WyvernMods.class;
 			ClassPool classPool = HookManager.getInstance().getClassPool();
+
+            /*Util.setReason("Insert examine method.");
+            CtClass ctItemBehaviour = classPool.get("com.wurmonline.server.behaviours.ItemBehaviour");
+            String replace = WyvernMods.class.getName() + ".handleExamine($2, $3);";
+            Util.insertAfterDeclared(thisClass, ctItemBehaviour, "examine", replace);*/
 
             // - Enable custom command handler - //
 			CtClass ctCommunicator = classPool.get("com.wurmonline.server.creatures.Communicator");
@@ -315,13 +337,15 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 			ModActions.registerAction(new UnequipAllAction());
 			ModActions.registerAction(new ReceiveMailAction());
 			ModActions.registerAction(new LeaderboardAction());
+			ModActions.registerAction(new AddSubGroupAction());
 			logger.info("Registering Arena actions.");
 			ModActions.registerAction(new SorceryCombineAction());
 			//ModActions.registerAction(new VillageTeleportAction()); // [3/28/18] Disabled - Highway Portals added instead.
 			ModActions.registerAction(new ArenaTeleportAction());
 			ModActions.registerAction(new ArenaEscapeAction());
 			logger.info("Registering Dev actions.");
-			ModActions.registerAction(new MissionAction());
+			ModActions.registerAction(new MissionAddAction());
+			ModActions.registerAction(new MissionRemoveAction());
 			logger.info("Setting custom creature corpse models.");
 			MethodsBestiary.setTemplateVariables();
 			/*if(Deities.getDeity(101) != null){ // Edit Breyk player god
@@ -349,7 +373,43 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 			
 			//espCounter = Servers.localServer.PVPSERVER; // Enables on PvP server by default.
 			//espCounter = false;
-			
+
+            SkillTemplate exorcism = SkillSystem.templates.get(SkillList.EXORCISM);
+            int[] deps = {SkillList.GROUP_ALCHEMY};
+            try {
+                String newName = "Crystal handling";
+                ReflectionUtil.setPrivateField(exorcism, ReflectionUtil.getField(exorcism.getClass(), "name"), newName);
+                SkillSystem.skillNames.put(exorcism.getNumber(), newName);
+                SkillSystem.namesToSkill.put(newName, exorcism.getNumber());
+                ReflectionUtil.setPrivateField(exorcism, ReflectionUtil.getField(exorcism.getClass(), "dependencies"), deps);
+            } catch (IllegalAccessException | NoSuchFieldException e) {
+                logger.info("Failed to rename exorcism!");
+                e.printStackTrace();
+            }
+            SkillTemplate ballistae = SkillSystem.templates.get(SkillList.BALLISTA);
+            int[] deps2 = {SkillList.GROUP_ALCHEMY};
+            try {
+                String newName = "Mystic components";
+                ReflectionUtil.setPrivateField(ballistae, ReflectionUtil.getField(ballistae.getClass(), "name"), newName);
+                SkillSystem.skillNames.put(ballistae.getNumber(), newName);
+                SkillSystem.namesToSkill.put(newName, ballistae.getNumber());
+                ReflectionUtil.setPrivateField(ballistae, ReflectionUtil.getField(ballistae.getClass(), "dependencies"), deps2);
+            } catch (IllegalAccessException | NoSuchFieldException e) {
+                logger.info("Failed to rename ballistae!");
+                e.printStackTrace();
+            }
+            SkillTemplate preaching = SkillSystem.templates.get(SkillList.PREACHING);
+            int[] deps3 = {SkillList.MASONRY};
+            try {
+                String newName = "Gem augmentation";
+                ReflectionUtil.setPrivateField(preaching, ReflectionUtil.getField(preaching.getClass(), "name"), newName);
+                SkillSystem.skillNames.put(preaching.getNumber(), newName);
+                SkillSystem.namesToSkill.put(newName, preaching.getNumber());
+                ReflectionUtil.setPrivateField(preaching, ReflectionUtil.getField(preaching.getClass(), "dependencies"), deps3);
+            } catch (IllegalAccessException | NoSuchFieldException e) {
+                logger.info("Failed to rename preaching!");
+                e.printStackTrace();
+            }
             SkillTemplate stealing = SkillSystem.templates.get(SkillList.STEALING);
             try {
 				ReflectionUtil.setPrivateField(stealing, ReflectionUtil.getField(stealing.getClass(), "tickTime"), 0);
@@ -387,26 +447,46 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 		try {
 			Connection con = ModSupportDb.getModSupportDb();
 			String sql;
-            if (!ModSupportDb.hasTable(con, "LeaderboardOpt")) {
-                sql = "CREATE TABLE LeaderboardOpt (\t\tname\t\t\t\tVARCHAR(30)\t\t\tNOT NULL DEFAULT 'Unknown',\t\tOPTIN\t\t\t\t\tINT\t\tNOT NULL DEFAULT 0)";
+			String tableName = "LeaderboardOpt";
+            if (!ModSupportDb.hasTable(con, tableName)) {
+                logger.info(tableName+" table not found in ModSupport. Creating table now.");
+                sql = "CREATE TABLE "+tableName+" (\t\tname\t\t\t\tVARCHAR(30)\t\t\tNOT NULL DEFAULT 'Unknown',\t\tOPTIN\t\t\t\t\tINT\t\tNOT NULL DEFAULT 0)";
                 PreparedStatement ps = con.prepareStatement(sql);
                 ps.execute();
                 ps.close();
             }
-            if (!ModSupportDb.hasTable(con, "SteamIdMap")) {
-                sql = "CREATE TABLE SteamIdMap (\t\tNAME\t\t\t\tVARCHAR(30)\t\t\tNOT NULL DEFAULT 'Unknown',\t\tSTEAMID\t\t\t\t\tLONG\t\tNOT NULL DEFAULT 0)";
+            tableName = "SteamIdMap";
+            if (!ModSupportDb.hasTable(con, tableName)) {
+                logger.info(tableName+" table not found in ModSupport. Creating table now.");
+                sql = "CREATE TABLE "+tableName+" (\t\tNAME\t\t\t\tVARCHAR(30)\t\t\tNOT NULL DEFAULT 'Unknown',\t\tSTEAMID\t\t\t\t\tLONG\t\tNOT NULL DEFAULT 0)";
                 PreparedStatement ps = con.prepareStatement(sql);
                 ps.execute();
                 ps.close();
             }
-            if (!ModSupportDb.hasTable(con, "PlayerStats")) {
-                sql = "CREATE TABLE PlayerStats (NAME VARCHAR(30) NOT NULL DEFAULT 'Unknown', KILLS INT NOT NULL DEFAULT 0, DEATHS INT NOT NULL DEFAULT 0, DEPOTS INT NOT NULL DEFAULT 0, HOTAS INT NOT NULL DEFAULT 0, TITANS INT NOT NULL DEFAULT 0)";
+            tableName = "PlayerStats";
+            if (!ModSupportDb.hasTable(con, tableName)) {
+                logger.info(tableName+" table not found in ModSupport. Creating table now.");
+                sql = "CREATE TABLE "+tableName+" (NAME VARCHAR(30) NOT NULL DEFAULT 'Unknown', KILLS INT NOT NULL DEFAULT 0, DEATHS INT NOT NULL DEFAULT 0, DEPOTS INT NOT NULL DEFAULT 0, HOTAS INT NOT NULL DEFAULT 0, TITANS INT NOT NULL DEFAULT 0, UNIQUES INT NOT NULL DEFAULT 0)";
                 PreparedStatement ps = con.prepareStatement(sql);
                 ps.execute();
                 ps.close();
+            }else{
+                logger.info("Found "+tableName+". Checking if it has a unique column.");
+                ResultSet rs = con.getMetaData().getColumns(null, null, tableName, "UNIQUES");
+                if(rs.next()){
+                    logger.info(tableName+" already has a uniques column.");
+                }else{
+                    logger.info("Detected no uniques column in "+tableName);
+                    sql = "ALTER TABLE "+tableName+" ADD COLUMN UNIQUES INT NOT NULL DEFAULT 0";
+                    PreparedStatement ps = con.prepareStatement(sql);
+                    ps.execute();
+                    ps.close();
+                }
             }
-			if (!ModSupportDb.hasTable(con, "ObjectiveTimers")) {
-				sql = "CREATE TABLE ObjectiveTimers (\t\tID\t\t\t\tVARCHAR(30)\t\t\tNOT NULL DEFAULT 'Unknown',\t\tTIMER\t\t\t\t\tLONG\t\tNOT NULL DEFAULT 0)";
+            tableName = "ObjectiveTimers";
+            if (!ModSupportDb.hasTable(con, tableName)) {
+                logger.info(tableName+" table not found in ModSupport. Creating table now.");
+				sql = "CREATE TABLE "+tableName+" (ID VARCHAR(30) NOT NULL DEFAULT 'Unknown', TIMER LONG NOT NULL DEFAULT 0)";
 				PreparedStatement ps = con.prepareStatement(sql);
 				ps.execute();
 				ps.close();
@@ -430,10 +510,9 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 				catch (SQLException e) {
 					throw new RuntimeException(e);
 				}
-			}else{
-                SupplyDepots.initializeDepotTimer();
-                Titans.initializeTitanTimer();
-            }
+			}
+			SupplyDepots.initializeDepotTimer();
+            Titans.initializeTitanTimer();
 		}
 		catch (SQLException e) {
 			throw new RuntimeException(e);
@@ -453,6 +532,12 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 	public static final long pollEternalReservoirTime = TimeConstants.MINUTE_MILLIS*10;
 	public static long lastPolledMissionCreator = 0;
 	public static final long pollMissionCreatorTime = TimeConstants.HOUR_MILLIS*4;
+    public static long lastPolledBloodlust = 0;
+    public static final long pollBloodlustTime = TimeConstants.MINUTE_MILLIS;
+    public static long lastPolledUniqueRegeneration = 0;
+    public static final long pollUniqueRegenerationTime = TimeConstants.SECOND_MILLIS;
+    public static long lastPolledUniqueCollection = 0;
+    public static final long pollUniqueCollectionTime = TimeConstants.MINUTE_MILLIS*5;
 	@Override
 	public void onServerPoll() {
 		if((lastSecondPolled + TimeConstants.SECOND_MILLIS) < System.currentTimeMillis()){
@@ -480,6 +565,18 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 				MissionCreator.pollMissions();
 				lastPolledMissionCreator += pollMissionCreatorTime;
 			}
+            if(lastPolledBloodlust + pollBloodlustTime < System.currentTimeMillis()){
+                Bloodlust.pollLusts();
+                lastPolledBloodlust += pollBloodlustTime;
+            }
+            if(lastPolledUniqueRegeneration + pollUniqueRegenerationTime < System.currentTimeMillis()){
+                CombatChanges.pollUniqueRegeneration();
+                lastPolledUniqueRegeneration += pollUniqueRegenerationTime;
+            }
+            if(lastPolledUniqueCollection + pollUniqueCollectionTime < System.currentTimeMillis()){
+                CombatChanges.pollUniqueCollection();
+                lastPolledUniqueCollection += pollUniqueCollectionTime;
+            }
 			
 			// Update counter
 			if(lastSecondPolled + TimeConstants.SECOND_MILLIS*10 > System.currentTimeMillis()){
@@ -493,6 +590,9 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 				lastPolledRareSpawns = System.currentTimeMillis();
 				lastPolledEternalReservoirs = System.currentTimeMillis();
 				lastPolledMissionCreator = System.currentTimeMillis();
+				lastPolledBloodlust = System.currentTimeMillis();
+				lastPolledUniqueRegeneration = System.currentTimeMillis();
+				lastPolledUniqueCollection = System.currentTimeMillis();
 			}
 		}
 	}

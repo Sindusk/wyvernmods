@@ -54,7 +54,7 @@ public class Worg implements ModCreature {
 				vehicle.setName(creature.getName());
 				vehicle.setMaxHeightDiff(0.07f);
 				vehicle.setMaxDepth(-1.7f);
-				vehicle.setMaxSpeed(50.0f);
+				vehicle.setMaxSpeed(40.0f);
 				vehicle.setCommandType((byte) 3);
 				vehicle.setCanHaveEquipment(false);
 			}

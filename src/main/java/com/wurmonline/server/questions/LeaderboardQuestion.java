@@ -101,13 +101,17 @@ public class LeaderboardQuestion extends Question {
         customMap.put(1, "High Skills");
         builder = builder + ",Most Titles";
         customMap.put(2, "Most Titles");
+        builder = builder + ",Uniques Slain";
+        customMap.put(3, "Uniques Slain");
+        builder = builder + ",Titans Slain";
+        customMap.put(4, "Titans Slain");
         if(Servers.localServer.PVPSERVER || this.getResponder().getPower() >= 5){
             builder = builder + ",PvP Kills";
-            customMap.put(3, "PvP Kills");
+            customMap.put(5, "PvP Kills");
             builder = builder + ",PvP Deaths";
-            customMap.put(4, "PvP Deaths");
+            customMap.put(6, "PvP Deaths");
             builder = builder + ",Depots Captured";
-            customMap.put(5, "PvP Depots Captured");
+            customMap.put(7, "PvP Depots Captured");
         }
         return builder;
     }

@@ -57,6 +57,20 @@ public class WarhammerHead implements ItemTypes, MiscConstants {
 					templateId, false, true, 0.0f, false, false, CreationCategories.WEAPON_HEADS);
 			CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_HEADS, ItemList.anvilLarge, ItemList.steelBar,
 					templateId, false, true, 0.0f, false, false, CreationCategories.WEAPON_HEADS);
+			CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_HEADS, ItemList.anvilLarge, ItemList.silverBar,
+					templateId, false, true, 0.0f, false, false, CreationCategories.WEAPON_HEADS);
+			CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_HEADS, ItemList.anvilLarge, ItemList.copperBar,
+					templateId, false, true, 0.0f, false, false, CreationCategories.WEAPON_HEADS);
+			CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_HEADS, ItemList.anvilLarge, ItemList.tinBar,
+					templateId, false, true, 0.0f, false, false, CreationCategories.WEAPON_HEADS);
+			CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_HEADS, ItemList.anvilLarge, ItemList.goldBar,
+					templateId, false, true, 0.0f, false, false, CreationCategories.WEAPON_HEADS);
+			CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_HEADS, ItemList.anvilLarge, ItemList.zincBar,
+					templateId, false, true, 0.0f, false, false, CreationCategories.WEAPON_HEADS);
+			CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_HEADS, ItemList.anvilLarge, ItemList.bronzeBar,
+					templateId, false, true, 0.0f, false, false, CreationCategories.WEAPON_HEADS);
+			CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_HEADS, ItemList.anvilLarge, ItemList.brassBar,
+					templateId, false, true, 0.0f, false, false, CreationCategories.WEAPON_HEADS);
 			CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_HEADS, ItemList.anvilLarge, ItemList.adamantineBar,
 					templateId, false, true, 0.0f, false, false, CreationCategories.WEAPON_HEADS);
 			CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_HEADS, ItemList.anvilLarge, ItemList.glimmerSteelBar,

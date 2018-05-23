@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import com.wurmonline.server.TimeConstants;
 import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 import org.gotti.wurmunlimited.modloader.classhooks.HookException;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
@@ -51,10 +52,11 @@ public class Bounty {
 	public static boolean isCombatant(Map<Long, Long> attackers, long playerId){
     	long now = System.currentTimeMillis();
     	long delta = now-attackers.get(playerId);
-    	if(delta > 120000){
+    	return delta < TimeConstants.MINUTE_MILLIS*2;
+    	/*if(delta > 120000){
     		return false;
     	}
-    	return true;
+    	return true;*/
     }
 	
 	public static Map<Long, Long> getAttackers(Creature mob){
@@ -242,7 +244,7 @@ public class Bounty {
           
       }
       catch (NotFoundException e) {
-          throw new HookException((Throwable)e);
+          throw new HookException(e);
       }
 	}
 }

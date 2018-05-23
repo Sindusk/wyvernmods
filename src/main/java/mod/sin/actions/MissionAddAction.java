@@ -1,10 +1,8 @@
 package mod.sin.actions;
 
-import com.wurmonline.server.NoSuchItemException;
 import com.wurmonline.server.Server;
 import com.wurmonline.server.behaviours.Action;
 import com.wurmonline.server.behaviours.ActionEntry;
-import com.wurmonline.server.behaviours.AutoEquipMethods;
 import com.wurmonline.server.creatures.Creature;
 import com.wurmonline.server.deities.Deities;
 import com.wurmonline.server.epic.EpicServerStatus;
@@ -21,19 +19,19 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class MissionAction implements ModAction {
-	private static Logger logger = Logger.getLogger(MissionAction.class.getName());
+public class MissionAddAction implements ModAction {
+	private static Logger logger = Logger.getLogger(MissionAddAction.class.getName());
 
 	private final short actionId;
 	private final ActionEntry actionEntry;
 
-	public MissionAction() {
+	public MissionAddAction() {
 		logger.log(Level.WARNING, "UnequipAllAction()");
 
 		actionId = (short) ModActions.getNextActionId();
 		actionEntry = ActionEntry.createEntry(
 			actionId,
-			"Generate Epic Mission",
+			"Add Epic Mission",
 			"generating",
 			new int[] { 0 }
 			//new int[] { 6 /* ACTION_TYPE_NOMOVE */ }	// 6 /* ACTION_TYPE_NOMOVE */, 48 /* ACTION_TYPE_ENEMY_ALWAYS */, 36 /* ACTION_TYPE_ALWAYS_USE_ACTIVE_ITEM */
@@ -81,6 +79,10 @@ public class MissionAction implements ModAction {
 			public boolean action(Action act, Creature performer, Item target, short action, float counter)
 			{
 				if(performer instanceof Player){
+					if(performer.getPower() < 5){
+						performer.getCommunicator().sendNormalServerMessage("You do not have permission to do that.");
+						return true;
+					}
 					Player player = (Player) performer;
 					int[] deityNums = {
 					        1, 2, 3, 4, // Original Gods

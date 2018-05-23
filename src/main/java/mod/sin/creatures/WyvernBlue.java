@@ -1,19 +1,17 @@
 package mod.sin.creatures;
 
-import com.wurmonline.mesh.Tiles;
 import com.wurmonline.server.Servers;
 import com.wurmonline.server.behaviours.Vehicle;
 import com.wurmonline.server.bodys.BodyTemplate;
 import com.wurmonline.server.bodys.Wound;
 import com.wurmonline.server.combat.ArmourTypes;
 import com.wurmonline.server.creatures.Creature;
-import com.wurmonline.server.creatures.CreatureTypes;
 import com.wurmonline.server.items.Item;
 import com.wurmonline.server.items.ItemList;
 import com.wurmonline.server.items.Materials;
 import com.wurmonline.server.skills.SkillList;
+import com.wurmonline.shared.constants.CreatureTypes;
 import org.gotti.wurmunlimited.modsupport.CreatureTemplateBuilder;
-import org.gotti.wurmunlimited.modsupport.creatures.EncounterBuilder;
 import org.gotti.wurmunlimited.modsupport.creatures.ModCreature;
 import org.gotti.wurmunlimited.modsupport.vehicles.ModVehicleBehaviour;
 import org.gotti.wurmunlimited.modsupport.vehicles.VehicleFacade;
@@ -33,6 +31,7 @@ public class WyvernBlue implements ModCreature, CreatureTypes {
 				CreatureTypes.C_TYPE_HUNTING,
 				CreatureTypes.C_TYPE_NON_NEWBIE,
 				CreatureTypes.C_TYPE_ANIMAL,
+                CreatureTypes.C_TYPE_MONSTER,
 				CreatureTypes.C_TYPE_GRAZER,
 				CreatureTypes.C_TYPE_AGG_HUMAN,
                 CreatureTypes.C_TYPE_MISSION_OK,
@@ -47,6 +46,7 @@ public class WyvernBlue implements ModCreature, CreatureTypes {
 				CreatureTypes.C_TYPE_HUNTING,
 				CreatureTypes.C_TYPE_NON_NEWBIE,
 				CreatureTypes.C_TYPE_ANIMAL,
+                CreatureTypes.C_TYPE_MONSTER,
 				CreatureTypes.C_TYPE_GRAZER,
 				CreatureTypes.C_TYPE_NO_REBIRTH,
 				CreatureTypes.C_TYPE_AGG_HUMAN,

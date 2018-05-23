@@ -4,7 +4,6 @@ import com.wurmonline.server.items.Item;
 import com.wurmonline.server.villages.GuardPlan;
 import com.wurmonline.server.villages.Village;
 import com.wurmonline.server.villages.Villages;
-import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.NotFoundException;
@@ -71,6 +70,11 @@ public class EconomicChanges {
                     + "  return newVal;"
                     + "}";
             Util.insertBeforeDeclared(thisClass, ctItem, "getValue", replace);
+
+            Util.setReason("Remove trader refilling off kings coffers.");
+            CtClass ctCreature = classPool.get("com.wurmonline.server.creatures.Creature");
+            replace = "$_ = 1;";
+            Util.instrumentDeclared(thisClass, ctCreature, "removeRandomItems", "nextInt", replace);
 
     } catch ( NotFoundException | IllegalArgumentException | ClassCastException e) {
         throw new HookException(e);

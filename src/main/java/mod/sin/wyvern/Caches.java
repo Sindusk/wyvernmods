@@ -90,13 +90,15 @@ public class Caches {
 		int templateId = cache.getTemplateId();
 		if(templateId == TitanCache.templateId){
             Item efficiencyTool = ItemUtil.createRandomToolWeapon(20f, 40f, cache.getCreatorName());
-            ItemUtil.applyEnchant(efficiencyTool, (byte) 114, 40f+(20f*Server.rand.nextFloat())); // Efficiency enchant is 114
-            if(efficiencyTool.isMetal()){
-                efficiencyTool.setMaterial(Server.rand.nextBoolean() ? Materials.MATERIAL_ADAMANTINE : Materials.MATERIAL_GLIMMERSTEEL);
-            }else if(efficiencyTool.isWood()){
-                efficiencyTool.setMaterial(Materials.MATERIAL_WOOD_WILLOW);
+            if(efficiencyTool != null) {
+                ItemUtil.applyEnchant(efficiencyTool, (byte) 120, 40f + (20f * Server.rand.nextFloat())); // Titanforged enchant is 120
+                if(efficiencyTool.isMetal()){
+                    efficiencyTool.setMaterial(Server.rand.nextBoolean() ? Materials.MATERIAL_ADAMANTINE : Materials.MATERIAL_GLIMMERSTEEL);
+                }else if(efficiencyTool.isWood()){
+                    efficiencyTool.setMaterial(Materials.MATERIAL_WOOD_WILLOW);
+                }
+                performer.getInventory().insertItem(efficiencyTool, true);
             }
-            performer.getInventory().insertItem(efficiencyTool, true);
         }else if(templateId == TreasureMapCache.templateId){
 			Item map = Treasuremap.CreateTreasuremap(performer, cache, null, null, true);
 			map.setRarity(cache.getRarity());
@@ -237,7 +239,6 @@ public class Caches {
 				ItemUtil.applyEnchant(item, Enchants.BUFF_LIFETRANSFER, quality*0.6f+(quality*0.6f*Server.rand.nextFloat()));
 			}
 		}else if(templateId == CrystalCache.templateId){
-			item.setQualityLevel(Server.rand.nextFloat()*quality);
 			if(Server.rand.nextInt(500) < quality){
 				item.setRarity(MiscConstants.RARE);
 			}
@@ -245,7 +246,7 @@ public class Caches {
 	}
 	public static int getBasicNums(int templateId){
 		if(templateId == CrystalCache.templateId){
-			return Server.rand.nextInt(5)+5;
+			return Server.rand.nextInt(5)+8;
 		}else if(templateId == GemCache.templateId){
 			return 2;
 		}
@@ -378,7 +379,9 @@ public class Caches {
 					float basicQuality = Math.max(baseQL+(randQL*Server.rand.nextFloat()), baseQL+(randQL*Server.rand.nextFloat()));
 					basicQuality = Math.min(minimumQuality+basicQuality, 100f);
 					Item basicItem = ItemFactory.createItem(basicTemplates[Server.rand.nextInt(basicTemplates.length)], basicQuality, "");
-					basicItem.setRarity(cache.getRarity());
+					if(cache.getRarity() > basicItem.getRarity()) {
+						basicItem.setRarity(cache.getRarity());
+					}
 					adjustBasicItem(templateId, quality, basicItem);
 					if(adjustBasicWeight(templateId)){
 						float weightMult = getWeightMultiplier(templateId, quality);
@@ -400,7 +403,9 @@ public class Caches {
 					float extraQuality = Math.max(baseQL+(randQL*Server.rand.nextFloat()), baseQL+(randQL*Server.rand.nextFloat()));
 					extraQuality = Math.min(minimumQuality+extraQuality, 100f);
 					Item extraItem = ItemFactory.createItem(extraTemplates[Server.rand.nextInt(extraTemplates.length)], extraQuality, "");
-					extraItem.setRarity(cache.getRarity());
+					if(cache.getRarity() > extraItem.getRarity()) {
+						extraItem.setRarity(cache.getRarity());
+					}
 					adjustExtraItem(templateId, extraItem);
 					inv.insertItem(extraItem, true);
 				}

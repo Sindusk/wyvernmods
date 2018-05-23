@@ -11,7 +11,6 @@ import com.wurmonline.server.creatures.SpellEffectsEnum;
 import com.wurmonline.server.players.Cultist;
 import com.wurmonline.server.players.Cults;
 import com.wurmonline.server.players.Player;
-import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.NotFoundException;

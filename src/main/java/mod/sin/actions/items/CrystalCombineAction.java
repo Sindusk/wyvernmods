@@ -1,6 +1,7 @@
 package mod.sin.actions.items;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,7 +55,7 @@ public class CrystalCombineAction implements ModAction {
 			public List<ActionEntry> getBehavioursFor(Creature performer, Item source, Item object)
 			{
 				if(performer instanceof Player && source != null && object != null && Crystals.isCrystal(source) && Crystals.isCrystal(object) && source != object && source.getTemplateId() == object.getTemplateId()){
-					return Arrays.asList(actionEntry);
+					return Collections.singletonList(actionEntry);
 				}
 				return null;
 			}
@@ -83,18 +84,15 @@ public class CrystalCombineAction implements ModAction {
 						if(counter == 1.0f){
 							performer.getCommunicator().sendNormalServerMessage("You begin to combine the crystals together.");
 							Server.getInstance().broadCastAction(performer.getName() + " begins combining crystals.", performer, 5);
-							Skill artifacts = performer.getSkills().getSkill(SkillList.MIND_LOGICAL);
-							int time = Actions.getSlowActionTime(performer, artifacts, source, 0d);
+							Skill combineSkill = performer.getSkills().getSkill(SkillList.MIND_LOGICAL);
+							int time = Actions.getStandardActionTime(performer, combineSkill, source, 0d);
 							act.setTimeLeft(time);
 							performer.sendActionControl("Combining", true, act.getTimeLeft());
 						}else if(counter * 10f > performer.getCurrentAction().getTimeLeft()){
-							double diff = (source.getCurrentQualityLevel()+target.getCurrentQualityLevel())*0.4d;
-							diff += source.getRarity()*15;
-							diff -= performer.getSoulDepth().getKnowledge();
-							if(Servers.localServer.PVPSERVER){ // Added difficulty to account for PvP epic curve:
-								diff *= 1.4f;
-							}
-							double power = performer.getSkills().getSkill(SkillList.MIND_LOGICAL).skillCheck(diff, source, 0d, false, 1);
+							double diff = (source.getCurrentQualityLevel()+target.getCurrentQualityLevel())*0.3d;
+							diff += source.getRarity()*20;
+							diff -= performer.getSkills().getSkill(SkillList.MIND).getKnowledge();
+							double power = performer.getSkills().getSkill(SkillList.SOUL).skillCheck(diff, source, 0d, false, 1);
 							if(power > 0){
 								performer.getCommunicator().sendNormalServerMessage("You successfully combine the crystals!");
 								Server.getInstance().broadCastAction(performer.getName() + " successfully combines the crystals!", performer, 5);

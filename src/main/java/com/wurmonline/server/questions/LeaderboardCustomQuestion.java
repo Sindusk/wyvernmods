@@ -183,16 +183,26 @@ public class LeaderboardCustomQuestion extends Question {
                 totalTitles(limit);
                 break;
             case 3:
+                limit = 20;
+                topPlayerStats("uniques", limit);
+                ignoreOpt = true;
+                break;
+            case 4:
+                limit = 20;
+                topPlayerStats("titans", limit);
+                ignoreOpt = true;
+                break;
+            case 5:
                 limit = 10;
                 topPlayerStats("kills", limit);
                 ignoreOpt = true;
                 break;
-            case 4:
+            case 6:
                 limit = 10;
                 topPlayerStats("deaths", limit);
                 ignoreOpt = true;
                 break;
-            case 5:
+            case 7:
                 limit = 10;
                 topPlayerStats("depots", limit);
                 ignoreOpt = true;

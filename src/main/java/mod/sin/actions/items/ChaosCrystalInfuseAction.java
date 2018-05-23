@@ -1,15 +1,5 @@
 package mod.sin.actions.items;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.gotti.wurmunlimited.modsupport.actions.ActionPerformer;
-import org.gotti.wurmunlimited.modsupport.actions.BehaviourProvider;
-import org.gotti.wurmunlimited.modsupport.actions.ModAction;
-import org.gotti.wurmunlimited.modsupport.actions.ModActions;
-
 import com.wurmonline.server.Items;
 import com.wurmonline.server.Server;
 import com.wurmonline.server.behaviours.Action;
@@ -17,13 +7,22 @@ import com.wurmonline.server.behaviours.ActionEntry;
 import com.wurmonline.server.behaviours.Actions;
 import com.wurmonline.server.creatures.Creature;
 import com.wurmonline.server.items.Item;
+import com.wurmonline.server.items.ItemList;
 import com.wurmonline.server.items.Materials;
 import com.wurmonline.server.items.WurmColor;
 import com.wurmonline.server.players.Player;
 import com.wurmonline.server.skills.SkillList;
-
 import mod.sin.items.ChaosCrystal;
 import mod.sin.wyvern.Crystals;
+import org.gotti.wurmunlimited.modsupport.actions.ActionPerformer;
+import org.gotti.wurmunlimited.modsupport.actions.BehaviourProvider;
+import org.gotti.wurmunlimited.modsupport.actions.ModAction;
+import org.gotti.wurmunlimited.modsupport.actions.ModActions;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ChaosCrystalInfuseAction implements ModAction {
 	private static Logger logger = Logger.getLogger(ChaosCrystalInfuseAction.class.getName());
@@ -54,8 +53,8 @@ public class ChaosCrystalInfuseAction implements ModAction {
 			@Override
 			public List<ActionEntry> getBehavioursFor(Creature performer, Item source, Item object)
 			{
-				if(performer instanceof Player && source != null && object != null && source.getTemplateId() == ChaosCrystal.templateId && object.isRepairable()){
-					return Arrays.asList(actionEntry);
+				if(performer instanceof Player && source != null && object != null && source.getTemplateId() == ChaosCrystal.templateId && object.isRepairable() && object.getTemplateId() != ItemList.unfinishedItem){
+					return Collections.singletonList(actionEntry);
 				}
 				return null;
 			}
@@ -86,6 +85,10 @@ public class ChaosCrystalInfuseAction implements ModAction {
 							performer.getCommunicator().sendNormalServerMessage("You cannot infuse that item.");
 							return true;
 						}
+						if(target.getTemplateId() == ItemList.unfinishedItem){
+							performer.getCommunicator().sendNormalServerMessage("You cannot infuse an unfinished item.");
+							return true;
+						}
 						if(Crystals.shouldCancelInfusion(performer, source, target)){
 							return true;
 						}
@@ -96,7 +99,7 @@ public class ChaosCrystalInfuseAction implements ModAction {
 							performer.sendActionControl("Infusing", true, act.getTimeLeft());
 						}else if(counter * 10f > performer.getCurrentAction().getTimeLeft()){
 							double diff = Crystals.getInfusionDifficulty(performer, source, target);
-							double power = performer.getSkills().getSkill(SkillList.SOUL_DEPTH).skillCheck(diff, source, 0d, false, 1);
+							double power = performer.getSkills().getSkill(SkillList.SOUL).skillCheck(diff, source, 0d, false, 1);
 							if(power > 90){
 								performer.getCommunicator().sendNormalServerMessage("You handle the crystals expertly and infuse the "+target.getName()+ ", increasing its rarity!");
 								target.setRarity(source.getRarity());

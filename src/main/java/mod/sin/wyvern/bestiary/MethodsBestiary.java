@@ -4,12 +4,15 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Logger;
 
 import com.wurmonline.mesh.Tiles;
+import com.wurmonline.server.combat.Weapon;
 import com.wurmonline.server.creatures.*;
 import com.wurmonline.server.items.*;
+import com.wurmonline.server.skills.NoSuchSkillException;
 import com.wurmonline.server.zones.NoSuchZoneException;
 import com.wurmonline.server.zones.Zone;
 import com.wurmonline.server.zones.Zones;
 import com.wurmonline.shared.constants.BodyPartConstants;
+import com.wurmonline.shared.constants.CreatureTypes;
 import javassist.*;
 import javassist.bytecode.Descriptor;
 import javassist.expr.ExprEditor;
@@ -34,7 +37,6 @@ import mod.sin.creatures.titans.*;
 import mod.sin.weapons.Club;
 import mod.sin.weapons.titan.*;
 import mod.sin.wyvern.MiscChanges;
-import mod.sin.wyvern.Arena;
 import org.gotti.wurmunlimited.modloader.classhooks.HookException;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
 
@@ -110,51 +112,91 @@ public class MethodsBestiary {
 		}
 		return (byte)127;
 	}
+
+	protected static boolean isUsuallyHitched(int templateId){
+	    if(templateId == Charger.templateId){
+	        return true;
+        }else if(templateId == CreatureTemplateIds.HORSE_CID || templateId == CreatureTemplateIds.HELL_HORSE_CID){
+	        return true;
+        }else if(templateId == WyvernBlue.templateId){
+	        return true;
+        }else if(templateId == WyvernBlack.templateId){
+	        return true;
+        }else if(templateId == WyvernGreen.templateId){
+	        return true;
+        }else if(templateId == WyvernRed.templateId){
+	        return true;
+        }else if(templateId == WyvernWhite.templateId){
+	        return true;
+        }
+        return false;
+    }
 	
 	public static float getAdjustedSizeMod(CreatureStatus status){
 		try {
-			float floatToRet = 1.0f;
 			Creature statusHolder = ReflectionUtil.getPrivateField(status, ReflectionUtil.getField(status.getClass(), "statusHolder"));
+			float aiDataModifier = 1.0f;
+			if(statusHolder.getCreatureAIData() != null){
+			    aiDataModifier = statusHolder.getCreatureAIData().getSizeModifier();
+            }
 			byte modtype = ReflectionUtil.getPrivateField(status, ReflectionUtil.getField(status.getClass(), "modtype"));
 			float ageSizeModifier = ReflectionUtil.callPrivateMethod(status, ReflectionUtil.getMethod(status.getClass(), "getAgeSizeModifier"));
-	        if ((!statusHolder.isVehicle() || statusHolder.isDragon()) && modtype > 0) {
+            float floatToRet = 1.0f;
+			if (/*(!statusHolder.isVehicle() || statusHolder.isDragon()) &&*/ modtype != 0) {
+	            float change = 0.0f;
 	            switch (modtype) {
-	                case 3: {
-	                    floatToRet = 1.4f;
+	                case CreatureTypes.C_MOD_RAGING: {
+	                    change = 0.4f;
 	                    break;
 	                }
-	                case 4: {
-	                    floatToRet = 2.0f;
+	                case CreatureTypes.C_MOD_SLOW: {
+	                    change = 0.7f;
 	                    break;
 	                }
-	                case 6: {
-	                    floatToRet = 2.0f;
+	                case CreatureTypes.C_MOD_GREENISH: {
+	                    change = 1.0f;
 	                    break;
 	                }
-	                case 7: {
-	                    floatToRet = 0.8f;
+	                case CreatureTypes.C_MOD_LURKING: {
+	                    change = -0.2f;
 	                    break;
 	                }
-	                case 8: {
-	                    floatToRet = 0.9f;
+	                case CreatureTypes.C_MOD_SLY: {
+	                    change = -0.1f;
 	                    break;
 	                }
-	                case 9: {
-	                    floatToRet = 1.5f;
+	                case CreatureTypes.C_MOD_HARDENED: {
+	                    change = 0.5f;
 	                    break;
 	                }
-	                case 10: {
-	                    floatToRet = 1.3f;
+	                case CreatureTypes.C_MOD_SCARED: {
+	                    change = 0.3f;
 	                    break;
 	                }
-	                case 99: {
-	                    floatToRet = 3.0f;
+	                case CreatureTypes.C_MOD_CHAMPION: {
+	                    change = 2.0f;
 	                    break;
 	                }
+                    case CreatureTypes.C_MOD_SIZESMALL: {
+                        change = -0.5f;
+                        break;
+                    }
+                    case CreatureTypes.C_MOD_SIZEMINI: {
+                        change = -0.75f;
+                        break;
+                    }
+                    case CreatureTypes.C_MOD_SIZETINY: {
+                        change = -0.875f;
+                        break;
+                    }
 	                default: {
 	                    //return floatToRet * ageSizeModifier;
 	                }
 	            }
+	            if(isUsuallyHitched(statusHolder.getTemplate().getTemplateId())){
+	                change *= 0.2f;
+                }
+	            floatToRet += change;
 	        }
 	        int templateId = statusHolder.getTemplate().getTemplateId();
 	        if(templateId == Lilith.templateId){
@@ -189,9 +231,18 @@ public class MethodsBestiary {
 	        	floatToRet *= 1.15f;
 	        }else if(templateId == Terror.templateId){
 	            floatToRet *= 3.0f;
+            }else if(templateId == IceCat.templateId){
+	            floatToRet *= 1.7f;
+            }
+
+            if (statusHolder.getHitched() == null && statusHolder.getTemplate().getTemplateId() == 82 && !statusHolder.getNameWithoutPrefixes().equalsIgnoreCase(statusHolder.getTemplate().getName())) {
+                floatToRet *= 2.0f;
+            }
+            if (!statusHolder.isVehicle() && statusHolder.hasTrait(28)) {
+                floatToRet *= 1.5f;
             }
 	        
-	        return floatToRet * ageSizeModifier;
+	        return floatToRet * ageSizeModifier * aiDataModifier;
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
 				| NoSuchMethodException | ClassCastException | NoSuchFieldException e) {
 			e.printStackTrace();
@@ -221,10 +272,8 @@ public class MethodsBestiary {
 			    effs.addSpellEffect(new SpellEffect(titanWeapon.getWurmId(), Enchants.BUFF_ROTTING_TOUCH, 300, 20000000));
 			    effs.addSpellEffect(new SpellEffect(titanWeapon.getWurmId(), Enchants.BUFF_BLOODTHIRST, 100, 20000000));
 			}
-			if(titanWeapon != null){
-				return titanWeapon;
-			}
-		} catch (FailedException | NoSuchTemplateException e) {
+            return titanWeapon;
+        } catch (FailedException | NoSuchTemplateException e) {
 			e.printStackTrace();
 		}
 		return null;
@@ -295,6 +344,25 @@ public class MethodsBestiary {
         return -1f;
     }
 
+    public static boolean isNotHitchable(Creature creature){
+	    if(creature.isUnique()){
+	        return true;
+        }
+        int templateId = creature.getTemplate().getTemplateId();
+	    if(templateId == Avenger.templateId){
+	        return true;
+        }else if(templateId == Giant.templateId){
+	        return true;
+        }else if(templateId == SpiritTroll.templateId){
+	        return true;
+        }else if(templateId == Creatures.TROLL_CID){
+	        return true;
+        }else if(templateId == Creatures.GOBLIN_CID){
+	        return true;
+        }
+        return false;
+    }
+
     public static boolean isSacrificeImmune(Creature creature){
         if(Titans.isTitan(creature) || Titans.isTitanMinion(creature)){
             return true;
@@ -340,12 +408,32 @@ public class MethodsBestiary {
         if(defender.isPlayer() && defender.getTarget() != attacker){
             return true;
         }
+        if(defender.isPlayer()){
+            Item weap = defender.getPrimWeapon();
+            if(weap != null && weap.isWeapon()){
+                try {
+                    double dam = Weapon.getModifiedDamageForWeapon(weap, defender.getSkills().getSkill(SkillList.BODY_STRENGTH), true) * 1000.0;
+                    dam += Server.getBuffedQualityEffect(weap.getCurrentQualityLevel() / 100.0f) * (double)Weapon.getBaseDamageForWeapon(weap) * 2400.0;
+                    if(attacker.getArmourMod() < 0.1f){
+                    	return false;
+					}
+                    if(dam * attacker.getArmourMod() < 3000){
+                        return true;
+                    }
+                } catch (NoSuchSkillException e) {
+                    e.printStackTrace();
+                }
+            }else{
+                if(defender.getBonusForSpellEffect(Enchants.CRET_BEARPAW) < 50f){
+                    return true;
+                }
+            }
+        }
         try {
             if(defender.isPlayer() && attacker.getArmour(BodyPartConstants.TORSO) != null){
                 return true;
             }
-        } catch (NoArmourException | NoSpaceException e) {
-            e.printStackTrace();
+        } catch (NoArmourException | NoSpaceException ignored) {
         }
         return false;
     }
@@ -456,6 +544,18 @@ public class MethodsBestiary {
 		}
 	}
 
+    private static void setUniqueTypes(int templateId){
+        try{
+            CreatureTemplate template = CreatureTemplateFactory.getInstance().getTemplate(templateId);
+            if(template != null){
+                ReflectionUtil.setPrivateField(template, ReflectionUtil.getField(template.getClass(), "isNotRebirthable"), true);
+                ReflectionUtil.setPrivateField(template, ReflectionUtil.getField(template.getClass(), "regenerating"), false);
+            }
+        } catch (NoSuchCreatureTemplateException | IllegalArgumentException | IllegalAccessException | ClassCastException | NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+    }
+
 	private static void setGhost(int templateId){
 		try{
 			CreatureTemplate template = CreatureTemplateFactory.getInstance().getTemplate(templateId);
@@ -528,6 +628,7 @@ public class MethodsBestiary {
 		setCorpseModel(WyvernWhite.templateId, "whitedragonhatchling.");
 		setCorpseModel(WyvernBlue.templateId, "bluedragonhatchling.");
 		setCorpseModel(Facebreyker.templateId, "riftogre.");
+		setCorpseModel(FireCrab.templateId, "crab.");
 		setCorpseModel(ForestSpider.templateId, "fogspider.");
 		setCorpseModel(Giant.templateId, "forestgiant.");
 		setCorpseModel(LargeBoar.templateId, "wildboar.");
@@ -539,7 +640,23 @@ public class MethodsBestiary {
 		setGhost(Avenger.templateId);
 		setGhost(LilithWraith.templateId);
 		setGhost(Charger.templateId);
-		
+
+		// Make uniques no rebirth and non-regenerative.
+        setUniqueTypes(CreatureTemplate.DRAGON_BLACK_CID);
+        setUniqueTypes(CreatureTemplate.DRAGON_BLUE_CID);
+        setUniqueTypes(CreatureTemplate.DRAGON_GREEN_CID);
+        setUniqueTypes(CreatureTemplate.DRAGON_RED_CID);
+        setUniqueTypes(CreatureTemplate.DRAGON_WHITE_CID);
+        setUniqueTypes(CreatureTemplate.DRAKE_BLACK_CID);
+        setUniqueTypes(CreatureTemplate.DRAKE_BLUE_CID);
+        setUniqueTypes(CreatureTemplate.DRAKE_GREEN_CID);
+        setUniqueTypes(CreatureTemplate.DRAKE_RED_CID);
+        setUniqueTypes(CreatureTemplate.DRAKE_WHITE_CID);
+        setUniqueTypes(CreatureTemplate.GOBLIN_LEADER_CID);
+        setUniqueTypes(CreatureTemplate.FOREST_GIANT_CID);
+        setUniqueTypes(CreatureTemplate.TROLL_KING_CID);
+        setUniqueTypes(CreatureTemplate.CYCLOPS_CID);
+
 		// Dragon natural armour increases:
 		setNaturalArmour(CreatureTemplate.DRAGON_BLUE_CID, 0.035f);
 		setNaturalArmour(CreatureTemplate.DRAGON_WHITE_CID, 0.035f);
@@ -561,7 +678,6 @@ public class MethodsBestiary {
 		setNoCorpse(LilithZombie.templateId);
 
 		setNoCorpse(IceCat.templateId);
-		setNoCorpse(FireCrab.templateId);
 		setNoCorpse(FireGiant.templateId);
 		setNoCorpse(Terror.templateId);
 		
@@ -777,7 +893,14 @@ public class MethodsBestiary {
                     MethodsBestiary.class.getName()+".addCreatureSpecialEffect(copyId != -10 ? copyId : creatureId, $0, creature);";
             Util.instrumentDescribed(thisClass, ctVirtualZone, "addCreature", desc4, "sendNewCreature", replace);
 
-    } catch ( CannotCompileException | NotFoundException | IllegalArgumentException | ClassCastException e) {
+			Util.setReason("Ensure unique creatures cannot be hitched to vehicles.");
+			CtClass ctVehicle = classPool.get("com.wurmonline.server.behaviours.Vehicle");
+			replace = "if("+MethodsBestiary.class.getName()+".isNotHitchable($1)){" +
+					"  return false;" +
+					"}";
+			Util.insertBeforeDeclared(thisClass, ctVehicle, "addDragger", replace);
+
+		} catch ( CannotCompileException | NotFoundException | IllegalArgumentException | ClassCastException e) {
         throw new HookException(e);
     }
     }

@@ -8,6 +8,7 @@ import java.util.Random;
 import java.util.logging.Logger;
 
 import com.wurmonline.server.FailedException;
+import com.wurmonline.server.Server;
 import com.wurmonline.server.Servers;
 import com.wurmonline.server.creatures.Creature;
 import com.wurmonline.server.economy.Economy;
@@ -23,10 +24,9 @@ import mod.sin.armour.SpectralHide;
 import mod.sin.creatures.Reaper;
 import mod.sin.creatures.SpectralDrake;
 import mod.sin.items.AffinityOrb;
+import mod.sin.items.caches.RiftCache;
 import mod.sin.items.caches.TitanCache;
-import mod.sin.wyvern.Bounty;
-import mod.sin.wyvern.Arena;
-import mod.sin.wyvern.Titans;
+import mod.sin.wyvern.*;
 import mod.sin.wyvern.util.ItemUtil;
 
 public class PlayerBounty {
@@ -139,12 +139,20 @@ public class PlayerBounty {
 						logger.warning("Error: Treasure box was not created properly!");
 					}
 				}*/
+				if(mob.isUnique()){
+					MiscChanges.addPlayerStat(player.getName(), "UNIQUES");
+				}
+				if(RareSpawns.isRareCreature(mob)){
+                    Item riftCache = ItemFactory.createItem(RiftCache.templateId, 50f+(30f*Server.rand.nextFloat()), mob.getName());
+                    player.getInventory().insertItem(riftCache, true);
+                }
 				if(Titans.isTitan(mob)){
 					player.addTitle(Title.getTitle(700));
 					Item affinityOrb = ItemFactory.createItem(AffinityOrb.templateId, 99f, mob.getName());
 					player.getInventory().insertItem(affinityOrb, true);
 					Item titanCache = ItemFactory.createItem(TitanCache.templateId, 99f, mob.getName());
 					player.getInventory().insertItem(titanCache, true);
+					MiscChanges.addPlayerStat(player.getName(), "TITANS");
 					return;
 				}
 				//double fightskill = player.getFightingSkill().getKnowledge();

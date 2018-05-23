@@ -4,6 +4,7 @@ import com.wurmonline.server.Server;
 import com.wurmonline.server.items.Item;
 import com.wurmonline.server.players.Titles;
 import com.wurmonline.server.skills.Skill;
+import com.wurmonline.server.skills.SkillList;
 import javassist.*;
 import javassist.bytecode.BadBytecode;
 import javassist.expr.ExprEditor;
@@ -99,7 +100,10 @@ public class Mastercraft {
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("Warriorgen_ThatGuy", 802, "That Guy", "That Guy", -1, "NORMAL");
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("Eternallove_WarriorgensWife", 803, "Warriorgens Wife", "Warriorgens Wife", -1, "NORMAL");
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("Bambam_ThornOne", 804, "Thorn One", "Thorn One", -1, "NORMAL");
-            ExtendTitleEnum.getSingletonInstance().addExtendEntry("Svenja_CareDependant", 805, "The care-dependant", "The care-dependant", -1, "NORMAL");
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("Svenja_CareDependant", 805, "The care-dependent", "The care-dependent", -1, "NORMAL");
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("Alexia_TheTreasuring", 806, "The Treasuring", "The Treasuring", -1, "NORMAL");
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("Reevi_ScienceGuy", 807, "Science Guy", "Science Guy", -1, "NORMAL");
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("Genocide_GrandDesigner", 808, "Grand Designer", "Grand Designer", -1, "NORMAL");
 
             // Characteristic Titles
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("MindLogic_Normal", 1000, "Logical", "Logical", 100, "NORMAL");
@@ -156,6 +160,14 @@ public class Mastercraft {
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("Weaponless_Minor", 1121, "Brawler", "Brawler", 10052, "MINOR");
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("Weaponless_Master", 1122, "Boxer", "Boxer", 10052, "MASTER");
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("Weaponless_Legendary", 1123, "Martial Artist", "Martial Artist", 10052, "LEGENDARY");
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("BladesSmithing_Normal", 1124, "Bladesmith", "Bladesmith", SkillList.SMITHING_WEAPON_BLADES, "NORMAL");
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("BladesSmithing_Minor", 1125, "Renowned Bladesmith", "Renowned Bladesmith", SkillList.SMITHING_WEAPON_BLADES, "MINOR");
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("BladesSmithing_Master", 1126, "Master Bladesmith", "Master Bladesmith", SkillList.SMITHING_WEAPON_BLADES, "MASTER");
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("BladesSmithing_Legendary", 1127, "Legendary Bladesmith", "Legendary Bladesmith", SkillList.SMITHING_WEAPON_BLADES, "LEGENDARY");
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("HeadSmithing_Normal", 1128, "Headsmither", "Headsmither", SkillList.SMITHING_WEAPON_HEADS, "NORMAL");
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("HeadSmithing_Minor", 1129, "Renowned Headsmither", "Renowned Headsmither", SkillList.SMITHING_WEAPON_HEADS, "MINOR");
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("HeadSmithing_Master", 1130, "Master Headsmither", "Master Headsmither", SkillList.SMITHING_WEAPON_HEADS, "MASTER");
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("HeadSmithing_Legendary", 1131, "Legendary Headsmither", "Legendary Headsmither", SkillList.SMITHING_WEAPON_HEADS, "LEGENDARY");
             
             // Skill Titles (100)
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("Archery_Legendary", 1500, "Legendary Marksman", "Legendary Marksman", 1030, "LEGENDARY");

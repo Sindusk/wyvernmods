@@ -1,13 +1,15 @@
 package mod.sin.creatures;
 
+import com.wurmonline.mesh.Tiles;
 import com.wurmonline.server.bodys.BodyTemplate;
 import com.wurmonline.server.bodys.Wound;
 import com.wurmonline.server.combat.ArmourTypes;
-import com.wurmonline.server.creatures.CreatureTypes;
 import com.wurmonline.server.items.ItemList;
 import com.wurmonline.server.items.Materials;
 import com.wurmonline.server.skills.SkillList;
+import com.wurmonline.shared.constants.CreatureTypes;
 import org.gotti.wurmunlimited.modsupport.CreatureTemplateBuilder;
+import org.gotti.wurmunlimited.modsupport.creatures.EncounterBuilder;
 import org.gotti.wurmunlimited.modsupport.creatures.ModCreature;
 
 public class FireCrab implements ModCreature, CreatureTypes {
@@ -22,8 +24,11 @@ public class FireCrab implements ModCreature, CreatureTypes {
 				CreatureTypes.C_TYPE_AGG_HUMAN,
 				CreatureTypes.C_TYPE_HUNTING,
 				CreatureTypes.C_TYPE_ANIMAL,
+                CreatureTypes.C_TYPE_DOMINATABLE,
 				CreatureTypes.C_TYPE_CARNIVORE,
-				CreatureTypes.C_TYPE_NON_NEWBIE
+				CreatureTypes.C_TYPE_NON_NEWBIE,
+                CreatureTypes.C_TYPE_MISSION_OK,
+                CreatureTypes.C_TYPE_MISSION_TRAITOR_OK
 		};
 		
 		//public CreatureTemplateBuilder(final String identifier, final String name, final String description,
@@ -35,9 +40,9 @@ public class FireCrab implements ModCreature, CreatureTypes {
 				"model.creature.quadraped.crab", types, BodyTemplate.TYPE_DOG, (short) 5, (byte) 0, (short) 85, (short) 50, (short) 85,
 				"sound.combat.crab.death", "sound.combat.crab.death", "sound.combat.crab.attack", "sound.combat.crab.attack2",
 				0.6f, 9f, 0f, 12.0f, 0.0f, 0.0f, 1.0f, 500,
-				new int[]{}, 10, 74, Materials.MATERIAL_MEAT_SEAFOOD);
+				new int[]{ItemList.eye, ItemList.eye}, 10, 74, Materials.MATERIAL_MEAT_SEAFOOD);
 		
-		builder.skill(SkillList.BODY_STRENGTH, 20.0f);
+		builder.skill(SkillList.BODY_STRENGTH, 25.0f);
 		builder.skill(SkillList.BODY_STAMINA, 30.0f);
 		builder.skill(SkillList.BODY_CONTROL, 35.0f);
 		builder.skill(SkillList.MIND_LOGICAL, 30.0f);
@@ -63,5 +68,9 @@ public class FireCrab implements ModCreature, CreatureTypes {
 	public void addEncounters() {
 		if (templateId == 0)
 			return;
+
+		new EncounterBuilder(Tiles.Tile.TILE_SAND.id)
+				.addCreatures(templateId, 1)
+				.build(2);
 	}
 }
