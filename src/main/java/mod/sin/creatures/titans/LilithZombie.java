@@ -54,6 +54,7 @@ public class LilithZombie implements ModCreature, CreatureTypes {
 		builder.combatDamageType(Wound.TYPE_INFECTION);
 		builder.maxPercentOfCreatures(0.005f);
 		builder.maxGroupAttackSize(100);
+		builder.color(128, 10, 10);
 		
 		templateId = builder.getTemplateId();
 		return builder;

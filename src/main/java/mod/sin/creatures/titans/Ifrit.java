@@ -53,6 +53,7 @@ public class Ifrit implements ModCreature, CreatureTypes {
 		builder.baseCombatRating(99.0f);
 		builder.combatDamageType(Wound.TYPE_BURN);
 		builder.maxGroupAttackSize(150);
+		builder.color(255, 128, 128);
 		
 		//builder.usesNewAttacks(true);
 		// float baseDamage, float criticalChance, float baseSpeed, int attackReach, int weightGroup, byte damageType, boolean usesWeapon, int rounds, float waitUntilNextAttack

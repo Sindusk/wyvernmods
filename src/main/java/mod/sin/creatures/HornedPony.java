@@ -69,6 +69,7 @@ public class HornedPony implements ModCreature, CreatureTypes {
 		builder.combatDamageType(Wound.TYPE_INTERNAL);
 		builder.maxPercentOfCreatures(0.001f);
 		builder.maxGroupAttackSize(100);
+		builder.color(128, 10, 70);
 		
 		templateId = builder.getTemplateId();
 		return builder;

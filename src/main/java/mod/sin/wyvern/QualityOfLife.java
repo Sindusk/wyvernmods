@@ -8,10 +8,13 @@ import com.wurmonline.server.creatures.NoSuchCreatureException;
 import com.wurmonline.server.items.Item;
 import com.wurmonline.server.items.ItemList;
 import com.wurmonline.server.zones.NoSuchZoneException;
+import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.NotFoundException;
 import javassist.bytecode.Descriptor;
+import javassist.expr.ExprEditor;
+import javassist.expr.FieldAccess;
 import mod.sin.lib.Util;
 import org.gotti.wurmunlimited.modloader.classhooks.HookException;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
@@ -164,8 +167,19 @@ public class QualityOfLife {
                     QualityOfLife.class.getName()+".vehicleHook(performer, $0);";
             Util.instrumentDescribed(thisClass, ctTileRockBehaviour, "createGem", desc2, "putItemInfrontof", replace);
 
+            CtClass ctPlayer = classPool.get("com.wurmonline.server.players.Player");
+            ctPlayer.getMethod("poll", "()Z").instrument(new ExprEditor() {
+                @Override
+                public void edit(FieldAccess f) throws CannotCompileException {
+                    if (f.getFieldName().equals("vehicle") && f.isReader())
+                        f.replace("$_ = -10L;");
+                }
+            });
+
         } catch ( NotFoundException | IllegalArgumentException | ClassCastException e) {
             throw new HookException(e);
+        } catch (CannotCompileException e) {
+            e.printStackTrace();
         }
     }
 }

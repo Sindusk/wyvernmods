@@ -53,6 +53,7 @@ public class Lilith implements ModCreature, CreatureTypes {
 		builder.baseCombatRating(99.0f);
 		builder.combatDamageType(Wound.TYPE_INFECTION);
 		builder.maxGroupAttackSize(150);
+		builder.color(128, 0, 0);
 		
 		//builder.usesNewAttacks(true);
 		// float baseDamage, float criticalChance, float baseSpeed, int attackReach, int weightGroup, byte damageType, boolean usesWeapon, int rounds, float waitUntilNextAttack

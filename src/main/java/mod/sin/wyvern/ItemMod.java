@@ -49,6 +49,7 @@ public class ItemMod {
 	public static DepthDrill DEPTH_DRILL = new DepthDrill();
 	public static DisintegrationRod DISINTEGRATION_ROD = new DisintegrationRod();
 	public static EnchantOrb ENCHANT_ORB = new EnchantOrb();
+	public static EternalOrb ETERNAL_ORB = new EternalOrb();
 	public static Eviscerator EVISCERATOR = new Eviscerator();
 	public static FriyanTablet FRIYAN_TABLET = new FriyanTablet();
 	public static HugeCrate HUGE_CRATE = new HugeCrate();
@@ -112,6 +113,7 @@ public class ItemMod {
 			DEPTH_DRILL.createTemplate();
 			DISINTEGRATION_ROD.createTemplate();
 			ENCHANT_ORB.createTemplate();
+			ETERNAL_ORB.createTemplate();
 			EVISCERATOR.createTemplate();
 			FRIYAN_TABLET.createTemplate();
 			HUGE_CRATE.createTemplate();
@@ -174,6 +176,7 @@ public class ItemMod {
 		ModActions.registerAction(new DisintegrationRodAction());
 		ModActions.registerAction(new EnchantersCrystalInfuseAction());
 		ModActions.registerAction(new EnchantOrbAction());
+		ModActions.registerAction(new EternalOrbAction());
 		ModActions.registerAction(new FriyanTabletAction());
 		ModActions.registerAction(new SealedMapAction());
 		ModActions.registerAction(new SupplyDepotAction());

@@ -1,16 +1,10 @@
 package mod.sin.wyvern.bounty;
 
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Random;
-import java.util.logging.Logger;
-
 import com.wurmonline.mesh.Tiles;
 import com.wurmonline.server.FailedException;
 import com.wurmonline.server.HistoryManager;
 import com.wurmonline.server.Players;
 import com.wurmonline.server.Server;
-import com.wurmonline.server.Servers;
 import com.wurmonline.server.creatures.Creature;
 import com.wurmonline.server.creatures.CreatureTemplate;
 import com.wurmonline.server.creatures.CreatureTemplateFactory;
@@ -18,17 +12,20 @@ import com.wurmonline.server.creatures.Creatures;
 import com.wurmonline.server.items.*;
 import com.wurmonline.server.villages.Village;
 import com.wurmonline.server.villages.Villages;
-import mod.sin.armour.SpectralHide;
 import mod.sin.creatures.Reaper;
 import mod.sin.creatures.SpectralDrake;
-import mod.sin.items.ChaosCrystal;
-import mod.sin.items.EnchantersCrystal;
+import mod.sin.items.AffinityOrb;
 import mod.sin.items.FriyanTablet;
+import mod.sin.items.caches.*;
 import mod.sin.wyvern.Bounty;
 import mod.sin.wyvern.MiscChanges;
-import mod.sin.wyvern.Arena;
 import mod.sin.wyvern.Titans;
 import mod.sin.wyvern.util.ItemUtil;
+
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Random;
+import java.util.logging.Logger;
 
 public class LootBounty {
 	public static final Logger logger = Logger.getLogger(LootBounty.class.getName());
@@ -102,14 +99,61 @@ public class LootBounty {
 		}
     	return 0;
 	}
+
+	public static void insertUniqueLoot(Creature mob, Item corpse){
+        try {
+            Item affinityOrb = ItemFactory.createItem(AffinityOrb.templateId, 90+(10*random.nextFloat()), "");
+            corpse.insertItem(affinityOrb);
+            int[] cacheIds = {
+                    ArtifactCache.templateId,
+                    CrystalCache.templateId, CrystalCache.templateId,
+                    DragonCache.templateId, DragonCache.templateId,
+                    MoonCache.templateId, MoonCache.templateId,
+                    RiftCache.templateId,
+                    TreasureMapCache.templateId
+            };
+            int i = 1+Server.rand.nextInt(3);
+            while(i > 0){
+                Item cache = ItemFactory.createItem(cacheIds[Server.rand.nextInt(cacheIds.length)], 50+(30*random.nextFloat()), "");
+                if(Server.rand.nextInt(5) == 0){
+                    cache.setRarity((byte) 1);
+                }
+                corpse.insertItem(cache);
+                i--;
+            }
+            if(mob.isDragon()) {
+                int mTemplate = mob.getTemplate().getTemplateId();
+                int lootTemplate = ItemList.drakeHide;
+                if(mTemplate == CreatureTemplateFactory.DRAGON_BLACK_CID || mTemplate == CreatureTemplateFactory.DRAGON_BLUE_CID || mTemplate == CreatureTemplateFactory.DRAGON_GREEN_CID
+                        || mTemplate == CreatureTemplateFactory.DRAGON_RED_CID || mTemplate == CreatureTemplateFactory.DRAGON_WHITE_CID){
+                    lootTemplate = ItemList.dragonScale;
+                }
+                logger.info("Generating extra hide & scale to insert on the corpse of " + mob.getName() + ".");
+                ItemTemplate itemTemplate = ItemTemplateFactory.getInstance().getTemplate(lootTemplate);
+                for (i = 0; i < 2; i++) {
+                    Item loot = ItemFactory.createItem(lootTemplate, 80 + (15 * random.nextFloat()), "");
+                    String creatureName = mob.getTemplate().getName().toLowerCase();
+                    if (!loot.getName().contains(creatureName)) {
+                        loot.setName(creatureName.toLowerCase() + " " + itemTemplate.getName());
+                    }
+                    loot.setData2(mTemplate);
+                    int weightGrams = itemTemplate.getWeightGrams() * (lootTemplate == ItemList.drakeHide ? 3 : 1);
+                    loot.setWeight((int) ((weightGrams * 0.02f) + (weightGrams * 0.02f * random.nextFloat())), true);
+                    corpse.insertItem(loot);
+                }
+            }
+        } catch (FailedException | NoSuchTemplateException e) {
+            e.printStackTrace();
+        }
+    }
 	
 	public static void blessWorldWithMoonVeins(Creature mob){
-		int i = 20;
+		int i = 10+Server.rand.nextInt(6);
 		while(i > 0){
 			int x = random.nextInt(Server.surfaceMesh.getSize());
 			int y = random.nextInt(Server.surfaceMesh.getSize());
 			short height = Tiles.decodeHeight(Server.surfaceMesh.getTile(x, y));
-			int type = Tiles.decodeType((int)Server.caveMesh.getTile(x, y));
+			int type = Tiles.decodeType(Server.caveMesh.getTile(x, y));
 			if(height >= 100 && (type == Tiles.Tile.TILE_CAVE_WALL.id || type == Tiles.Tile.TILE_CAVE.id)){
 				Tiles.Tile tileType = random.nextBoolean() ? Tiles.Tile.TILE_CAVE_WALL_ORE_ADAMANTINE : Tiles.Tile.TILE_CAVE_WALL_ORE_GLIMMERSTEEL;
 				Server.caveMesh.setTile(x, y, Tiles.encode(Tiles.decodeHeight(Server.caveMesh.getTile(x, y)), tileType.id, Tiles.decodeData(Server.caveMesh.getTile(x, y))));
@@ -310,6 +354,8 @@ public class LootBounty {
     		blessWorldWithMoonVeins(mob);
 			// Spawn 5-10 friyan tablets throughout the world.
     		spawnFriyanTablets();
+    		// Add unique loot
+			insertUniqueLoot(mob, corpse);
 			
 			// Spawn Spectral Drake
     		/*if (mob.isDragon()) { // Spawn the spectral drake and add extra hide/scale

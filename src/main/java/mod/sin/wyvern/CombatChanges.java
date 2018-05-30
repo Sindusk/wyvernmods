@@ -1,6 +1,7 @@
 package mod.sin.wyvern;
 
 import com.wurmonline.server.Server;
+import com.wurmonline.server.Servers;
 import com.wurmonline.server.bodys.Wound;
 import com.wurmonline.server.bodys.Wounds;
 import com.wurmonline.server.creatures.Creature;
@@ -66,6 +67,33 @@ public class CombatChanges {
         return mult;
     }
 
+    public static int getLifeTransferAmountModifier(Wound wound, int initial){
+        byte type = wound.getType();
+        if(type == Wound.TYPE_ACID || type == Wound.TYPE_BURN || type == Wound.TYPE_COLD){
+            initial *= 0.5;
+        }else if(type == Wound.TYPE_INTERNAL || type == Wound.TYPE_INFECTION || type == Wound.TYPE_POISON){
+            initial *= 0.3;
+        }
+        return initial;
+    }
+
+    public static float getLifeTransferModifier(Creature creature, Creature defender){
+        if(Servers.localServer.PVPSERVER && (defender.isDominated() || defender.isPlayer()) && creature.isPlayer()){
+            return 0.5f;
+        }
+        return 1.0f;
+    }
+
+    public static void doLifeTransfer(Creature creature, Creature defender, Item attWeapon, double defdamage, float armourMod){
+        float lifeTransfer = attWeapon.getSpellLifeTransferModifier()*getLifeTransferModifier(creature, defender);
+        Wound[] w;
+        if (lifeTransfer > 0.0f && defdamage * (double)armourMod * (double)lifeTransfer / (double)(creature.isChampion() ? 1000.0f : 500.0f) > 500.0 && creature.getBody() != null && creature.getBody().getWounds() != null && (w = creature.getBody().getWounds().getWounds()).length > 0) {
+            int amount = - (int)(defdamage * (double)lifeTransfer / (double)(creature.isChampion() ? 1000.0f : (creature.getCultist() != null && creature.getCultist().healsFaster() ? 250.0f : 500.0f)));
+            amount = getLifeTransferAmountModifier(w[0], amount);
+            w[0].modifySeverity(amount);
+        }
+    }
+
     public static float getAdjustedOakshell(Creature defender, Item armour, float armourMod){
         if(defender != null && armour == null){
             float oakshellPower = defender.getBonusForSpellEffect(Enchants.CRET_OAKSHELL);
@@ -111,13 +139,76 @@ public class CombatChanges {
             }
         }
     }
-
-    public static boolean canDoDamage(double damage, Creature attacker, Creature defender, Item weapon) {
-        logger.info(String.format("canDoDamage from %s to %s with %s - %.1f", attacker.getName(), defender.getName(), weapon.getName(), damage));
+    public static boolean canDoDamage(double damage, Creature attacker, Creature defender) {
+        //logger.info(String.format("canDoDamage from %s to %s - %.1f", attacker.getName(), defender.getName(), damage));
         return damage > 1D;
     }
 
-    static void patchCombatDamageCheck(ClassPool classPool) throws NotFoundException, BadBytecode {
+    static void patchCombatDamageCheckCombatEngine(ClassPool classPool) throws NotFoundException, BadBytecode {
+        CtClass cls = classPool.getCtClass("com.wurmonline.server.combat.CombatEngine");
+        CtClass ctCreature = classPool.get("com.wurmonline.server.creatures.Creature");
+        CtClass ctString = classPool.get("java.lang.String");
+        CtClass ctBattle = classPool.get("com.wurmonline.server.combat.Battle");
+        CtClass ctCombatEngine = classPool.get("com.wurmonline.server.combat.CombatEngine");
+        // @Nullable Creature performer, Creature defender, byte type, int pos, double damage, float armourMod,
+        // String attString, @Nullable Battle battle, float infection, float poison, boolean archery, boolean alreadyCalculatedResist
+        CtClass[] params1 = {
+                ctCreature,
+                ctCreature,
+                CtClass.byteType,
+                CtClass.intType,
+                CtClass.doubleType,
+                CtClass.floatType,
+                ctString,
+                ctBattle,
+                CtClass.floatType,
+                CtClass.floatType,
+                CtClass.booleanType,
+                CtClass.booleanType
+        };
+        String desc1 = Descriptor.ofMethod(CtClass.booleanType, params1);
+        CtMethod method = cls.getMethod("addWound", desc1);
+        //CtMethod method = cls.getMethod("setDamage", "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;DBB)Z");
+        MethodInfo methodInfo = method.getMethodInfo();
+        CodeAttribute codeAttribute = methodInfo.getCodeAttribute();
+        ConstPool constPool = codeAttribute.getConstPool();
+        CodeIterator codeIterator = codeAttribute.iterator();
+
+        // Scan through all the bytecode - look for a multiplication followed by comparing
+        while (codeIterator.hasNext()) {
+            int pos = codeIterator.next();
+            int op = codeIterator.byteAt(pos);
+            if (op != CodeIterator.DMUL) continue; // not multiplication - continue
+            op = codeIterator.byteAt(++pos);
+            if (op == CodeIterator.LDC2_W && codeIterator.byteAt(pos + 3) == CodeIterator.DCMPL) {
+                // found the pattern, check the value it's comparing to
+                int ref = codeIterator.u16bitAt(pos + 1);
+                double val = constPool.getDoubleInfo(ref);
+                if (val == 500.0) {
+                    // here it is, generate new code to insert
+                    // We'll be calling canDoDamage, the first parameter (damage) is already on the stack, prepare the rest
+                    Bytecode newCode = new Bytecode(constPool);
+
+                    newCode.add(Bytecode.ALOAD_0); // performer - first parameter of addWound
+                    newCode.add(Bytecode.ALOAD_1); // defender - first parameter of addWound
+
+                    // call our methor, result is left on the stack
+                    newCode.addInvokestatic(
+                            CombatChanges.class.getName(), "canDoDamage",
+                            "(DLcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/creatures/Creature;)Z");
+
+                    // The code we're replacing is 4 bytes - LDC2_W, 2byte reference and DCMPL
+                    // Insert a gap for to match the size of the new code
+                    codeIterator.insertGap(pos, newCode.getSize() - 4);
+
+                    // And put the new code
+                    codeIterator.write(newCode.get(), pos);
+                }
+            }
+        }
+    }
+
+    static void patchCombatDamageCheckCombatHandler(ClassPool classPool) throws NotFoundException, BadBytecode {
         CtClass cls = classPool.getCtClass("com.wurmonline.server.creatures.CombatHandler");
         CtMethod method = cls.getMethod("setDamage", "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;DBB)Z");
         MethodInfo methodInfo = method.getMethodInfo();
@@ -142,12 +233,11 @@ public class CombatChanges {
                     newCode.add(Bytecode.ALOAD_0); // this
                     newCode.addGetfield(cls, "creature", "Lcom/wurmonline/server/creatures/Creature;"); // this.creature
                     newCode.add(Bytecode.ALOAD_1); // defender - first parameter of setDamage
-                    newCode.add(Bytecode.ALOAD_2); // weapon - second parameter of setDamage
 
                     // call our methor, result is left on the stack
                     newCode.addInvokestatic(
                             CombatChanges.class.getName(), "canDoDamage",
-                            "(DLcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;)Z");
+                            "(DLcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/creatures/Creature;)Z");
 
                     // The code we're replacing is 4 bytes - LDC2_W, 2byte reference and DCMPL
                     // Insert a gap for to match the size of the new code
@@ -159,6 +249,7 @@ public class CombatChanges {
             }
         }
     }
+
 
     public static void preInit(){
         try{
@@ -271,13 +362,34 @@ public class CombatChanges {
             Util.instrumentDeclared(thisClass, ctWound, "poll", "checkInfection", replace);
             Util.instrumentDeclared(thisClass, ctWound, "poll", "checkPoison", replace);
 
-            //patchCombatDamageCheck(classPool);
-            //patchCombatDamageCheckAddWound(classPool);
+            Util.setReason("Allow Life Transfer to stack with Rotting Touch (Mechanics-Wise).");
+            replace = CombatChanges.class.getName()+".doLifeTransfer(this.creature, defender, attWeapon, defdamage, armourMod);"
+                    + "$_ = $proceed($$);";
+            Util.instrumentDeclared(thisClass, ctCombatHandler, "setDamage", "isWeaponCrush", replace);
+
+            Util.setReason("Reduce Life Transfer power on PvP.");
+            replace = "$_ = $proceed($$)*"+CombatChanges.class.getName()+".getLifeTransferModifier(this.creature, defender);";
+            Util.instrumentDeclared(thisClass, ctCombatHandler, "setDamage", "getSpellLifeTransferModifier", replace);
+
+            Util.setReason("Reduce Life Transfer healing amount for certain wounds.");
+            replace = "$_ = $proceed("+CombatChanges.class.getName()+".getLifeTransferAmountModifier($0, $1));";
+            Util.instrumentDeclared(thisClass, ctCombatHandler, "setDamage", "modifySeverity", replace);
+
+            Util.setReason("Make AOSP not disgustingly broken.");
+            replace = "if(!this.creature.isPlayer()){" +
+                    "  $_ = $proceed($$)*this.creature.addSpellResistance((short) 278);" +
+                    "}else{" +
+                    "  $_ = $proceed($$);" +
+                    "}";
+            Util.instrumentDeclared(thisClass, ctCombatHandler, "setDamage", "getSpellPainShare", replace);
+
+            patchCombatDamageCheckCombatEngine(classPool);
+            patchCombatDamageCheckCombatHandler(classPool);
 
         } catch ( NotFoundException | IllegalArgumentException | ClassCastException e) {
             throw new HookException(e);
-        }/* catch (BadBytecode badBytecode) {
+        } catch (BadBytecode badBytecode) {
             badBytecode.printStackTrace();
-        }*/
+        }
     }
 }

@@ -18,6 +18,8 @@ import java.util.logging.SimpleFormatter;
 import com.wurmonline.server.Items;
 import com.wurmonline.server.creatures.Communicator;
 import com.wurmonline.server.creatures.Creature;
+import com.wurmonline.server.creatures.CreatureTemplate;
+import com.wurmonline.server.creatures.CreatureTemplateFactory;
 import com.wurmonline.server.items.*;
 import mod.sin.lib.Util;
 import org.gotti.wurmunlimited.modloader.ReflectionUtil;

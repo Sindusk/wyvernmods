@@ -3,6 +3,7 @@ package mod.sin.actions.items;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,7 +58,7 @@ public class EnchantOrbAction implements ModAction {
 			public List<ActionEntry> getBehavioursFor(Creature performer, Item source, Item object)
 			{
 				if(performer instanceof Player && source != null && object != null && source.getTemplateId() == EnchantOrb.templateId && source != object){
-					return Arrays.asList(actionEntry);
+					return Collections.singletonList(actionEntry);
 				}
 				return null;
 			}
@@ -84,8 +85,8 @@ public class EnchantOrbAction implements ModAction {
 						player.getCommunicator().sendNormalServerMessage("You must use an Enchant Orb to transfer enchants.");
 						return true;
 					}
-					if(source.getWurmId() == target.getWurmId()){
-						player.getCommunicator().sendNormalServerMessage("You cannot enchant the orb with itself!");
+					if(target.getTemplate().getTemplateId() == EnchantOrb.templateId){
+						player.getCommunicator().sendNormalServerMessage("You cannot enchant an Enchant Orb with another.");
 						return true;
 					}
 					ItemSpellEffects effs = source.getSpellEffects();
@@ -93,36 +94,78 @@ public class EnchantOrbAction implements ModAction {
 						player.getCommunicator().sendNormalServerMessage("The "+source.getTemplate().getName()+" has no enchants.");
 						return true;
 					}
-					if(!Spell.mayBeEnchanted(target)){
+					/*if(!Spell.mayBeEnchanted(target)){
 						player.getCommunicator().sendNormalServerMessage("The "+target.getTemplate().getName()+" may not be enchanted.");
-					}
+					}*/
 					ItemSpellEffects teffs = target.getSpellEffects();
 					if(teffs == null){
 						teffs = new ItemSpellEffects(target.getWurmId());
 					}
 					for(SpellEffect eff : effs.getEffects()){
 						Spell spell = Spells.getEnchantment(eff.type);
-						boolean canEnchant = Spell.mayBeEnchanted(target);
+						boolean canEnchant = false;// = Spell.mayBeEnchanted(target);
 						byte type = eff.type;
 						if(spell == null){
-							logger.info("Error: Enchant for "+eff.type+" doesn't exist.");
-							continue;
-						}
+							if(eff.type < -60){ // It's a rune
+							    if(teffs.getNumberOfRuneEffects() > 0){
+							        teffs.getRandomRuneEffect();
+							        player.getCommunicator().sendAlertServerMessage("The "+target.getTemplate().getName()+" already has a rune attached and resists the application of the "+eff.getName()+".");
+							        continue;
+                                }else{
+							        canEnchant = true;
+                                }
+                            }else{
+                                if(teffs.getSpellEffect(type) != null){
+                                    float power = teffs.getSpellEffect(type).getPower();
+                                    if(power >= 100f){
+                                        player.getCommunicator().sendAlertServerMessage("The "+target.getTemplate().getName()+" already has the maximum power for "+eff.getName()+", and refuses to accept more.");
+                                        continue;
+                                    }else if(power + eff.getPower() > 100){
+                                        float difference = 100-power;
+                                        eff.setPower(eff.getPower()-difference);
+                                        teffs.getSpellEffect(type).setPower(100);
+                                        player.getCommunicator().sendSafeServerMessage("The "+eff.getName()+" transfers some of its power to the "+target.getTemplate().getName()+".");
+                                        continue;
+                                    }else{
+                                        teffs.getSpellEffect(type).setPower(effs.getSpellEffect(type).getPower()+power);
+                                        effs.removeSpellEffect(type);
+                                        player.getCommunicator().sendSafeServerMessage("The "+eff.getName()+" fully transfers to the "+target.getTemplate().getName()+".");
+                                        continue;
+                                    }
+                                }else{
+                                    canEnchant = true;
+                                }
+                            }
+						}else {
+                            try {
+                                Method m = spell.getClass().getDeclaredMethod("precondition", Skill.class, Creature.class, Item.class);
+                                canEnchant = ReflectionUtil.callPrivateMethod(spell, m, player.getChannelingSkill(), performer, target);
+                            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException e) {
+                                e.printStackTrace();
+                            }
+                        }
 						if(canEnchant){
-							try {
-								Method m = spell.getClass().getDeclaredMethod("precondition", Skill.class, Creature.class, Item.class);
-								canEnchant = ReflectionUtil.callPrivateMethod(spell, m, player.getChannelingSkill(), performer, target);
-							} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException e) {
-								e.printStackTrace();
-							}
-						}
-						if(canEnchant){
+						    if(teffs.getSpellEffect(type) != null){
+						        if(teffs.getSpellEffect(type).getPower() >= eff.getPower()) {
+                                    player.getCommunicator().sendAlertServerMessage("The " + target.getTemplate().getName() + " already has a more powerful " + eff.getName() + " and resists the transfer.");
+                                    continue;
+                                }else{
+						            teffs.getSpellEffect(type).setPower(eff.getPower());
+						            effs.removeSpellEffect(type);
+						            player.getCommunicator().sendSafeServerMessage("The "+eff.getName()+" replaces the existing enchant.");
+						            continue;
+                                }
+                            }
 							SpellEffect newEff = new SpellEffect(target.getWurmId(), type, eff.getPower(), 20000000);
 							teffs.addSpellEffect(newEff);
-							Items.destroyItem(source.getWurmId());
+							effs.removeSpellEffect(type);
 							player.getCommunicator().sendSafeServerMessage("The "+eff.getName()+" transfers to the "+target.getTemplate().getName()+".");
 						}
 					}
+					if(effs.getEffects().length == 0){
+					    player.getCommunicator().sendSafeServerMessage("The "+source.getTemplate().getName()+" exhausts the last of its magic and vanishes.");
+					    Items.destroyItem(source.getWurmId());
+                    }
 				}else{
 					logger.info("Somehow a non-player activated an Enchant Orb...");
 				}

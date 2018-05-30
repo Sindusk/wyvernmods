@@ -126,8 +126,10 @@ public class SorceryCombineAction implements ModAction {
                                 performer.getCommunicator().sendSafeServerMessage("A new sorcery has been created!");
                                 MiscChanges.sendServerTabMessage("arena", performer.getName()+" has created a new sorcery!", 52, 152, 219);
                                 Item sorcery = ItemUtil.createRandomSorcery((byte) (2+Server.rand.nextInt(1)));
-                                logger.info("Player "+performer.getName()+" created a "+sorcery.getName()+" with "+(3-sorcery.getAuxData())+" charges.");
-                                performer.getInventory().insertItem(sorcery, true);
+                                if(sorcery != null) {
+									logger.info("Player " + performer.getName() + " created a " + sorcery.getName() + " with " + (3 - sorcery.getAuxData()) + " charges.");
+									performer.getInventory().insertItem(sorcery, true);
+								}
                                 if(newAux >= 0) {
                                     first.setAuxData(newAux);
                                     first.setName("sorcery fragment [" + (first.getAuxData() + 1) + "/10]");

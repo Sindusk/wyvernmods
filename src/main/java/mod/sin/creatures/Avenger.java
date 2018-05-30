@@ -73,6 +73,7 @@ public class Avenger implements ModCreature, CreatureTypes {
 		builder.combatDamageType(Wound.TYPE_COLD);
 		builder.maxPercentOfCreatures(0.005f);
 		builder.maxGroupAttackSize(100);
+		builder.color(70, 70, 255);
 		
 		templateId = builder.getTemplateId();
 		return builder;

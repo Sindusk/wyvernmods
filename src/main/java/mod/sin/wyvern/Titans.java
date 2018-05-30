@@ -535,42 +535,44 @@ public class Titans {
         int prevDamage = titanDamage.get(titan);
         int currentDamage = titan.getStatus().damage;
         long wurmid = titan.getWurmId();
-        if(titan.isOnSurface() && currentDamage > 0){
-            // Advanced Ability
-            int chance;
-            int range;
-            int radius;
-            if(currentDamage > 52428) { // 20%
-                chance = 40;
-                range = 8;
-                radius = 2;
-            }else if(currentDamage > 32767){ // 50%
-                chance = 45;
-                range = 5;
-                radius = 1;
-            }else if(currentDamage > 16383){ // 75%
-                chance = 55;
-                range = 4;
-                radius = 1;
-            }else{
-                chance = 60;
-                range = 3;
-                radius = 0;
-            }
-            if(titanAdvancedTimed.containsKey(wurmid)){
-                int currentChance = titanAdvancedTimed.get(wurmid);
-                boolean success = Server.rand.nextInt(currentChance) == 0;
-                if(success){
-                    performAdvancedAbility(titan, range, radius);
-                    titanAdvancedTimed.put(wurmid, currentChance+chance-1);
-                }else{
-                    titanAdvancedTimed.put(wurmid, currentChance-1);
+        if(currentDamage > 0) {
+            if (titan.isOnSurface()) {
+                // Advanced Ability
+                int chance;
+                int range;
+                int radius;
+                if (currentDamage > 52428) { // 20%
+                    chance = 40;
+                    range = 7;
+                    radius = 2;
+                } else if (currentDamage > 32767) { // 50%
+                    chance = 45;
+                    range = 5;
+                    radius = 1;
+                } else if (currentDamage > 16383) { // 75%
+                    chance = 55;
+                    range = 4;
+                    radius = 1;
+                } else {
+                    chance = 60;
+                    range = 3;
+                    radius = 0;
                 }
-            }else{
-                titanAdvancedTimed.put(wurmid, chance);
+                if (titanAdvancedTimed.containsKey(wurmid)) {
+                    int currentChance = titanAdvancedTimed.get(wurmid);
+                    boolean success = Server.rand.nextInt(currentChance) == 0;
+                    if (success) {
+                        performAdvancedAbility(titan, range, radius);
+                        titanAdvancedTimed.put(wurmid, currentChance + chance - 1);
+                    } else {
+                        titanAdvancedTimed.put(wurmid, currentChance - 1);
+                    }
+                } else {
+                    titanAdvancedTimed.put(wurmid, chance);
+                }
+            } else if (!titan.isOnSurface() && Server.rand.nextInt(20) == 0) {
+                performAdvancedAbility(titan, 3, 3);
             }
-        }else if(!titan.isOnSurface() && Server.rand.nextInt(20) == 0){
-            performAdvancedAbility(titan, 5, 2);
         }
     }
     protected static void pollDamageMechanics(Creature titan){
@@ -762,7 +764,7 @@ public class Titans {
                 int tiley = (int) (minY+(minY*2*Server.rand.nextFloat()))*4;*/
                 int[] titanTemplates = {Lilith.templateId, Ifrit.templateId};
                 try {
-                    Creature.doNew(titanTemplates[Server.rand.nextInt(titanTemplates.length)], spawnX, spawnY, 360f*Server.rand.nextFloat(), 0, "", (byte)0);
+                    Creature.doNew(titanTemplates[Server.rand.nextInt(titanTemplates.length)], spawnX, spawnY, 360f*Server.rand.nextFloat(), 1, "", (byte)0);
                     lastSpawnedTitan = System.currentTimeMillis();
                     updateLastSpawnedTitan();
                 } catch (Exception e) {

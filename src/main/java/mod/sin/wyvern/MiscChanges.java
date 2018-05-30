@@ -38,13 +38,6 @@ import java.util.logging.Logger;
 public class MiscChanges {
 	public static Logger logger = Logger.getLogger(MiscChanges.class.getName());
 	
-	public static void doLifeTransfer(Creature creature, Item attWeapon, double defdamage, float armourMod){
-		Wound[] w;
-		if (attWeapon.getSpellLifeTransferModifier() > 0.0f && defdamage * (double)armourMod * (double)attWeapon.getSpellLifeTransferModifier() / (double)(creature.isChampion() ? 1000.0f : 500.0f) > 500.0 && creature.getBody() != null && creature.getBody().getWounds() != null && (w = creature.getBody().getWounds().getWounds()).length > 0) {
-            w[0].modifySeverity(- (int)(defdamage * (double)attWeapon.getSpellLifeTransferModifier() / (double)(creature.isChampion() ? 1000.0f : (creature.getCultist() != null && creature.getCultist().healsFaster() ? 250.0f : 500.0f))));
-        }
-	}
-	
 	public static void sendServerTabMessage(String channel, final String message, final int red, final int green, final int blue){
 		DiscordRelay.sendToDiscord(channel, message, true);
 		// WARNING: Never change this from a new Runnable. Lambdas are a lie and will break everything.
@@ -314,8 +307,8 @@ public class MiscChanges {
 
             // - Enable creature custom colors - (Used for creating custom color creatures eg. Lilith) - //
             CtClass ctCreature = classPool.get("com.wurmonline.server.creatures.Creature");
-            replace = "{ return true; }";
-            Util.setBodyDeclared(thisClass, ctCreature, "hasCustomColor", replace);
+            /*replace = "{ return true; }";
+            Util.setBodyDeclared(thisClass, ctCreature, "hasCustomColor", replace);*/
 
             // - Increase the amount of checks for new unique spawns by 5x - //
             CtClass ctServer = classPool.get("com.wurmonline.server.Server");
@@ -392,11 +385,6 @@ public class MiscChanges {
             		+ "  $_ = $proceed($$);"
             		+ "}";
         	Util.instrumentDeclared(thisClass, ctCombatHandler, "checkShield", "max", replace);
-
-        	Util.setReason("Allow Life Transfer to stack with Rotting Touch (Mechanics-Wise).");
-        	replace = MiscChanges.class.getName()+".doLifeTransfer(this.creature, attWeapon, defdamage, armourMod);"
-            		+ "$_ = $proceed($$);";
-        	Util.instrumentDeclared(thisClass, ctCombatHandler, "setDamage", "isWeaponCrush", replace);
 
         	// - Allow GM's to bypass the 5 second emote sound limit. - //
         	replace = "if(this.getPower() > 0){"

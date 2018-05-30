@@ -42,76 +42,6 @@ import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
 
 public class MethodsBestiary {
 	protected static Logger logger = Logger.getLogger(MethodsBestiary.class.getName());
-	
-	public static boolean checkColorTemplate(CreatureTemplate template){
-		try {
-			int templateId = template.getTemplateId();
-			if(templateId == Lilith.templateId){
-	        	return true;
-	        }/*else if(templateId == ForestSpider.templateId){
-				return true;
-			}*/else if(templateId == Avenger.templateId){
-				return true;
-			}else if(templateId == HornedPony.templateId){
-				return true;
-			}else if(templateId == LilithZombie.templateId){
-				return true;
-			}
-		} catch (IllegalArgumentException | ClassCastException e) {
-			e.printStackTrace();
-		}
-		return false;
-	}
-
-	public static byte getCreatureColorRed(CreatureTemplate template){
-		try {
-			int templateId = template.getTemplateId();
-			/*if(templateId == ForestSpider.templateId){
-	        	return (byte)0;
-	        }else */if(templateId == Avenger.templateId){
-	        	return (byte)70;
-	        }
-		} catch (IllegalArgumentException | ClassCastException e) {
-			e.printStackTrace();
-		}
-		return (byte)127;
-	}
-
-	public static byte getCreatureColorGreen(CreatureTemplate template){
-		try {
-			int templateId = template.getTemplateId();
-			if(templateId == Lilith.templateId){
-	        	return (byte)0;
-	        }else if(templateId == Avenger.templateId){
-	        	return (byte)70;
-	        }else if(templateId == HornedPony.templateId){
-	        	return (byte)10;
-	        }else if(templateId == LilithZombie.templateId){
-	        	return (byte)0;
-	        }
-		} catch (IllegalArgumentException | ClassCastException e) {
-			e.printStackTrace();
-		}
-		return (byte)127;
-	}
-	
-	public static byte getCreatureColorBlue(CreatureTemplate template){
-		try {
-			int templateId = template.getTemplateId();
-			if(templateId == Lilith.templateId){
-				return (byte)0;
-			}/*else if(templateId == ForestSpider.templateId){
-	        	return (byte)0;
-	        }*/else if(templateId == HornedPony.templateId){
-	        	return (byte)70;
-	        }else if(templateId == LilithZombie.templateId){
-	        	return (byte)0;
-	        }
-		} catch (IllegalArgumentException | ClassCastException e) {
-			e.printStackTrace();
-		}
-		return (byte)127;
-	}
 
 	protected static boolean isUsuallyHitched(int templateId){
 	    if(templateId == Charger.templateId){
@@ -297,8 +227,10 @@ public class MethodsBestiary {
         }else if(creature.getTemplate().getTemplateId() == WyvernRed.templateId){
             return true;
         }else if(creature.getTemplate().getTemplateId() == WyvernWhite.templateId){
-            return true;
-        }else if(creature.getTemplate().getTemplateId() == Charger.templateId){
+			return true;
+		}else if(creature.getTemplate().getTemplateId() == WyvernBlue.templateId){
+			return true;
+		}else if(creature.getTemplate().getTemplateId() == Charger.templateId){
             return true;
         }
         return creature.isHorse();
@@ -339,8 +271,10 @@ public class MethodsBestiary {
         }else if(templateId == WyvernWhite.templateId){
             return 0.5f;
         }else if(templateId == WyvernRed.templateId){
-            return 0.25f;
-        }
+			return 0.25f;
+		}else if(templateId == WyvernBlue.templateId){
+			return 0.20f;
+		}
         return -1f;
     }
 

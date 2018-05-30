@@ -761,8 +761,8 @@ public class Arena {
             Util.setReason("Reduce player vs player damage by half.");
             CtClass ctCombatHandler = classPool.get("com.wurmonline.server.creatures.CombatHandler");
             replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER && ($1.isDominated() || $1.isPlayer()) && $0.creature.isPlayer()){" +
-                    "  logger.info(\"Detected player hit against player/pet opponent. Halving damage.\");" +
-                    "  $3 = $3 * 0.5d;" +
+                    //"  logger.info(\"Detected player hit against player/pet opponent. Halving damage.\");" +
+                    "  $3 = $3 * 0.7d;" +
                     "}";
             Util.insertBeforeDeclared(thisClass, ctCombatHandler, "setDamage", replace);
 

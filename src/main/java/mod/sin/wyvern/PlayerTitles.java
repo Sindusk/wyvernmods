@@ -41,6 +41,7 @@ public class PlayerTitles {
         }
     }
     public static void preInit(){
+        // Donations
         playerTitles.put("Sindusk", "Phenomenal Feline");
 
         customTitles.put("Sindawn", 501); // Developer
@@ -70,5 +71,16 @@ public class PlayerTitles {
         customTitles.put("Reevi", 807); // Science Guy
 
         customTitles.put("Genocide", 808); // Grand Designer
+
+        donatorTitles.add("Seleas");
+        customTitles.put("Seleas", 809); // The Crazy Cat Lord
+        playerTitles.put("Seleas", "No, Really");
+
+        donatorTitles.add("Piratemax");
+        customTitles.put("Piratemax", 810); // Slave
+        playerTitles.put("Piratemax", "Boy Next Door");
+
+        // Other rewards
+        customTitles.put("Critias", 602);
     }
 }

@@ -195,7 +195,7 @@ public class Bounty {
           //ctCreatureStatus.getDeclaredMethod("getSizeMod").setBody("{return mod.sin.wyvern.bestiary.MethodsBestiary.getAdjustedSizeMod(this);}");
           
           // -- Enable adjusting color for creatures -- //
-          CtClass ctCreatureTemplate = classPool.get("com.wurmonline.server.creatures.CreatureTemplate");
+          /*CtClass ctCreatureTemplate = classPool.get("com.wurmonline.server.creatures.CreatureTemplate");
           replace = "if("+MethodsBestiary.class.getName()+".checkColorTemplate(this)){"
           		+ "  return "+MethodsBestiary.class.getName()+".getCreatureColorRed(this);"
           		+ "}";
@@ -207,7 +207,7 @@ public class Bounty {
           replace = "if("+MethodsBestiary.class.getName()+".checkColorTemplate(this)){"
           		+ "  return "+MethodsBestiary.class.getName()+".getCreatureColorBlue(this);"
           		+ "}";
-          Util.insertBeforeDeclared(thisClass, ctCreatureTemplate, "getColorBlue", replace);
+          Util.insertBeforeDeclared(thisClass, ctCreatureTemplate, "getColorBlue", replace);*/
           /*ctCreatureTemplate.getDeclaredMethod("getColorRed").insertBefore("if(mod.sin.wyvern.bestiary.MethodsBestiary.checkColorTemplate(this)){"
             		+ "  return mod.sin.wyvern.bestiary.MethodsBestiary.getCreatureColorRed(this);"
             		+ "}");

@@ -83,10 +83,15 @@ public class Mastercraft {
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("Special_Title", 553, "Special Guy", "Special Girl", -1, "NORMAL");
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("Prophet_Ear", 554, "Prophet Ear", "Prophet Ear", -1, "NORMAL");
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("Koza", 555, "Koza", "Koza", -1, "NORMAL");
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("Wyvern_Hunter", 556, "Wyvern Hunter", "Wyvern Hunter", -1, "NORMAL");
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("Overlord", 557, "Overlord", "Overlord", -1, "NORMAL");
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("Troll", 558, "Troll", "Troll", -1, "NORMAL");
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("Beggar", 559, "Beggar", "Beggar", -1, "NORMAL");
             
             // Contest Titles
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("Home_Decorator", 600, "Home Decorator", "Home Decorator", -1, "NORMAL");
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("Arena_Champion", 601, "Champion of the Arena", "Champion of the Arena", -1, "NORMAL");
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("Pastamancer", 602, "Pastamancer", "Pastamancer", -1, "NORMAL");
             
             // Special Event Titles
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("Titan_Slayer", 700, "Titanslayer", "Titanslayer", -1, "NORMAL");
@@ -104,6 +109,8 @@ public class Mastercraft {
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("Alexia_TheTreasuring", 806, "The Treasuring", "The Treasuring", -1, "NORMAL");
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("Reevi_ScienceGuy", 807, "Science Guy", "Science Guy", -1, "NORMAL");
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("Genocide_GrandDesigner", 808, "Grand Designer", "Grand Designer", -1, "NORMAL");
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("Seleas_CrazyCatLord", 809, "The Crazy Cat Lord", "The Crazy Cat Lord", -1, "NORMAL");
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("Piratemax_Slave", 810, "Slave", "Slave", -1, "NORMAL");
 
             // Characteristic Titles
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("MindLogic_Normal", 1000, "Logical", "Logical", 100, "NORMAL");
