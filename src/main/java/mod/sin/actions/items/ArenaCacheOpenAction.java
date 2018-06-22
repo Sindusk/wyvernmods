@@ -99,8 +99,8 @@ public class ArenaCacheOpenAction implements ModAction {
 							Server.getInstance().broadCastAction(performer.getName() + " opens "+performer.getHisHerItsString()+" "+target.getName()+".", performer, 5);
 							logger.info("Player "+performer.getName()+" opened arena cache.");
 							// Sorcery fragment.
-							Item sorceryFragment = ItemFactory.createItem(SorceryFragment.templateId, 90f, null);
-							performer.getInventory().insertItem(sorceryFragment, true);
+							/*Item sorceryFragment = ItemFactory.createItem(SorceryFragment.templateId, 90f, null);
+							performer.getInventory().insertItem(sorceryFragment, true);*/
 							SupplyDepots.giveCacheReward(performer);
 							Items.destroyItem(target.getWurmId());
 							return true;

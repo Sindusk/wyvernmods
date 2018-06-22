@@ -128,7 +128,7 @@ public class ChaosCrystalInfuseAction implements ModAction {
 								Items.destroyItem(source.getWurmId());
 							}else if(power > 30){
 								performer.getCommunicator().sendNormalServerMessage("You safely infuse the "+target.getName()+ ", chaotically changing it its weight.");
-								target.setWeight((int) (target.getWeightGrams()*Server.rand.nextFloat()*2f), false);
+								target.setWeight((int) ((target.getWeightGrams()*0.5f)+target.getWeightGrams()*Server.rand.nextFloat()*1.5f), false);
 								Items.destroyItem(source.getWurmId());
 							}else if(power > 0){
 								performer.getCommunicator().sendNormalServerMessage("You barely manage to infuse the "+target.getName()+ ", chaotically changing its quality.");

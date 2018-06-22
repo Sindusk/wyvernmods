@@ -55,10 +55,10 @@ public class Caches {
 	}
 	
 	public static float getBaseQuality(float quality){
-		return quality*0.2f;
+		return quality*0.25f;
 	}
 	public static float getRandomQuality(float quality){
-		return quality*0.5f;
+		return quality*0.6f;
 	}
 	public static float getWeightMultiplier(int templateId, float quality){
 		if(templateId == DragonCache.templateId){
@@ -120,6 +120,7 @@ public class Caches {
 					ItemList.axeSmall, ItemList.axeMedium, ItemList.axeHuge,
 					ItemList.maulSmall, ItemList.maulMedium, ItemList.maulLarge,
 					ItemList.spearLong, ItemList.staffSteel, ItemList.halberd,
+                    Club.templateId, BattleYoyo.templateId,
 					Knuckles.templateId, Warhammer.templateId
 			};
 		}else if(templateId == CrystalCache.templateId){
@@ -174,11 +175,52 @@ public class Caches {
 					ItemList.riftWood,
 					ItemList.riftStone
 			};
+		}else if(templateId == ToolCache.templateId){
+			return new int[]{
+                    ItemList.hatchet,
+                    ItemList.knifeCarving,
+                    ItemList.pickAxe,
+                    ItemList.saw,
+                    ItemList.shovel,
+                    ItemList.rake,
+                    ItemList.hammerMetal,
+                    ItemList.hammerWood,
+                    ItemList.anvilSmall,
+                    ItemList.cheeseDrill,
+                    ItemList.knifeButchering,
+                    ItemList.fishingRodIronHook,
+                    ItemList.stoneChisel,
+                    ItemList.spindle,
+                    ItemList.anvilLarge,
+                    ItemList.grindstone,
+                    ItemList.needleIron,
+                    ItemList.knifeFood,
+                    ItemList.sickle,
+                    ItemList.scythe,
+                    ItemList.file,
+                    ItemList.awl,
+                    ItemList.leatherKnife,
+                    ItemList.scissors,
+                    ItemList.clayShaper,
+                    ItemList.spatula,
+                    ItemList.fruitpress,
+                    ItemList.trowel,
+                    ItemList.groomingBrush
+			};
 		}
 		return null;
 	}
 	public static void adjustBasicItem(int templateId, float quality, Item item){
 		if(templateId == ArmourCache.templateId){
+            if(Server.rand.nextInt(800) < quality){
+                if(item.getRarity() == 0){
+                    if(Server.rand.nextInt(1800) < quality){
+                        item.setRarity(MiscConstants.SUPREME);
+                    }else{
+                        item.setRarity(MiscConstants.RARE);
+                    }
+                }
+            }
 			if(quality > 50){
 				if(quality > 95 && Server.rand.nextBoolean()){
 					ItemUtil.applyEnchant(item, Enchants.BUFF_SHARED_PAIN, quality*Server.rand.nextFloat()*0.7f);
@@ -218,7 +260,6 @@ public class Caches {
 					Materials.MATERIAL_STEEL
 			};
 			item.setMaterial(materials[Server.rand.nextInt(materials.length)]);
-			item.setQualityLevel(item.getQualityLevel());
 			if(Server.rand.nextInt(400) < quality){
 				if(item.getRarity() == 0){
 					if(Server.rand.nextInt(900) < quality){
@@ -233,8 +274,8 @@ public class Caches {
 						Enchants.BUFF_WIND_OF_AGES,
 						Enchants.BUFF_BLESSINGDARK
 				};
-				ItemUtil.applyEnchant(item, enchants[Server.rand.nextInt(enchants.length)], quality*Server.rand.nextFloat()*0.6f);
-				ItemUtil.applyEnchant(item, Enchants.BUFF_NIMBLENESS, quality*Server.rand.nextFloat()*0.7f);
+				ItemUtil.applyEnchant(item, enchants[Server.rand.nextInt(enchants.length)], quality*0.5f+(quality*0.5f*Server.rand.nextFloat()));
+				ItemUtil.applyEnchant(item, Enchants.BUFF_NIMBLENESS, quality*0.3f+(quality*0.7f*Server.rand.nextFloat()));
 			}else if(quality > 30){
 				ItemUtil.applyEnchant(item, Enchants.BUFF_LIFETRANSFER, quality*0.6f+(quality*0.6f*Server.rand.nextFloat()));
 			}
@@ -242,7 +283,54 @@ public class Caches {
 			if(Server.rand.nextInt(500) < quality){
 				item.setRarity(MiscConstants.RARE);
 			}
-		}
+		}else if(templateId == ToolCache.templateId){
+		    byte[] materials = {
+		            Materials.MATERIAL_SERYLL,
+                    Materials.MATERIAL_GLIMMERSTEEL,
+                    Materials.MATERIAL_ADAMANTINE,
+                    Materials.MATERIAL_STEEL,
+                    Materials.MATERIAL_TIN,
+                    Materials.MATERIAL_BRONZE,
+                    Materials.MATERIAL_BRASS,
+                    Materials.MATERIAL_ZINC,
+                    Materials.MATERIAL_IRON,
+                    Materials.MATERIAL_COPPER,
+                    Materials.MATERIAL_GOLD,
+                    Materials.MATERIAL_LEAD,
+                    Materials.MATERIAL_SILVER
+            };
+		    item.setMaterial(materials[Server.rand.nextInt(materials.length)]);
+            if(Server.rand.nextInt(1200) < quality){
+                if(item.getRarity() == 0){
+                    if(Server.rand.nextInt(2700) < quality){
+                        item.setRarity(MiscConstants.SUPREME);
+                    }else{
+                        item.setRarity(MiscConstants.RARE);
+                    }
+                }
+            }
+            if(Server.rand.nextInt(200) < quality){
+                byte rune = (byte) (Server.rand.nextInt(78)-128);
+                if(!ItemUtil.isSingleUseRune(rune)){
+                    ItemUtil.applyEnchant(item, rune, 50);
+                }
+            }
+            if(quality > 30 && Server.rand.nextInt(250) < quality){
+                ItemUtil.applyEnchant(item, Enchants.BUFF_WIND_OF_AGES, quality*0.6f+(quality*0.6f*Server.rand.nextFloat()));
+            }
+            if(quality > 30 && Server.rand.nextInt(250) < quality){
+                ItemUtil.applyEnchant(item, Enchants.BUFF_CIRCLE_CUNNING, quality*0.6f+(quality*0.6f*Server.rand.nextFloat()));
+            }
+            if(quality > 50 && Server.rand.nextInt(250) < quality){ // Efficiency
+                ItemUtil.applyEnchant(item, (byte) 114, quality*0.6f+(quality*0.6f*Server.rand.nextFloat()));
+            }
+            if(quality > 70 && Server.rand.nextInt(350) < quality){
+                ItemUtil.applyEnchant(item, Enchants.BUFF_BLESSINGDARK, quality*0.6f+(quality*0.6f*Server.rand.nextFloat()));
+            }
+            if(quality > 90 && Server.rand.nextInt(5000) < quality){ // Titanforged
+                ItemUtil.applyEnchant(item, (byte) 120, quality*0.2f+(quality*0.2f*Server.rand.nextFloat()));
+            }
+        }
 	}
 	public static int getBasicNums(int templateId){
 		if(templateId == CrystalCache.templateId){
@@ -439,7 +527,7 @@ public class Caches {
             TITAN_CACHE.createTemplate();
             CACHE_IDS.add(TitanCache.templateId);
 			TOOL_CACHE.createTemplate();
-			//CACHE_IDS.add(ToolCache.templateId);
+			CACHE_IDS.add(ToolCache.templateId);
 			TREASUREMAP_CACHE.createTemplate();
 			CACHE_IDS.add(TreasureMapCache.templateId);
 			WEAPON_CACHE.createTemplate();

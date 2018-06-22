@@ -33,6 +33,14 @@ public class ItemUtil {
 			ItemList.tomeMagicBlue,
 			ItemList.tomeMagicWhite
 	};
+	public static boolean isSorcery(Item item){
+		for(int id : sorceryIds){
+			if(item.getTemplateId() == id){
+				return true;
+			}
+		}
+		return false;
+	}
 	public static int[] plateChainTemplates = {
 			ItemList.plateBoot,
 			ItemList.plateGauntlet,
@@ -266,4 +274,24 @@ public class ItemUtil {
 		}
 		return null;
 	}
+	public static boolean isSingleUseRune(byte rune){
+        if(rune == -80){
+            return true;
+        }else if(rune == -81){
+            return true;
+        }else if(rune == -91){
+            return true;
+        }else if(rune == -97){
+            return true;
+        }else if(rune == -104){
+            return true;
+        }else if(rune == -107){
+            return true;
+        }else if(rune == -119){
+            return true;
+        }else if(rune == -126){
+            return true;
+        }
+        return false;
+    }
 }

@@ -92,6 +92,7 @@ public class Mastercraft {
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("Home_Decorator", 600, "Home Decorator", "Home Decorator", -1, "NORMAL");
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("Arena_Champion", 601, "Champion of the Arena", "Champion of the Arena", -1, "NORMAL");
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("Pastamancer", 602, "Pastamancer", "Pastamancer", -1, "NORMAL");
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("Pizzamancer", 603, "Pizzamancer", "Pizzamancer", -1, "NORMAL");
             
             // Special Event Titles
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("Titan_Slayer", 700, "Titanslayer", "Titanslayer", -1, "NORMAL");

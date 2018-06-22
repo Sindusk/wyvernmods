@@ -68,6 +68,10 @@ public class Charger implements ModCreature, CreatureTypes {
 		builder.denMaterial(Materials.MATERIAL_WOOD_BIRCH);
 		builder.denName("charger lair");
 		builder.maxGroupAttackSize(100);
+		//builder.color(219, 180, 87);
+        //builder.color(255, 0, 0);
+		//builder.sizeModifier(1024, 1024, 1024);
+		//builder.paintMode(2);
 		
 		templateId = builder.getTemplateId();
 		return builder;
@@ -87,7 +91,7 @@ public class Charger implements ModCreature, CreatureTypes {
 
 				vehicle.createPassengerSeats(0);
 				vehicle.setSeatFightMod(0, 0.8f, 1.1f);
-				vehicle.setSeatOffset(0, 0.0f, 0.0f, 0.0f);
+				vehicle.setSeatOffset(0, 0.0f, 0.0f, 0.5f);
 				vehicle.setCreature(true);
 				vehicle.setSkillNeeded(Servers.localServer.PVPSERVER ? 25.0f : 37.0f);
 				vehicle.setName(creature.getName());

@@ -1,11 +1,15 @@
 package mod.sin.actions.items;
 
+import com.wurmonline.server.Items;
 import com.wurmonline.server.behaviours.Action;
 import com.wurmonline.server.behaviours.ActionEntry;
 import com.wurmonline.server.creatures.Creature;
 import com.wurmonline.server.items.Item;
 import com.wurmonline.server.players.Player;
 import com.wurmonline.server.questions.AffinityOrbQuestion;
+import com.wurmonline.server.skills.Affinities;
+import com.wurmonline.server.skills.Affinity;
+import mod.sin.items.AffinityCatcher;
 import mod.sin.items.AffinityOrb;
 import org.gotti.wurmunlimited.modsupport.actions.ActionPerformer;
 import org.gotti.wurmunlimited.modsupport.actions.BehaviourProvider;
@@ -17,14 +21,14 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class AffinityOrbAction implements ModAction {
-	private static Logger logger = Logger.getLogger(AffinityOrbAction.class.getName());
+public class AffinityCatcherConsumeAction implements ModAction {
+	private static Logger logger = Logger.getLogger(AffinityCatcherConsumeAction.class.getName());
 
 	private final short actionId;
 	private final ActionEntry actionEntry;
 
-	public AffinityOrbAction() {
-		logger.log(Level.WARNING, "AffinityOrbAction()");
+	public AffinityCatcherConsumeAction() {
+		logger.log(Level.WARNING, "AffinityCatcherConsumeAction()");
 
 		actionId = (short) ModActions.getNextActionId();
 		actionEntry = ActionEntry.createEntry(
@@ -52,7 +56,7 @@ public class AffinityOrbAction implements ModAction {
 			@Override
 			public List<ActionEntry> getBehavioursFor(Creature performer, Item object)
 			{
-				if(performer instanceof Player && object != null && object.getTemplateId() == AffinityOrb.templateId) {
+				if(performer instanceof Player && object != null && object.getTemplateId() == AffinityCatcher.templateId && object.getData() > 0) {
 					return Collections.singletonList(actionEntry);
 				}
 				
@@ -77,37 +81,26 @@ public class AffinityOrbAction implements ModAction {
 			{
 				if(performer instanceof Player){
 					Player player = (Player) performer;
-					if (target.getTemplate().getTemplateId() != AffinityOrb.templateId){
-	                    player.getCommunicator().sendSafeServerMessage("You must use an Affinity Orb to be infused.");
+					if (target.getTemplate().getTemplateId() != AffinityCatcher.templateId){
+	                    player.getCommunicator().sendSafeServerMessage("You must use a captured affinity.");
 	                    return true;
 					}
-                    AffinityOrbQuestion aoq = new AffinityOrbQuestion(performer, "Affinity Orb", "Which affinity would you like to receive?", performer.getWurmId(), target);
-                    aoq.sendQuestion();
-					/*int skillNum = SkillSystem.getRandomSkillNum();
-		            Affinity[] affs = Affinities.getAffinities(player.getWurmId());
-		            boolean found = false;
-		            while (!found) {
-		                boolean hasAffinity = false;
-		                for (Affinity affinity : affs) {
-		                    if (affinity.getSkillNumber() != skillNum) continue;
-		                    hasAffinity = true;
-		                    if (affinity.getNumber() >= 5) break;
-		                    Affinities.setAffinity(player.getWurmId(), skillNum, affinity.getNumber() + 1, false);
-		                    String skillString = SkillSystem.getNameFor(skillNum);
-		                    found = true;
-		                    Items.destroyItem(target.getWurmId());
-		                    player.getCommunicator().sendSafeServerMessage("Vynora infuses you with an affinity for " + skillString + "!");
-		                    break;
-		                }
-		                if (!found && !hasAffinity) {
-		                	String skillString = SkillSystem.getNameFor(skillNum);
-		                    Affinities.setAffinity(player.getWurmId(), skillNum, 1, false);
-		                    Items.destroyItem(target.getWurmId());
-		                    player.getCommunicator().sendSafeServerMessage("Vynora infuses you with an affinity for " + skillString + "!");
-		                    found = true;
-		                }
-		                skillNum = SkillSystem.getRandomSkillNum();
-		            }*/
+					if(target.getData() <= 0){
+						player.getCommunicator().sendSafeServerMessage("The catcher needs to have an affinity captured before being consumed.");
+						return true;
+					}
+					int skillNum = (int) target.getData();
+					Affinity[] affs = Affinities.getAffinities(performer.getWurmId());
+                    for (Affinity affinity : affs) {
+                        if (affinity.getSkillNumber() != skillNum) continue;
+                        if (affinity.getNumber() >= 5){
+                            player.getCommunicator().sendSafeServerMessage("You already have the maximum amount of affinities for that skill.");
+                            return true;
+                        }
+                        Affinities.setAffinity(player.getWurmId(), skillNum, affinity.getNumber() + 1, false);
+                        Items.destroyItem(target.getWurmId());
+                        return true;
+                    }
 				}else{
 					logger.info("Somehow a non-player activated an Affinity Orb...");
 				}

@@ -1,5 +1,7 @@
 package mod.sin.creatures;
 
+import com.wurmonline.server.items.ItemList;
+import com.wurmonline.server.items.Materials;
 import com.wurmonline.shared.constants.CreatureTypes;
 import org.gotti.wurmunlimited.modsupport.CreatureTemplateBuilder;
 import org.gotti.wurmunlimited.modsupport.creatures.ModCreature;
@@ -33,7 +35,7 @@ public class Facebreyker implements ModCreature, CreatureTypes {
 				"model.creature.humanoid.ogre.rift", types, (byte) 0, (short) 20, (byte) 0, (short) 350, (short) 100, (short) 60,
 				"sound.death.troll", "sound.death.troll", "sound.combat.hit.troll", "sound.combat.hit.troll",
 				0.05f, 50.0f, 50.0f, 0.0f, 0.0f, 0.0f, 1.6f, 1100,
-				new int[]{867}, 40, 100, (byte) 0);
+				new int[]{ItemList.boneCollar}, 40, 100, Materials.MATERIAL_MEAT_HUMANOID);
 		
 		builder.skill(SkillList.BODY_STRENGTH, 90.0f);
 		builder.skill(SkillList.BODY_STAMINA, 90.0f);

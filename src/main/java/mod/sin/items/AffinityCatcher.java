@@ -1,27 +1,26 @@
 package mod.sin.items;
 
-import java.io.IOException;
-import java.util.logging.Logger;
-
-import org.gotti.wurmunlimited.modsupport.ItemTemplateBuilder;
-
 import com.wurmonline.server.MiscConstants;
 import com.wurmonline.server.items.ItemTemplate;
 import com.wurmonline.server.items.ItemTypes;
 import com.wurmonline.server.items.Materials;
+import org.gotti.wurmunlimited.modsupport.ItemTemplateBuilder;
 
-public class AffinityOrb implements ItemTypes, MiscConstants {
-	public static Logger logger = Logger.getLogger(AffinityOrb.class.getName());
+import java.io.IOException;
+import java.util.logging.Logger;
+
+public class AffinityCatcher implements ItemTypes, MiscConstants {
+	public static Logger logger = Logger.getLogger(AffinityCatcher.class.getName());
 	public static int templateId;
 	
 	public void createTemplate() throws IOException{
-		String name = "affinity orb";
-		ItemTemplateBuilder itemBuilder = new ItemTemplateBuilder("wyvern.affinityorb");
-		itemBuilder.name(name, "affinity orbs", "A valuable orb that infuses the user with hidden knowledge.");
-		itemBuilder.descriptions("brilliantly glowing", "strongly glowing", "faintly glowing", "barely glowing");
+		String name = "affinity catcher";
+		ItemTemplateBuilder itemBuilder = new ItemTemplateBuilder("mod.item.affinity.catcher");
+		itemBuilder.name(name, "affinity catchers", "A valuable orb that can transfer knowledge from one person to another.");
 		itemBuilder.itemTypes(new short[]{
 				ItemTypes.ITEM_TYPE_MAGIC,
 				ItemTypes.ITEM_TYPE_FULLPRICE,
+				ItemTypes.ITEM_TYPE_HASDATA,
 				ItemTypes.ITEM_TYPE_NOSELLBACK,
 				ItemTypes.ITEM_TYPE_ALWAYS_BANKABLE
 		});
@@ -36,7 +35,7 @@ public class AffinityOrb implements ItemTypes, MiscConstants {
 		itemBuilder.difficulty(5.0f);
 		itemBuilder.weightGrams(500);
 		itemBuilder.material(Materials.MATERIAL_CRYSTAL);
-		itemBuilder.value(500000);
+		itemBuilder.value(100000);
 		itemBuilder.isTraded(true);
 		
 		ItemTemplate template = itemBuilder.build();

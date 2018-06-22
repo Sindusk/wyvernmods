@@ -198,6 +198,7 @@ public class SupplyDepots {
 						MiscChanges.sendServerTabMessage("arena", "The next Arena depot will appear in 5 minutes!", 255, 128, 0);
 					}else if(minutesLeft == 19){
 						MiscChanges.sendServerTabMessage("arena", "The next Arena depot will appear in 20 minutes!", 255, 128, 0);
+                        MiscChanges.sendGlobalFreedomChat(host, "The next Arena depot will appear in 20 minutes!", 255, 128, 0);
 					}else if(minutesLeft == 59){
 						MiscChanges.sendServerTabMessage("arena", "The next Arena depot will appear in 60 minutes!", 255, 128, 0);
 						MiscChanges.sendGlobalFreedomChat(host, "The next Arena depot will appear in 60 minutes!", 255, 128, 0);
@@ -251,14 +252,12 @@ public class SupplyDepots {
 				inv.insertItem(token, true);
 				i--;
 			}
-			// Seryll or sleep powder
-			if(Server.rand.nextBoolean()){
-			    Item seryll = ItemFactory.createItem(ItemList.seryllBar, 70+(30*Server.rand.nextFloat()), null);
-			    inv.insertItem(seryll, true);
-            }else{
-			    Item sleepPowder = ItemFactory.createItem(ItemList.sleepPowder, 99f, null);
-			    inv.insertItem(sleepPowder, true);
-            }
+			// High quality seryll
+			Item seryll = ItemFactory.createItem(ItemList.seryllBar, 80+(20*Server.rand.nextFloat()), null);
+			inv.insertItem(seryll, true);
+			// Sleep powder
+			Item sleepPowder = ItemFactory.createItem(ItemList.sleepPowder, 99f, null);
+			inv.insertItem(sleepPowder, true);
 			// Very low chance for a HotA statue.
 			if(Server.rand.nextFloat()*100f <= 1f){
 				Item hotaStatue = ItemFactory.createItem(ItemList.statueHota, 80f+(20f*Server.rand.nextFloat()), "");

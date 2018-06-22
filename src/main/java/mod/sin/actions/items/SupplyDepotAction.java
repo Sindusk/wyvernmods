@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import mod.sin.items.SorceryFragment;
 import org.gotti.wurmunlimited.modsupport.actions.ActionPerformer;
 import org.gotti.wurmunlimited.modsupport.actions.BehaviourProvider;
 import org.gotti.wurmunlimited.modsupport.actions.ModAction;
@@ -110,6 +111,8 @@ public class SupplyDepotAction implements ModAction {
 							Item inv = performer.getInventory();
 							Item cache = ItemFactory.createItem(ArenaCache.templateId, 90+(10*Server.rand.nextFloat()), "");
 							inv.insertItem(cache, true);
+							Item fragment = ItemFactory.createItem(SorceryFragment.templateId, 90+(10*Server.rand.nextFloat()), "");
+							inv.insertItem(fragment, true);
 							performer.getCommunicator().sendSafeServerMessage("You have successfully captured the depot!");
 							Server.getInstance().broadCastAction(performer.getName() + " successfully captures the depot!", performer, 50);
 							SupplyDepots.broadcastCapture(performer);

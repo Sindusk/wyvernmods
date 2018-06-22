@@ -2,7 +2,9 @@ package com.wurmonline.server.questions;
 
 import com.wurmonline.mesh.Tiles;
 import com.wurmonline.server.*;
+import com.wurmonline.server.behaviours.AutoEquipMethods;
 import com.wurmonline.server.creatures.Creature;
+import com.wurmonline.server.items.Item;
 import com.wurmonline.server.players.Player;
 import com.wurmonline.server.players.Spawnpoint;
 import com.wurmonline.server.villages.Village;
@@ -58,16 +60,30 @@ public class NewSpawnQuestion extends Question {
         }else{
             boolean transfer = answer.containsKey("transfer") && answer.get("transfer") == "true";
             if(transfer) {
+                logger.info("Respawning player before transfer.");
+                Spawnpoint spawn = spawns.get(0);
+                this.spawn((Player) this.getResponder(), spawn);
+                logger.info("Spawn complete, beginning to unequip all items into inventory.");
+                for(Item equip : this.getResponder().getBody().getAllItems()){
+                    AutoEquipMethods.unequip(equip, this.getResponder());
+                }
+                if(!this.getResponder().getPrimWeapon().isBodyPartAttached()){
+                    AutoEquipMethods.unequip(this.getResponder().getPrimWeapon(), this.getResponder());
+                }
+                logger.info("Unequip method complete. Beginning transfer.");
                 try {
                     ServerEntry targetServer = Servers.localServer.serverSouth;
                     Player player = Players.getInstance().getPlayer(this.getResponder().getWurmId());
                     if(targetServer == null){
                         player.getCommunicator().sendNormalServerMessage("Error: Something went wrong [TARGETSERVER=NULL].");
+                        return;
                     }
                     if (!targetServer.isAvailable(player.getPower(), true)) {
                         player.getCommunicator().sendNormalServerMessage(targetServer.name + " is not currently available.");
                     } else {
-                        player.sendTransfer(Server.getInstance(), targetServer.EXTERNALIP, Integer.parseInt(targetServer.EXTERNALPORT), targetServer.INTRASERVERPASSWORD, targetServer.getId(), -1, -1, true, false, player.getKingdomId());
+                        int tilex = 1010;
+                        int tiley = 1010;
+                        player.sendTransfer(Server.getInstance(), targetServer.EXTERNALIP, Integer.parseInt(targetServer.EXTERNALPORT), targetServer.INTRASERVERPASSWORD, targetServer.getId(), tilex, tiley, true, false, player.getKingdomId());
                     }
                 } catch (NoSuchPlayerException e) {
                     logger.info("Could not find player for WurmId " + this.getResponder().getWurmId() + " [" + this.getResponder().getName() + "]");

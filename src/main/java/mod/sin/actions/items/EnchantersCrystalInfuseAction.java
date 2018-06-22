@@ -137,7 +137,7 @@ public class EnchantersCrystalInfuseAction implements ModAction {
 							}else if(power > 35){
 								performer.getCommunicator().sendNormalServerMessage("You manage to infuse the "+target.getName()+ ", shifting its magical properties.");
 								for(SpellEffect eff : effs.getEffects()){
-									eff.setPower(eff.getPower()+((eff.getPower()*Server.rand.nextFloat()*0.4f) * (Server.rand.nextBoolean() ? 1 : -1)));
+									eff.setPower(eff.getPower()+((eff.getPower()*Server.rand.nextFloat()*0.3f) * (Server.rand.nextBoolean() ? 1 : -1)));
 								}
 								Items.destroyItem(source.getWurmId());
 							}else if(power > 0){

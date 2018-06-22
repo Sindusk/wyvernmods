@@ -4,6 +4,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Logger;
 
 import com.wurmonline.mesh.Tiles;
+import com.wurmonline.server.Servers;
+import com.wurmonline.server.behaviours.AutoEquipMethods;
 import com.wurmonline.server.combat.Weapon;
 import com.wurmonline.server.creatures.*;
 import com.wurmonline.server.items.*;
@@ -604,6 +606,11 @@ public class MethodsBestiary {
 		setNaturalArmour(CreatureTemplate.DRAKE_BLACK_CID, 0.055f);
 		// Goblin leader natural armour increase:
 		setNaturalArmour(CreatureTemplate.GOBLIN_LEADER_CID, 0.055f);
+
+		// Worg armour reduction on Arena
+        if(Servers.localServer.PVPSERVER) {
+            setNaturalArmour(CreatureTemplate.WORG_CID, 0.3f);
+        }
 
 		// Make titan minions drop no corpse
 		setNoCorpse(IfritFiend.templateId);

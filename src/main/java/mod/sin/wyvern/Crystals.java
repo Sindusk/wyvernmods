@@ -28,7 +28,8 @@ public class Crystals {
 			Enchants.BUFF_VENOM,
 			Enchants.BUFF_WEBARMOUR,
 			Enchants.BUFF_WIND_OF_AGES,
-			110 // Harden
+			110, // Harden
+			114 // Efficiency
 			//110, 111 // Harden and Phasing
 	};
 	public static byte getNewRandomEnchant(Item target){

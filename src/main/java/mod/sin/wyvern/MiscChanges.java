@@ -731,11 +731,77 @@ public class MiscChanges {
                 }
             });
 
+            Util.setReason("Make armour title benefits always occur.");
+            replace = "$_ = improve.getNumber();";
+            Util.instrumentDeclared(thisClass, ctMethodsItems, "improveItem", "getSkillId", replace);
+            Util.instrumentDeclared(thisClass, ctMethodsItems, "polishItem", "getSkillId", replace);
+
+            Util.setReason("Make it so sorceries can be used anywhere with a flat 3x3 altar.");
+            CtClass ctAbilities = classPool.get("com.wurmonline.server.players.Abilities");
+            replace = "$_ = 1;";
+            Util.instrumentDeclared(thisClass, ctAbilities, "isInProperLocation", "getTemplateId", replace);
+
+            /*Util.setReason("Debug Login Handler when creating a new player via an exception.");
+            CtClass ctLoginHandler = classPool.get("com.wurmonline.server.LoginHandler");
+            replace = "$_ = $proceed($$);" +
+                    "logger.info(ex.getMessage());";
+            Util.instrumentDeclared(thisClass, ctLoginHandler, "handleLogin", "doNewPlayer", replace);
+            replace = "$_ = $proceed($$);" +
+                    "logger.info(\"addPlayer(\"+$1+\")\");";
+            Util.instrumentDeclared(thisClass, ctLoginHandler, "handleLogin", "addPlayer", replace);
+            replace = "$_ = $proceed($$);" +
+                    "logger.info(\"initialisePlayer(\"+$1+\")\");";
+            Util.instrumentDeclared(thisClass, ctLoginHandler, "handleLogin", "initialisePlayer", replace);
+            replace = "$_ = $proceed($$);" +
+                    "logger.info(\"createBodyParts\");";
+            Util.instrumentDeclared(thisClass, ctLoginHandler, "handleLogin", "createBodyParts", replace);
+            replace = "logger.info(\"loadSkills\");" +
+                    "$_ = $proceed($$);";
+            Util.instrumentDeclared(thisClass, ctLoginHandler, "handleLogin", "loadSkills", replace);
+            replace = "logger.info(\"loadAllItemsForCreature1(\"+$1+\")\");" +
+                    "logger.info(\"loadAllItemsForCreature2(\"+$1.getStatus()+\")\");" +
+                    "logger.info(\"loadAllItemsForCreature3(\"+$2+\")\");" +
+                    "try{" +
+                    "  $_ = $proceed($$);" +
+                    "}catch(com.wurmonline.server.NoSuchItemException ex){" +
+                    "  logger.info(ex.getMessage());" +
+                    "}";
+            Util.instrumentDeclared(thisClass, ctLoginHandler, "handleLogin", "loadAllItemsForCreature", replace);
+
+            // -- Items method debugging -- //
+            Util.setReason("Debug Items method loadAllitemsForCreature");
+            CtClass ctItems = classPool.get("com.wurmonline.server.Items");
+            replace = "logger.info(\"creature = \"+$1+\", inventoryId = \"+$2);";
+            Util.insertBeforeDeclared(thisClass, ctItems, "loadAllItemsForCreature", replace);
+            replace = "logger.info(\"loadPossessions(\"+$1+\")\");" +
+                    "$_ = $proceed($$);";
+            Util.instrumentDeclared(thisClass, ctItems, "loadAllItemsForCreature", "loadPossessions", replace);
+
+            replace = "logger.info(\"sendMapInfo - Communicator: \"+$0);" +
+                    "$_ = $proceed($$);";
+            Util.instrumentDeclared(thisClass, ctLoginHandler, "handleLogin", "sendMapInfo", replace);
+            replace = "logger.info(\"loadAllPrivatePOIForPlayer(\"+$1+\")\");" +
+                    "$_ = $proceed($$);";
+            Util.instrumentDeclared(thisClass, ctLoginHandler, "handleLogin", "loadAllPrivatePOIForPlayer", replace);
+            replace = "$_ = $proceed($$);" +
+                    "logger.info(\"resetLastSentToolbelt\");";
+            Util.instrumentDeclared(thisClass, ctLoginHandler, "handleLogin", "resetLastSentToolbelt", replace);*/
+
+            Util.setReason("Make drinks less filling.");
+            CtClass[] params13 = {
+                    ctAction,
+                    ctCreature,
+                    ctItem,
+                    CtClass.floatType
+            };
+            String desc13 = Descriptor.ofMethod(CtClass.booleanType, params13);
+            replace = "$_ = $proceed($1, $2, $3*5);";
+            Util.instrumentDescribed(thisClass, ctMethodsItems, "drink", desc13, "sendActionControl", replace);
+            replace = "$_ = $proceed($1/5, $2, $3, $4, $5);";
+            Util.instrumentDescribed(thisClass, ctMethodsItems, "drink", desc13, "modifyThirst", replace);
+
         } catch (CannotCompileException | NotFoundException | IllegalArgumentException | ClassCastException e) {
             throw new HookException(e);
         }
 	}
-	public static void logMessage(String message){
-	    logger.info(message);
-    }
 }

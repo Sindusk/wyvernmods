@@ -2,8 +2,10 @@ package com.wurmonline.server.questions;
 
 import com.wurmonline.server.Servers;
 import com.wurmonline.server.creatures.Creature;
+import com.wurmonline.server.players.AchievementTemplate;
 import com.wurmonline.server.skills.SkillSystem;
 import com.wurmonline.server.skills.SkillTemplate;
+import mod.sin.wyvern.AchievementChanges;
 import net.coldie.tools.BmlForm;
 import org.gotti.wurmunlimited.modsupport.ModSupportDb;
 
@@ -11,10 +13,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Properties;
+import java.util.*;
 
 public class LeaderboardQuestion extends Question {
 
@@ -38,15 +37,21 @@ public class LeaderboardQuestion extends Question {
 
     @Override
     public void answer(Properties answer) {
-        boolean accepted = answer.containsKey("accept") && answer.get("accept") == "true";
+        boolean skill = answer.containsKey("accept") && answer.get("accept") == "true";
+        boolean achievements = answer.containsKey("achievements") && answer.get("achievements") == "true";
         boolean custom = answer.containsKey("custom") && answer.get("custom") == "true";
-        if (accepted) {
+        if (skill) {
             int entry = Integer.parseInt(answer.getProperty("leaderboard"));
             String val = skillMap.get(entry);
             int skillNum = skillIdMap.get(entry);
-            //this.getResponder().getCommunicator().sendNormalServerMessage("Received response: "+val);
             LeaderboardSkillQuestion lbsq = new LeaderboardSkillQuestion(this.getResponder(), "Leaderboard", val, this.getResponder().getWurmId(), skillNum);
             lbsq.sendQuestion();
+        }else if(achievements){
+            int entry = Integer.parseInt(answer.getProperty("achievementboard"));
+            String val = achievementMap.get(entry);
+            int achievementNum = achievementIdMap.get(entry);
+            LeaderboardAchievementQuestion lbaq = new LeaderboardAchievementQuestion(this.getResponder(), "Leaderboard", val, this.getResponder().getWurmId(), achievementNum);
+            lbaq.sendQuestion();
         }else if(custom){
             int entry = Integer.parseInt(answer.getProperty("customboard"));
             String val = customMap.get(entry);
@@ -94,6 +99,34 @@ public class LeaderboardQuestion extends Question {
         return builder;
     }
 
+    protected HashMap<Integer, String> achievementMap = new HashMap<>();
+    protected HashMap<Integer, Integer> achievementIdMap = new HashMap<>();
+
+    public String getAchievementOptions(){
+        String builder = "";
+        Collection<AchievementTemplate> achievements = AchievementChanges.goodAchievements.values();
+        List<AchievementTemplate> sortedAchievements = new ArrayList<>(achievements);
+        sortedAchievements.sort(new Comparator<AchievementTemplate>() {
+            public int compare(AchievementTemplate o1, AchievementTemplate o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+        int i = 0;
+        int index = 0;
+        achievementMap.clear();
+        while(i < sortedAchievements.size()){
+            builder = builder + sortedAchievements.get(i).getName();
+            achievementMap.put(i, sortedAchievements.get(i).getName());
+            achievementIdMap.put(i, sortedAchievements.get(i).getNumber());
+            i++;
+            if(i < sortedAchievements.size()){
+                builder = builder + ",";
+            }
+        }
+        builder = builder.replaceAll("'", "");
+        return builder;
+    }
+
     public String getCustomOptions(){
         String builder = "Total Skill";
         customMap.put(0, "Total Skill");
@@ -105,13 +138,19 @@ public class LeaderboardQuestion extends Question {
         customMap.put(3, "Uniques Slain");
         builder = builder + ",Titans Slain";
         customMap.put(4, "Titans Slain");
+        builder = builder + ",Most Affinities";
+        customMap.put(5, "Most Affinities");
+        builder = builder + ",Most Unique Achievements";
+        customMap.put(6, "Most Unique Achievements");
+        builder = builder + ",Largest Structures";
+        customMap.put(7, "Largest Structures");
         if(Servers.localServer.PVPSERVER || this.getResponder().getPower() >= 5){
             builder = builder + ",PvP Kills";
-            customMap.put(5, "PvP Kills");
+            customMap.put(8, "PvP Kills");
             builder = builder + ",PvP Deaths";
-            customMap.put(6, "PvP Deaths");
+            customMap.put(9, "PvP Deaths");
             builder = builder + ",Depots Captured";
-            customMap.put(7, "PvP Depots Captured");
+            customMap.put(10, "PvP Depots Captured");
         }
         return builder;
     }
@@ -136,6 +175,7 @@ public class LeaderboardQuestion extends Question {
             throw new RuntimeException(e);
         }
         f.addBoldText("You are currently " + (opted == 0 ? "not " : "") + "opted into the leaderboard system.\n\n", new String[0]);
+        f.addBoldText("Skill Leaderboards");
         f.addRaw("harray{label{text='View leaderboard:'}dropdown{id='leaderboard';options='");
         f.addRaw(getSkillOptions());
         f.addRaw("'}}");
@@ -143,18 +183,26 @@ public class LeaderboardQuestion extends Question {
         f.addButton("Accept", "accept");
         f.endHorizontalFlow();
         f.addText(" \n\n", new String[0]);
-        f.addBoldText("Opt into or out of the Leaderboard system.");
+        f.addBoldText("Achievement Leaderboards");
+        f.addRaw("harray{label{text='View leaderboard:'}dropdown{id='achievementboard';options='");
+        f.addRaw(getAchievementOptions());
+        f.addRaw("'}}");
         f.beginHorizontalFlow();
-        f.addButton("Opt In", "optin");
-        f.addButton("Opt Out", "optout");
+        f.addButton("Accept", "achievements");
         f.endHorizontalFlow();
         f.addText(" \n\n", new String[0]);
-        f.addBoldText("Special leaderboards are available below.");
+        f.addBoldText("Special Leaderboards");
         f.addRaw("harray{label{text='View leaderboard:'}dropdown{id='customboard';options='");
         f.addRaw(getCustomOptions());
         f.addRaw("'}}");
         f.beginHorizontalFlow();
         f.addButton("Accept", "custom");
+        f.endHorizontalFlow();
+        f.addText(" \n\n", new String[0]);
+        f.addBoldText("Opt into or out of the Leaderboard system.");
+        f.beginHorizontalFlow();
+        f.addButton("Opt In", "optin");
+        f.addButton("Opt Out", "optout");
         f.endHorizontalFlow();
         this.getResponder().getCommunicator().sendBml(400, 500, true, true, f.toString(), 150, 150, 200, this.title);
     }

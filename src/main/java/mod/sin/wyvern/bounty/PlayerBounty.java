@@ -216,7 +216,7 @@ public class PlayerBounty {
 		try {
 			//Map<Long, Long> attackers = ReflectionUtil.getPrivateField(creature, ReflectionUtil.getField(creature.getClass(), "attackers"));
 			Map<Long, Long> attackers = Bounty.getAttackers(creature);
-			if(!Bounty.isCombatant(attackers, player.getWurmId()) || creature.isPlayer() || creature.isReborn()){
+			if((attackers != null && !Bounty.isCombatant(attackers, player.getWurmId())) || creature.isPlayer() || creature.isReborn()){
 				return;
 			}
 			logger.info(player.getName()+" killed "+creature.getName());

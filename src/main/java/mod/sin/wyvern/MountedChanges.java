@@ -67,7 +67,7 @@ public class MountedChanges {
         if(creature.isHorse() || creature.isUnicorn()) {
             factor *= newCalcHorseShoeBonus(creature);
         }
-        if(creature.isHorse()){
+        /*if(creature.isHorse()){
             try {
                 Item barding = creature.getArmour(BodyPartConstants.TORSO);
                 if(barding != null){
@@ -81,7 +81,7 @@ public class MountedChanges {
                 }
             } catch (NoArmourException | NoSpaceException ignored) {
             }
-        }
+        }*/
         if (creature.getBonusForSpellEffect(Enchants.CRET_OAKSHELL) > 0.0f) {
             factor *= 1f - (0.3f * (creature.getBonusForSpellEffect(Enchants.CRET_OAKSHELL) / 100.0f));
         }

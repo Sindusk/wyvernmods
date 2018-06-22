@@ -12,9 +12,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Properties;
+import java.util.*;
 
 public class LeaderboardCustomQuestion extends Question {
     protected int entryNum;
@@ -132,6 +130,149 @@ public class LeaderboardCustomQuestion extends Question {
             throw new RuntimeException(e);
         }
     }
+    protected void topAffinities(int limit){
+        Connection dbcon;
+        PreparedStatement ps;
+        ResultSet rs;
+        String name;
+        int skillNum;
+        double affinities;
+        try {
+            dbcon = DbConnector.getPlayerDbCon();
+            ps = dbcon.prepareStatement("SELECT players.name, sum(affinities.number) as Count FROM affinities JOIN players ON affinities.wurmid = players.wurmid WHERE players.power = 0 GROUP BY players.name ORDER BY Count DESC LIMIT "+limit);
+            rs = ps.executeQuery();
+            while(rs.next()){
+                name = rs.getString(1);
+                affinities = rs.getDouble(2);
+                names.add(name);
+                values.add(affinities);
+            }
+            DbUtilities.closeDatabaseObjects(ps, rs);
+        }
+        catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    protected void topUniqueAchievements(int limit){
+        Connection dbcon;
+        PreparedStatement ps;
+        ResultSet rs;
+        String name;
+        int skillNum;
+        double achievements;
+        try {
+            dbcon = DbConnector.getPlayerDbCon();
+            ps = dbcon.prepareStatement("SELECT players.name, count(*) AS theCount FROM achievements JOIN players ON achievements.player = players.wurmid WHERE players.power = 0 GROUP BY players.name ORDER BY theCount DESC LIMIT "+limit);
+            rs = ps.executeQuery();
+            while(rs.next()){
+                name = rs.getString(1);
+                achievements = rs.getDouble(2);
+                names.add(name);
+                values.add(achievements);
+            }
+            DbUtilities.closeDatabaseObjects(ps, rs);
+        }
+        catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    protected HashMap<Long, String> structureNames = new HashMap<>();
+    protected HashMap<Long, String> structurePlanners = new HashMap<>();
+    protected HashMap<Long, Integer> structureWalls = new HashMap<>();
+    protected HashMap<Long, Integer> structureFloors = new HashMap<>();
+    protected void calculateStructureWalls(){
+        Connection dbcon;
+        PreparedStatement ps;
+        ResultSet rs;
+        String name;
+        long wurmid;
+        int walls;
+        String planner;
+        try {
+            dbcon = DbConnector.getZonesDbCon();
+            ps = dbcon.prepareStatement("SELECT structures.wurmid, structures.name, count(*), structures.planner FROM walls JOIN structures ON structures.wurmid = walls.structure WHERE structures.finished = 1 AND walls.state > 1 GROUP BY walls.structure ORDER BY count(*) DESC");
+            rs = ps.executeQuery();
+            while(rs.next()){
+                wurmid = rs.getLong(1);
+                name = rs.getString(2);
+                walls = rs.getInt(3);
+                planner = rs.getString(4);
+                structureNames.put(wurmid, name);
+                structurePlanners.put(wurmid, planner);
+                structureWalls.put(wurmid, walls);
+            }
+            DbUtilities.closeDatabaseObjects(ps, rs);
+        }
+        catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    protected void calculateStructureFloors(){
+        Connection dbcon;
+        PreparedStatement ps;
+        ResultSet rs;
+        String name;
+        long wurmid;
+        int floors;
+        String planner;
+        try {
+            dbcon = DbConnector.getZonesDbCon();
+            ps = dbcon.prepareStatement("SELECT structures.wurmid, structures.name, count(*), structures.planner FROM floors JOIN structures ON structures.wurmid = floors.structure WHERE structures.finished = 1 AND floors.state > 1 GROUP BY floors.structure ORDER BY count(*) DESC");
+            rs = ps.executeQuery();
+            while(rs.next()){
+                wurmid = rs.getLong(1);
+                name = rs.getString(2);
+                floors = rs.getInt(3);
+                planner = rs.getString(4);
+                structureNames.put(wurmid, name);
+                structurePlanners.put(wurmid, planner);
+                structureFloors.put(wurmid, floors);
+            }
+            DbUtilities.closeDatabaseObjects(ps, rs);
+        }
+        catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    protected void topStructureSizes(int limit){
+        calculateStructureWalls();
+        calculateStructureFloors();
+        HashMap<Long, Integer> structureTotals = new HashMap<>();
+        for(long wurmid : structureWalls.keySet()){
+            structureTotals.put(wurmid, structureWalls.get(wurmid));
+        }
+        for(long wurmid : structureFloors.keySet()){
+            if(structureTotals.containsKey(wurmid)){
+                int current = structureTotals.get(wurmid);
+                structureTotals.put(wurmid, current + structureFloors.get(wurmid));
+            }else{
+                structureTotals.put(wurmid, structureFloors.get(wurmid));
+            }
+        }
+        LinkedList<Map.Entry<Long, Integer>> list = new LinkedList<>(structureTotals.entrySet());
+        list.sort((o1, o2) -> ((Comparable) o1.getValue())
+                .compareTo(((Map.Entry) (o2)).getValue()));
+        Collections.reverse(list);
+        HashMap<Long, Integer> sortedHashMap = new LinkedHashMap<>();
+        for (Iterator it = list.iterator(); it.hasNext();) {
+            Map.Entry<Long, Integer> entry = (Map.Entry<Long, Integer>) it.next();
+            sortedHashMap.put(entry.getKey(), entry.getValue());
+        }
+        Set set2 = sortedHashMap.entrySet();
+        Iterator iterator2 = set2.iterator();
+        int i = 0;
+        long wurmid;
+        while(iterator2.hasNext()) {
+            Map.Entry me2 = (Map.Entry)iterator2.next();
+            if(i < limit){
+                wurmid = (long) me2.getKey();
+                names.add(structureNames.get(wurmid));
+                values.add((double) (int) me2.getValue());
+                extra.add(structurePlanners.get(wurmid));
+            }
+            i++;
+        }
+    }
     protected void topPlayerStats(String statName, int limit){
         Connection dbcon;
         PreparedStatement ps;
@@ -193,16 +334,29 @@ public class LeaderboardCustomQuestion extends Question {
                 ignoreOpt = true;
                 break;
             case 5:
+                limit = 20;
+                topAffinities(limit);
+                break;
+            case 6:
+                limit = 20;
+                topUniqueAchievements(limit);
+                break;
+            case 7:
+                limit = 20;
+                topStructureSizes(limit);
+                ignoreOpt = true;
+                break;
+            case 8:
                 limit = 10;
                 topPlayerStats("kills", limit);
                 ignoreOpt = true;
                 break;
-            case 6:
+            case 9:
                 limit = 10;
                 topPlayerStats("deaths", limit);
                 ignoreOpt = true;
                 break;
-            case 7:
+            case 10:
                 limit = 10;
                 topPlayerStats("depots", limit);
                 ignoreOpt = true;

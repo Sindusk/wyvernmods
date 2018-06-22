@@ -95,6 +95,12 @@ public class EternalOrbAction implements ModAction {
 						player.getCommunicator().sendNormalServerMessage("The "+target.getTemplate().getName()+" has no enchants.");
 						return true;
 					}
+					for(SpellEffect eff : teffs.getEffects()){
+					    if(eff.type == 120){
+					        player.getCommunicator().sendNormalServerMessage("The "+eff.getName()+" enchant makes this item immune to the effects of the "+source.getName()+".");
+					        return true;
+                        }
+                    }
 					try {
 						Item enchantOrb = ItemFactory.createItem(EnchantOrb.templateId, source.getCurrentQualityLevel(), "");
 						ItemSpellEffects effs = enchantOrb.getSpellEffects();

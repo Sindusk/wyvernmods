@@ -1,10 +1,7 @@
 package mod.sin.wyvern.bounty;
 
 import com.wurmonline.mesh.Tiles;
-import com.wurmonline.server.FailedException;
-import com.wurmonline.server.HistoryManager;
-import com.wurmonline.server.Players;
-import com.wurmonline.server.Server;
+import com.wurmonline.server.*;
 import com.wurmonline.server.creatures.Creature;
 import com.wurmonline.server.creatures.CreatureTemplate;
 import com.wurmonline.server.creatures.CreatureTemplateFactory;
@@ -311,6 +308,23 @@ public class LootBounty {
 	    boolean sendLootHelp = false;
 	    // Begin loot table drops
         int templateId = mob.getTemplate().getTemplateId();
+        if(Servers.localServer.PVPSERVER && mob.isPlayer()){
+            if(mob.isDeathProtected()) {
+                logger.info("Death protection was active for " + mob.getName() + ". Inserting silver coin reward.");
+                try {
+                    Item silver = ItemFactory.createItem(ItemList.coinSilver, 99f, null);
+                    corpse.insertItem(silver, true);
+                } catch (FailedException | NoSuchTemplateException e) {
+                    e.printStackTrace();
+                }
+            }
+            Item[] items = mob.getAllItems();
+            for(Item item : items){
+                if(item.isRepairable()){
+                    item.setDamage(Math.min(99f, item.getDamage() + Math.max(10f+(Server.rand.nextFloat()*5f), 10f * item.getDamageModifier(false))));
+                }
+            }
+        }
     	if(templateId == Reaper.templateId || templateId == SpectralDrake.templateId){
     		Server.getInstance().broadCastAlert("The "+mob.getName()+" has been slain. A new creature shall enter the realm shortly.");
     		sendLootHelp = true;

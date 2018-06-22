@@ -1,6 +1,9 @@
 package mod.sin.wyvern;
 
+import com.wurmonline.server.economy.Economy;
+import com.wurmonline.server.economy.Shop;
 import com.wurmonline.server.items.Item;
+import com.wurmonline.server.items.Trade;
 import com.wurmonline.server.villages.GuardPlan;
 import com.wurmonline.server.villages.Village;
 import com.wurmonline.server.villages.Villages;
@@ -48,6 +51,36 @@ public class EconomicChanges {
         return -10;
     }
 
+    public static long getNewShopDiff(Trade trade, long money, long shopDiff){
+        Shop shop = null;
+        Village citizenVillage = null;
+        if (trade.creatureOne.isNpcTrader()) {
+            shop = Economy.getEconomy().getShop(trade.creatureOne);
+        }
+        if (trade.creatureTwo.isNpcTrader()) {
+            shop = Economy.getEconomy().getShop(trade.creatureTwo);
+        }
+        if(shop == null){
+            logger.info("Something went horribly wrong and the shop is null.");
+            return 0;
+        }
+        logger.info("Money = "+money+", shopDiff = "+shopDiff);
+        if(!shop.isPersonal() && money > 0){
+            logger.info("We're adding money. Testing to see how much difference there is.");
+            if(money + shopDiff > 0){
+                logger.info("Player actually purchased something. Reducing the income.");
+                long newDiff = money + shopDiff;
+                logger.info("Actual difference in currency: "+Economy.getEconomy().getChangeFor(newDiff).getChangeString());
+                newDiff *= 0.2;
+                logger.info("After 80% void: "+Economy.getEconomy().getChangeFor(newDiff).getChangeString());
+                logger.info("Returning the following amount of money to incur the change: "+(-shopDiff+newDiff));
+                return -shopDiff+newDiff;
+            }
+            //return (long) (money*0.2);
+        }
+        return money;
+    }
+
     public static void preInit(){
         try{
             ClassPool classPool = HookManager.getInstance().getClassPool();
@@ -75,6 +108,11 @@ public class EconomicChanges {
             CtClass ctCreature = classPool.get("com.wurmonline.server.creatures.Creature");
             replace = "$_ = 1;";
             Util.instrumentDeclared(thisClass, ctCreature, "removeRandomItems", "nextInt", replace);
+
+            Util.setReason("Void 80% of all currency put into traders.");
+            CtClass ctTrade = classPool.get("com.wurmonline.server.items.Trade");
+            replace = "$1 = "+EconomicChanges.class.getName()+".getNewShopDiff($0, $1, $0.shopDiff);";
+            Util.insertBeforeDeclared(thisClass, ctTrade, "addShopDiff", replace);
 
     } catch ( NotFoundException | IllegalArgumentException | ClassCastException e) {
         throw new HookException(e);

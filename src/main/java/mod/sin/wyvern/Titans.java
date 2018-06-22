@@ -3,6 +3,7 @@ package mod.sin.wyvern;
 import com.wurmonline.mesh.Tiles;
 import com.wurmonline.server.*;
 import com.wurmonline.server.bodys.Wound;
+import com.wurmonline.server.bodys.Wounds;
 import com.wurmonline.server.creatures.Creature;
 import com.wurmonline.server.creatures.Creatures;
 import com.wurmonline.server.creatures.MineDoorPermission;
@@ -675,6 +676,23 @@ public class Titans {
         }
         titanDamage.put(titan, currentDamage);
     }
+    public static void pollTitanRegeneration(){
+        if(!titans.isEmpty()) {
+            for (Creature cret : titans) {
+                if (cret.getBody().isWounded()) {
+                    Wounds tWounds = cret.getBody().getWounds();
+                    int toHeal = 2;
+                    Wound w = tWounds.getWounds()[Server.rand.nextInt(tWounds.getWounds().length)];
+                    if (w.getSeverity() > toHeal) {
+                        w.modifySeverity(-toHeal);
+                        break;
+                    } else {
+                        w.heal();
+                    }
+                }
+            }
+        }
+    }
     public static void pollTitan(Creature titan){
         if(titanDamage.containsKey(titan)){
             int prevDamage = titanDamage.get(titan);
@@ -686,6 +704,14 @@ public class Titans {
         }else{
             titanDamage.put(titan, titan.getStatus().damage);
         }
+    }
+    public static void pollTitans(){
+        for(Creature c : titans){
+            if(isTitan(c)){
+                pollTitan(c);
+            }
+        }
+        pollTitanRegeneration();
     }
 
     public static ArrayList<Creature> titans = new ArrayList<>();
@@ -764,7 +790,7 @@ public class Titans {
                 int tiley = (int) (minY+(minY*2*Server.rand.nextFloat()))*4;*/
                 int[] titanTemplates = {Lilith.templateId, Ifrit.templateId};
                 try {
-                    Creature.doNew(titanTemplates[Server.rand.nextInt(titanTemplates.length)], spawnX, spawnY, 360f*Server.rand.nextFloat(), 1, "", (byte)0);
+                    Creature.doNew(titanTemplates[Server.rand.nextInt(titanTemplates.length)], spawnX, spawnY, 360f*Server.rand.nextFloat(), 0, "", (byte)0);
                     lastSpawnedTitan = System.currentTimeMillis();
                     updateLastSpawnedTitan();
                 } catch (Exception e) {
@@ -777,13 +803,6 @@ public class Titans {
                 c.healRandomWound(1000);
             }
             lastPolledTitanSpawn = System.currentTimeMillis();
-        }
-    }
-    public static void pollTitans(){
-        for(Creature c : titans){
-            if(isTitan(c)){
-                pollTitan(c);
-            }
         }
     }
 

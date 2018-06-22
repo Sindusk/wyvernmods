@@ -9,6 +9,7 @@ import com.wurmonline.server.items.*;
 import com.wurmonline.server.players.Player;
 import com.wurmonline.server.questions.NewSpawnQuestion;
 import com.wurmonline.server.questions.SpawnQuestion;
+import com.wurmonline.server.skills.Affinity;
 import com.wurmonline.server.villages.Citizen;
 import com.wurmonline.server.villages.Village;
 import com.wurmonline.server.zones.Zone;
@@ -139,14 +140,14 @@ public class Arena {
 				statue.insertItem(sleepPowder, true);
 			}
 			for (x = 0; x < 5; ++x) {
-				lump = ItemFactory.createItem(ItemList.adamantineBar, Math.min(99, 50 + winStreak), null);
+				lump = ItemFactory.createItem(ItemList.adamantineBar, Math.min(99f, 60 + (winStreak*Server.rand.nextFloat()*1.5f)), null);
 				float baseWeight = lump.getWeightGrams();
 				float multiplier = 1f;//+(winStreak*0.4f*Server.rand.nextFloat());
 				lump.setWeight((int) (baseWeight*multiplier), true);
 				statue.insertItem(lump, true);
 			}
 			for (x = 0; x < 5; ++x) {
-				lump = ItemFactory.createItem(ItemList.glimmerSteelBar, Math.min(99, 50 + winStreak), null);
+				lump = ItemFactory.createItem(ItemList.glimmerSteelBar, Math.min(99f, 60 + (winStreak*Server.rand.nextFloat()*1.5f)), null);
                 float baseWeight = lump.getWeightGrams();
                 float multiplier = 1f;//+(winStreak*0.2f*Server.rand.nextFloat());
                 lump.setWeight((int) (baseWeight*multiplier), true);
@@ -163,8 +164,8 @@ public class Arena {
                     ArtifactCache.templateId,
                     CrystalCache.templateId, CrystalCache.templateId,
                     DragonCache.templateId, DragonCache.templateId, DragonCache.templateId,
-                    GemCache.templateId,
                     RiftCache.templateId, RiftCache.templateId, RiftCache.templateId,
+                    ToolCache.templateId,
                     TreasureMapCache.templateId
             };
             int i = 5+Server.rand.nextInt(4); // 5-8 caches.
@@ -180,9 +181,9 @@ public class Arena {
                 i--;
             }
             // Add 3-5 seryll lumps of medium ql
-            i = 3+Server.rand.nextInt(3); // 3-5 caches
+            i = 3+Server.rand.nextInt(3); // 3-5 lumps
             while(i > 0){
-                Item seryll = ItemFactory.createItem(ItemList.seryllBar, 30f+(40f*Server.rand.nextFloat()), null);
+                Item seryll = ItemFactory.createItem(ItemList.seryllBar, 40f+(60f*Server.rand.nextFloat()), null);
                 statue.insertItem(seryll, true);
                 i--;
             }
@@ -208,6 +209,10 @@ public class Arena {
 			p.sendTransfer(Server.getInstance(), targetserver.INTRASERVERADDRESS, Integer.parseInt(targetserver.INTRASERVERPORT), targetserver.INTRASERVERPASSWORD, targetserver.id, tilex, tiley, true, false, p.getKingdomId());
 		}
 	}
+
+	public static Affinity[] getNullAffinities(){
+	    return new Affinity[0];
+    }
 
 	public static void preInit(){
 		try {
@@ -688,13 +693,13 @@ public class Arena {
                     "}";
             Util.instrumentDeclared(thisClass, ctCreature, "die", "getFavor", replace);
 
-            Util.setReason("Nerf resurrection stones.");
+            /*Util.setReason("Nerf resurrection stones.");
             replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){" +
                     "  $_ = com.wurmonline.server.Server.rand.nextInt(40) > 35;" +
                     "}else{" +
                     "  $_ = $proceed($$);" +
                     "}";
-            Util.instrumentDeclared(thisClass, ctCreature, "die", "isDeathProtected", replace);
+            Util.instrumentDeclared(thisClass, ctCreature, "die", "isDeathProtected", replace);*/
 
             Util.setReason("Adjust spawn question mechanics.");
             CtClass ctSpawnQuestion = classPool.get("com.wurmonline.server.questions.SpawnQuestion");
@@ -769,6 +774,40 @@ public class Arena {
             Util.setReason("Disable crown influence from spreading to enemies.");
             replace = "$_ = $0.getAttitude(this) == 1;";
             Util.instrumentDeclared(thisClass, ctPlayer, "spreadCrownInfluence", "isFriendlyKingdom", replace);
+
+            Util.setReason("Disable item drops from players on Arena.");
+            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER && this.isPlayer()){" +
+                    "  this.getCommunicator().sendSafeServerMessage(\"You have died on the Arena server and your items are kept safe.\");" +
+                    "  keepItems = true;" +
+                    "}" +
+                    "$_ = $proceed($$);";
+            Util.instrumentDeclaredCount(thisClass, ctCreature, "die", "isOnCurrentServer", 1, replace);
+
+            Util.setReason("Disable player skill loss on Arena.");
+            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER && this.isPlayer() && this.isDeathProtected()){" +
+                    "  this.getCommunicator().sendSafeServerMessage(\"You have died on the Arena server with a Resurrection Stone and your knowledge is kept safe.\");" +
+                    "  return;" +
+                    "}else if(com.wurmonline.server.Servers.localServer.PVPSERVER){" +
+                    "  this.getCommunicator().sendAlertServerMessage(\"You have died on the Arena server without a Resurrection Stone, resulting in some of your knowledge being lost.\");" +
+                    "}";
+            Util.insertBeforeDeclared(thisClass, ctCreature, "punishSkills", replace);
+
+            Util.setReason("Disable player fight skill loss on Arena.");
+            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER && this.isPlayer() && this.isDeathProtected()){" +
+                    "  $_ = null;" +
+                    "}else{" +
+                    "  $_ = $proceed($$);" +
+                    "}";
+            Util.instrumentDeclaredCount(thisClass, ctCreature, "modifyFightSkill", "setKnowledge", 1, replace);
+
+            Util.setReason("Disable player affinity loss on Arena.");
+            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER && this.isPlayer() && this.isDeathProtected()){" +
+                    "  this.getCommunicator().sendSafeServerMessage(\"Your resurrection stone keeps your affinities safe from your slayers.\");" +
+                    "  $_ = "+Arena.class.getName()+".getNullAffinities();" +
+                    "}else{" +
+                    "  $_ = $proceed($$);" +
+                    "}";
+            Util.instrumentDeclared(thisClass, ctPlayer, "modifyRanking", "getAffinities", replace);
 
 
 		}catch (NotFoundException e) {

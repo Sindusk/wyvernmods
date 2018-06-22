@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import com.wurmonline.server.Servers;
+import mod.sin.items.caches.*;
 import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
 import org.gotti.wurmunlimited.modloader.classhooks.InvocationHandlerFactory;
@@ -35,7 +36,8 @@ import mod.sin.weapons.titan.*;
 
 public class ItemMod {
 	public static Logger logger = Logger.getLogger(ItemMod.class.getName());
-	
+
+	public static AffinityCatcher AFFINITY_CATCHER = new AffinityCatcher();
 	public static AffinityOrb AFFINITY_ORB = new AffinityOrb();
 	public static ArenaCache ARENA_CACHE = new ArenaCache();
 	public static ArenaSupplyDepot ARENA_SUPPLY_DEPOT = new ArenaSupplyDepot();
@@ -100,6 +102,7 @@ public class ItemMod {
 	public static void createItems(){
 		logger.info("createItems()");
 		try{
+		    AFFINITY_CATCHER.createTemplate();
 			AFFINITY_ORB.createTemplate();
 			ARENA_CACHE.createTemplate();
 			ARENA_SUPPLY_DEPOT.createTemplate();
@@ -166,6 +169,8 @@ public class ItemMod {
 	}
 	
 	public static void registerActions(){
+	    ModActions.registerAction(new AffinityCatcherCaptureAction());
+	    ModActions.registerAction(new AffinityCatcherConsumeAction());
 		ModActions.registerAction(new AffinityOrbAction());
 		ModActions.registerAction(new ArenaCacheOpenAction());
 		ModActions.registerAction(new ArrowPackUnpackAction());
@@ -270,6 +275,7 @@ public class ItemMod {
 			new Weapon(Club.templateId, 8.1f, 4.5f, 0.002f, 3, 3, 0.4f, 0.5d);
 			new Weapon(Knuckles.templateId, 3.6f, 2.2f, 0.002f, 1, 1, 0.2f, 0.5d);
 			new Weapon(Warhammer.templateId, 9.40f, 5.6f, 0.008f, 4, 3, 1f, 0d);
+			//new Weapon(ItemList.stoneChisel, 50f, 1f, 0.5f, 8, 1, 3f, -5f);
 			// Titan weaponry
 			new Weapon(MaartensMight.templateId, 11, 5, 0.02f, 4, 4, 1.0f, 0d);
 			new Weapon(RaffehsRage.templateId, 9.5f, 4.25f, 0.02f, 3, 3, 1.0f, 0d);
@@ -310,6 +316,15 @@ public class ItemMod {
 		}
 		return -10;
 	}
+
+	private static void setFragments(int templateId, int fragmentCount){
+        try {
+            ItemTemplate item = ItemTemplateFactory.getInstance().getTemplate(templateId);
+            ReflectionUtil.setPrivateField(item, ReflectionUtil.getField(item.getClass(), "fragmentAmount"), fragmentCount);
+        } catch (IllegalAccessException | NoSuchFieldException | NoSuchTemplateException e) {
+            e.printStackTrace();
+        }
+    }
 	
 	public static void modifyItems() throws NoSuchTemplateException, IllegalArgumentException, IllegalAccessException, ClassCastException, NoSuchFieldException{
 		// Make leather able to be combined.
@@ -383,6 +398,29 @@ public class ItemMod {
         ReflectionUtil.setPrivateField(marbleKeystone, ReflectionUtil.getField(marbleKeystone.getClass(), "decoration"), true);
         ItemTemplate skull = ItemTemplateFactory.getInstance().getTemplate(ItemList.skull);
         ReflectionUtil.setPrivateField(skull, ReflectionUtil.getField(skull.getClass(), "decoration"), true);
+
+        // Modify fragment counts
+        setFragments(ArmourCache.templateId, 18);
+        setFragments(ArtifactCache.templateId, 33);
+        setFragments(CrystalCache.templateId, 11);
+        setFragments(DragonCache.templateId, 19);
+        setFragments(GemCache.templateId, 7);
+        setFragments(MoonCache.templateId, 14);
+        setFragments(PotionCache.templateId, 18);
+        setFragments(RiftCache.templateId, 24);
+        setFragments(TitanCache.templateId, 100);
+        setFragments(ToolCache.templateId, 27);
+        setFragments(TreasureMapCache.templateId, 38);
+
+        setFragments(AffinityOrb.templateId, 20);
+
+        setFragments(ItemList.statueWorg, 40);
+        setFragments(ItemList.statueEagle, 40);
+
+        setFragments(ItemList.statueFo, 50);
+        setFragments(ItemList.statueMagranon, 50);
+        setFragments(ItemList.statueLibila, 50);
+        setFragments(ItemList.statueVynora, 50);
 		
 		createCustomWeapons();
 		createCustomArmours();

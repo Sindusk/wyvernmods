@@ -9,21 +9,22 @@ import com.wurmonline.server.creatures.Creatures;
 import com.wurmonline.server.items.Item;
 import com.wurmonline.server.players.Player;
 import com.wurmonline.shared.constants.Enchants;
-import javassist.ClassPool;
-import javassist.CtClass;
-import javassist.CtMethod;
-import javassist.NotFoundException;
+import javassist.*;
 import javassist.bytecode.*;
+import javassist.expr.ExprEditor;
+import javassist.expr.FieldAccess;
 import mod.sin.lib.Util;
 import org.gotti.wurmunlimited.modloader.classhooks.HookException;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 public class CombatChanges {
     public static Logger logger = Logger.getLogger(CombatChanges.class.getName());
 
+    // Added to CombatHandled
     public static int getWeaponType(Item weapon){
         if(weapon.enchantment == Enchants.ACID_DAM){
             return Wound.TYPE_ACID;
@@ -67,6 +68,7 @@ public class CombatChanges {
         return mult;
     }
 
+    // Added to CombatHandled
     public static int getLifeTransferAmountModifier(Wound wound, int initial){
         byte type = wound.getType();
         if(type == Wound.TYPE_ACID || type == Wound.TYPE_BURN || type == Wound.TYPE_COLD){
@@ -77,6 +79,7 @@ public class CombatChanges {
         return initial;
     }
 
+    // Added to CombatHandled
     public static float getLifeTransferModifier(Creature creature, Creature defender){
         if(Servers.localServer.PVPSERVER && (defender.isDominated() || defender.isPlayer()) && creature.isPlayer()){
             return 0.5f;
@@ -84,6 +87,7 @@ public class CombatChanges {
         return 1.0f;
     }
 
+    // Added to CombatHandled
     public static void doLifeTransfer(Creature creature, Creature defender, Item attWeapon, double defdamage, float armourMod){
         float lifeTransfer = attWeapon.getSpellLifeTransferModifier()*getLifeTransferModifier(creature, defender);
         Wound[] w;
@@ -94,6 +98,7 @@ public class CombatChanges {
         }
     }
 
+    // Added (kind of) to CombatHandled
     public static float getAdjustedOakshell(Creature defender, Item armour, float armourMod){
         if(defender != null && armour == null){
             float oakshellPower = defender.getBonusForSpellEffect(Enchants.CRET_OAKSHELL);
@@ -139,6 +144,8 @@ public class CombatChanges {
             }
         }
     }
+
+    // Added to CombatHandled
     public static boolean canDoDamage(double damage, Creature attacker, Creature defender) {
         //logger.info(String.format("canDoDamage from %s to %s - %.1f", attacker.getName(), defender.getName(), damage));
         return damage > 1D;
@@ -250,6 +257,18 @@ public class CombatChanges {
         }
     }
 
+    // Added to CombatHandled
+    public static void pollCreatureActionStacks(){
+        for(Creature c : Creatures.getInstance().getCreatures()){
+            if(c.isFighting()) {
+                c.getActions().poll(c);
+            }
+        }
+    }
+
+    public static void goodLog(String str){
+        logger.info(str);
+    }
 
     public static void preInit(){
         try{
@@ -382,6 +401,55 @@ public class CombatChanges {
                     "  $_ = $proceed($$);" +
                     "}";
             Util.instrumentDeclared(thisClass, ctCombatHandler, "setDamage", "getSpellPainShare", replace);
+
+            /*Util.setReason("Debug attack method");
+            CtClass ctAction = classPool.get("com.wurmonline.server.behaviours.Action");
+            CtClass[] params4 = {
+                    ctCreature,
+                    CtClass.intType,
+                    CtClass.booleanType,
+                    CtClass.floatType,
+                    ctAction
+            };
+            String desc4 = Descriptor.ofMethod(CtClass.booleanType, params4);
+            replace = "logger.info(\"opponent = \"+$1.getName()+\", combatCounter = \"+$2+\", opportunity = \"+$3+\", actionCounter = \"+$4);";
+            Util.insertBeforeDescribed(thisClass, ctCombatHandler, "attack", desc4, replace);*/
+
+            /*Util.setReason("Debug CreatureAI Poll");
+            CtClass ctCreatureAI = classPool.get("com.wurmonline.server.creatures.ai.CreatureAI");
+            replace = "if($1.getTemplate().getTemplateId() == 2147483619){" +
+                    CombatChanges.class.getName()+".goodLog(\"CreatureAI.pollCreature(\"+$1.getName()+\", \"+$2+\")\");" +
+                    "}";
+            Util.insertBeforeDeclared(thisClass, ctCreatureAI, "pollCreature", replace);*/
+
+            /*Util.setReason("Debug VolaTile Poll");
+            CtClass ctVolaTile = classPool.get("com.wurmonline.server.zones.VolaTile");
+            replace = "if($2.getTemplate().getTemplateId() == 2147483619){" +
+                    CombatChanges.class.getName()+".goodLog(\"VolaTile.pollOneCreatureOnThisTile(\"+$2.getName()+\")\");" +
+                    "}";
+            Util.insertBeforeDeclared(thisClass, ctVolaTile, "pollOneCreatureOnThisTile", replace);*/
+
+            /*Util.setReason("Debug Creature Poll");
+            replace = "if($0.getTemplate().getTemplateId() == 2147483619){" +
+                    CombatChanges.class.getName()+".goodLog(\"Creature.poll(\"+$0.getName()+\")\");" +
+                    "}";
+            Util.insertBeforeDeclared(thisClass, ctCreature, "poll", replace);*/
+
+            /*Util.setReason("Debug Creatures Poll");
+            CtClass ctCreatures = classPool.get("com.wurmonline.server.creatures.Creatures");
+            replace = CombatChanges.class.getName()+".goodLog(\"Creatures.pollAllCreatures()\");";
+            Util.insertBeforeDeclared(thisClass, ctCreatures, "pollAllCreatures", replace);*/
+
+            // TODO: Enable with new combat rework.
+            /*Util.setReason("Poll creature action stacks on every update.");
+            CtClass ctZones = classPool.get("com.wurmonline.server.zones.Zones");
+            replace = //CombatChanges.class.getName()+".goodLog(\"Zones.pollNextZones(\"+$1+\") [time \"+java.lang.System.currentTimeMillis()+\"]\");" +
+                    CombatChanges.class.getName()+".pollCreatureActionStacks();";
+            Util.insertBeforeDeclared(thisClass, ctZones, "pollNextZones", replace);*/
+
+            /*replace = "$_ = $proceed($$);" +
+                    CombatChanges.class.getName()+".goodLog(\"Zones.pollNextZones(\"+sleepTime+\") call to Creatures.getInstance().pollAllCreatures(\"+$1+\") [time \"+java.lang.System.currentTimeMillis()+\"]\");";
+            Util.instrumentDeclared(thisClass, ctZones, "pollNextZones", "pollAllCreatures", replace);*/
 
             patchCombatDamageCheckCombatEngine(classPool);
             patchCombatDamageCheckCombatHandler(classPool);
