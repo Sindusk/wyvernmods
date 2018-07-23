@@ -57,7 +57,7 @@ public class SpiritTroll implements ModCreature, CreatureTypes {
 		//       final float naturalArmour, final float handDam, final float kickDam, final float biteDam, final float headDam, final float breathDam, final float speed, final int moveRate,
 		//       final int[] itemsButchered, final int maxHuntDist, final int aggress) {
 		CreatureTemplateBuilder builder = new CreatureTemplateBuilder("mod.creature.spirit.troll", "Spirit troll", "A spirit troll.",
-				"model.creature.humanoid.troll.standard", Servers.localServer.PVPSERVER ? pvpTypes : types, BodyTemplate.TYPE_HUMAN, (short) 5, (byte) 0, (short) 85, (short) 50, (short) 85,
+				"model.creature.humanoid.troll.king", Servers.localServer.PVPSERVER ? pvpTypes : types, BodyTemplate.TYPE_HUMAN, (short) 5, (byte) 0, (short) 85, (short) 50, (short) 85,
 				"sound.death.troll", "sound.death.troll", "sound.combat.hit.troll", "sound.combat.hit.troll", 
 				0.15f, 15f, 17f, 19.0f, 0.0f, 0.0f, 1.2f, 500,
 				new int[]{}, 10, 74, Materials.MATERIAL_MEAT_HUMANOID);

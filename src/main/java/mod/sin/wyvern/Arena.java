@@ -230,6 +230,7 @@ public class Arena {
             		+ "  $_ = $proceed($$);"
             		+ "}";
             Util.instrumentDeclared(thisClass, ctCommunicator, "reallyHandle_CMD_MOVE_INVENTORY", "getDominator", replace);
+            Util.instrumentDeclared(thisClass, ctCommunicator, "equipCreatureCheck", "getDominator", replace);
             /*ctCommunicator.getDeclaredMethod("reallyHandle_CMD_MOVE_INVENTORY").instrument(new ExprEditor(){
                 public void edit(MethodCall m) throws CannotCompileException {
                     if (m.getMethodName().equals("getDominator")) {
@@ -784,16 +785,16 @@ public class Arena {
             Util.instrumentDeclaredCount(thisClass, ctCreature, "die", "isOnCurrentServer", 1, replace);
 
             Util.setReason("Disable player skill loss on Arena.");
-            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER && this.isPlayer() && this.isDeathProtected()){" +
-                    "  this.getCommunicator().sendSafeServerMessage(\"You have died on the Arena server with a Resurrection Stone and your knowledge is kept safe.\");" +
+            replace = "if(this.isPlayer() && this.isDeathProtected()){" +
+                    "  this.getCommunicator().sendSafeServerMessage(\"You have died with a Resurrection Stone and your knowledge is kept safe.\");" +
                     "  return;" +
-                    "}else if(com.wurmonline.server.Servers.localServer.PVPSERVER){" +
-                    "  this.getCommunicator().sendAlertServerMessage(\"You have died on the Arena server without a Resurrection Stone, resulting in some of your knowledge being lost.\");" +
+                    "}else{" +
+                    "  this.getCommunicator().sendAlertServerMessage(\"You have died without a Resurrection Stone, resulting in some of your knowledge being lost.\");" +
                     "}";
             Util.insertBeforeDeclared(thisClass, ctCreature, "punishSkills", replace);
 
             Util.setReason("Disable player fight skill loss on Arena.");
-            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER && this.isPlayer() && this.isDeathProtected()){" +
+            replace = "if(this.isPlayer() && this.isDeathProtected()){" +
                     "  $_ = null;" +
                     "}else{" +
                     "  $_ = $proceed($$);" +
@@ -808,6 +809,14 @@ public class Arena {
                     "  $_ = $proceed($$);" +
                     "}";
             Util.instrumentDeclared(thisClass, ctPlayer, "modifyRanking", "getAffinities", replace);
+
+            /*Util.setReason("Enable stealing from deeds.");
+            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){" +
+                    "  $_ = true;" +
+                    "}else{" +
+                    "  $_ = $proceed($$);" +
+                    "}";
+            Util.instrumentDeclared(thisClass, ctMethodsItems, "checkIfStealing", "mayPass", replace);*/
 
 
 		}catch (NotFoundException e) {

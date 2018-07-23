@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import mod.sin.items.KeyFragment;
 import org.gotti.wurmunlimited.modsupport.actions.ActionPerformer;
 import org.gotti.wurmunlimited.modsupport.actions.BehaviourProvider;
 import org.gotti.wurmunlimited.modsupport.actions.ModAction;
@@ -75,7 +76,7 @@ public class SealedMapAction implements ModAction {
 			public short getActionId() {
 				return actionId;
 			}
-			
+
 			// Without activated object
 			@Override
 			public boolean action(Action act, Creature performer, Item target, short action, float counter)
@@ -92,7 +93,7 @@ public class SealedMapAction implements ModAction {
 						}
 						if(counter == 1.0f){
 							performer.getCommunicator().sendNormalServerMessage("You begin to unseal the "+target.getName()+".");
-							Server.getInstance().broadCastAction(performer.getName() + " begins unseal "+performer.getHisHerItsString()+" "+target.getName()+".", performer, 5);
+							Server.getInstance().broadCastAction(performer.getName() + " begins unsealing "+performer.getHisHerItsString()+" "+target.getName()+".", performer, 5);
 							act.setTimeLeft(50);
 							performer.sendActionControl("Unsealing", true, act.getTimeLeft());
 						}else if(counter * 10f > performer.getCurrentAction().getTimeLeft()){

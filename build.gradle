@@ -1,7 +1,7 @@
 apply plugin: 'java'
 
 group "mod.sin"
-version "1.0"
+version "1.1"
 
 repositories {
     mavenCentral()
@@ -12,8 +12,9 @@ repositories {
 
 dependencies {
     compile 'org.gotti.wurmunlimited:server-modlauncher:0.37'
-    compile 'com.github.Sindusk:sindusklibrary:v1.5'
+    compile 'com.github.Sindusk:sindusklibrary:v1.7'
     compile 'com.github.Sindusk:DiscordRelay:v1.2'
+    compile 'com.github.Sindusk:DUSKombat:v1.0'
     compile 'com.github.Sindusk:TreasureHunting:1.1.4'
 }
 

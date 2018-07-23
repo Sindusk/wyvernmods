@@ -20,6 +20,7 @@ import com.wurmonline.server.players.Player;
 import com.wurmonline.server.players.Titles.Title;
 import com.wurmonline.server.skills.NoSuchSkillException;
 import com.wurmonline.server.skills.SkillList;
+import mod.piddagoras.duskombat.DamageEngine;
 import mod.sin.armour.SpectralHide;
 import mod.sin.creatures.Reaper;
 import mod.sin.creatures.SpectralDrake;
@@ -128,7 +129,7 @@ public class PlayerBounty {
 					return;
 				}
 			}
-    		if(Bounty.dealtDamage.containsKey(mobWurmId) && Bounty.dealtDamage.get(mobWurmId).containsKey(player.getWurmId())){
+    		if(DamageEngine.dealtDamage.containsKey(mobWurmId) && DamageEngine.dealtDamage.get(mobWurmId).containsKey(player.getWurmId())){
     			// -- Damage Dealt Rewards -- //
 				/*if(mob.isUnique()){
 					// Treasure boxes awarded to players who deal damage:

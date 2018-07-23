@@ -37,16 +37,19 @@ public class SkillChanges {
         try {
             Skills parent = ReflectionUtil.getPrivateField(skill, ReflectionUtil.getField(skill.getClass(), "parent"));
             double advanceMultiplicator = (100.0 - skill.getKnowledge()) / (skill.getDifficulty(parent.priest) * skill.getKnowledge() * skill.getKnowledge()) * learnMod * bonus;
-            double p = 5;
-            double q = 3;
+            double negativeDecayRate = 5;
+            double positiveDecayRate = 3;
+            double valueAtZero = 3.74d;
+            double valueAtOneHundred = 0.9d;
             //advanceMultiplicator *= Math.pow(2, ((2-Math.pow((100/(100+power)), p))*(100-power)/100));
-            double mult = Math.pow(2, (2-Math.pow(100/(100+power), p))*Math.pow((100-power)*0.01, q));
+            //double mult = Math.pow(2, (2-Math.pow(100/(100+power), negativeDecayRate))*Math.pow((100-power)*0.01, positiveDecayRate));
+            double mult = valueAtOneHundred*Math.pow(valueAtZero/valueAtOneHundred, (2-Math.pow(100/(100+Math.max(-99,power)), negativeDecayRate))*Math.pow((100-power)*0.01, positiveDecayRate));
             if(mult < 0.5 && skill.getKnowledge() < 20){
                 advanceMultiplicator *= 0.5+(Server.rand.nextDouble()*0.5);
             }else if(skill.getNumber() == SkillList.MEDITATING || skill.getNumber() == SkillList.LOCKPICKING){
                 advanceMultiplicator *= Math.max(mult, 0.8d);
             }else if(mult > 0.0001) {
-                advanceMultiplicator *= mult*0.95d;
+                advanceMultiplicator *= mult;
             }else{
                 advanceMultiplicator = 0;
             }

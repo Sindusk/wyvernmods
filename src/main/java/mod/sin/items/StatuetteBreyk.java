@@ -17,10 +17,10 @@ import com.wurmonline.server.skills.SkillList;
 public class StatuetteBreyk implements ItemTypes, MiscConstants {
 	public static Logger logger = Logger.getLogger(StatuetteBreyk.class.getName());
 	public static int templateId;
-	private String name = "statuette of Breyk";
+	private String name = "statuette of Thelastdab";
 	public void createTemplate() throws IOException{
 		ItemTemplateBuilder itemBuilder = new ItemTemplateBuilder("mod.item.statuette.breyk");
-		itemBuilder.name(name, "statuettes", "A statuette resembling the artists interpretation of the deity Breyk.");
+		itemBuilder.name(name, "statuettes", "A statuette resembling the artists interpretation of the demigod Thelastdab.");
 		itemBuilder.itemTypes(new short[]{ // {108, 52, 22, 44, 87, 92, 147} - Statuette
 				ItemTypes.ITEM_TYPE_NAMED,
 				ItemTypes.ITEM_TYPE_DECORATION,
@@ -37,7 +37,7 @@ public class StatuetteBreyk implements ItemTypes, MiscConstants {
 		itemBuilder.dimensions(3, 5, 20);
 		itemBuilder.primarySkill(-10);
 		itemBuilder.bodySpaces(MiscConstants.EMPTY_BYTE_PRIMITIVE_ARRAY);
-		itemBuilder.modelName("model.decoration.statuette.fo.");
+		itemBuilder.modelName("model.decoration.statuette.magranon.");
 		itemBuilder.difficulty(40.0f);
 		itemBuilder.weightGrams(1000);
 		itemBuilder.material(Materials.MATERIAL_SILVER);

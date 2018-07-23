@@ -144,13 +144,15 @@ public class LeaderboardQuestion extends Question {
         customMap.put(6, "Most Unique Achievements");
         builder = builder + ",Largest Structures";
         customMap.put(7, "Largest Structures");
+        builder = builder + ",Most Populated Villages";
+        customMap.put(8, "Most Populated Villages");
         if(Servers.localServer.PVPSERVER || this.getResponder().getPower() >= 5){
             builder = builder + ",PvP Kills";
-            customMap.put(8, "PvP Kills");
+            customMap.put(9, "PvP Kills");
             builder = builder + ",PvP Deaths";
-            customMap.put(9, "PvP Deaths");
+            customMap.put(10, "PvP Deaths");
             builder = builder + ",Depots Captured";
-            customMap.put(10, "PvP Depots Captured");
+            customMap.put(11, "PvP Depots Captured");
         }
         return builder;
     }

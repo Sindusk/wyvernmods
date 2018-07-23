@@ -1,23 +1,29 @@
 package mod.sin.wyvern;
 
+import com.wurmonline.server.deities.Deities;
+import com.wurmonline.server.deities.Deity;
+
 import java.util.logging.Logger;
 
 public class DeityChanges {
     public static Logger logger = Logger.getLogger(DeityChanges.class.getName());
 
     public static void onServerStarted(){
-        /*if(Deities.getDeity(101) != null){ // Edit Breyk player god
-            Deity breyk = Deities.getDeity(101);
+        if(Deities.getDeity(101) != null){ // Edit Thelastdab Player God
+            Deity thelastdab = Deities.getDeity(101);
             // Add some defining affinities
-            breyk.repairer = true;
-            breyk.learner = true;
-            breyk.deathProtector = true;
-            breyk.befriendCreature = true;
+            thelastdab.metalAffinity = true;
+            thelastdab.deathProtector = true;
+            thelastdab.mountainGod = true;
+            thelastdab.warrior = true;
             // Remove some affinities
-            breyk.warrior = false;
-            breyk.healer = false;
-            breyk.clayAffinity = false;
-        }*/
+            thelastdab.learner = false;
+            thelastdab.repairer = false;
+            thelastdab.befriendCreature = false;
+            thelastdab.healer = false;
+            thelastdab.clayAffinity = false;
+            thelastdab.waterGod = false;
+        }
         /*if(Deities.getDeity(102) != null){ // Edit Cyberhusky player god
             Deity cyberhusky = Deities.getDeity(102);
             // Add some defining affinities

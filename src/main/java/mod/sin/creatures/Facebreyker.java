@@ -57,6 +57,8 @@ public class Facebreyker implements ModCreature, CreatureTypes {
 		builder.baseCombatRating(80.0f);
 		builder.combatDamageType(Wound.TYPE_CRUSH);
 		builder.maxGroupAttackSize(100);
+
+		builder.setCombatMoves(new int[]{5});
 		
 		//builder.usesNewAttacks(true);
 		// float baseDamage, float criticalChance, float baseSpeed, int attackReach, int weightGroup, byte damageType, boolean usesWeapon, int rounds, float waitUntilNextAttack

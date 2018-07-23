@@ -3,6 +3,8 @@ package mod.sin.wyvern;
 import com.wurmonline.server.*;
 import com.wurmonline.server.bodys.Wound;
 import com.wurmonline.server.creatures.Creature;
+import com.wurmonline.server.creatures.Creatures;
+import com.wurmonline.server.creatures.NoSuchCreatureException;
 import com.wurmonline.server.items.Item;
 import com.wurmonline.server.items.ItemTemplate;
 import com.wurmonline.server.items.SimpleCreationEntry;
@@ -16,6 +18,7 @@ import com.wurmonline.server.webinterface.WcKingdomChat;
 import com.wurmonline.server.zones.VolaTile;
 import com.wurmonline.server.zones.Zones;
 import com.wurmonline.shared.constants.Enchants;
+import com.wurmonline.shared.util.StringUtilities;
 import javassist.*;
 import javassist.bytecode.Descriptor;
 import javassist.expr.ExprEditor;
@@ -31,6 +34,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -52,16 +56,19 @@ public class MiscChanges {
         };
         r.run();
 	}
-	
-	public static void sendGlobalFreedomChat(final Creature sender, final String message, final int red, final int green, final int blue){
+
+    public static void sendGlobalFreedomChat(final Creature sender, final String message, final int red, final int green, final int blue){
+	    sendGlobalFreedomChat(sender, sender.getNameWithoutPrefixes(), message, red, green, blue);
+    }
+	public static void sendGlobalFreedomChat(final Creature sender, final String name, final String message, final int red, final int green, final int blue){
 		Runnable r = () -> {
             Message mess;
             for(Player rec : Players.getInstance().getPlayers()){
-                mess = new Message(sender, (byte)10, "GL-Freedom", "<"+sender.getNameWithoutPrefixes()+"> "+message, red, green, blue);
+                mess = new Message(sender, (byte)10, "GL-Freedom", "<"+name+"> "+message, red, green, blue);
                 rec.getCommunicator().sendMessage(mess);
             }
             if (message.trim().length() > 1) {
-                WcKingdomChat wc = new WcKingdomChat(WurmId.getNextWCCommandId(), sender.getWurmId(), sender.getNameWithoutPrefixes(), message, false, (byte) 4, red, green, blue);
+                WcKingdomChat wc = new WcKingdomChat(WurmId.getNextWCCommandId(), sender.getWurmId(), name, message, false, (byte) 4, red, green, blue);
                 if (!Servers.isThisLoginServer()) {
                     wc.sendToLoginServer();
                 } else {
@@ -71,6 +78,29 @@ public class MiscChanges {
         };
         r.run();
 	}
+
+	public static void broadCastDeathsPvE(Player player, Map<Long, Long> attackers){
+	    StringBuilder attackerString = new StringBuilder();
+        final long now = System.currentTimeMillis();
+        for (final Long attackerId : attackers.keySet()) {
+            final Long time = attackers.get(attackerId);
+            try {
+                final Creature creature = Creatures.getInstance().getCreature(attackerId);
+                if (now - time >= 600000L) {
+                    continue;
+                }
+                if(attackerString.length() > 0){
+                    attackerString.append(" ");
+                }
+                attackerString.append(StringUtilities.raiseFirstLetter(creature.getName()));
+                if (creature.isPlayer()) {
+                    return;
+                }
+            }
+            catch (NoSuchCreatureException ignored) {}
+        }
+	    Players.getInstance().broadCastDeathInfo(player, attackerString.toString());
+    }
 
 	public static void broadCastDeaths(Creature player, String slayers){
 	    String slayMessage = "slain by ";
@@ -278,8 +308,10 @@ public class MiscChanges {
             String infoTabTitle = "Server";
             // Initial messages:
             String[] infoTabLine = {"Server Thread: https://forum.wurmonline.com/index.php?/topic/162067-revenant-modded-pvepvp-3x-action-new-skillgain/",
-                            "Website/Maps: https://www.sarcasuals.com/",
-                            "Server Discord: https://discord.gg/r8QNXAC"};
+                    "Website/Maps: https://www.sarcasuals.com/",
+                    "Server Discord: https://discord.gg/r8QNXAC",
+                    "Server Data: https://docs.google.com/spreadsheets/d/1yjqTHoxUan4LIldI3jgrXZgXj1M2ENQ4MXniPUz0rE4",
+                    "Server Wiki/Documentation: https://docs.google.com/document/d/1GeaygilS-Z-d1TuGB7awOe9sJNV4o5BTZw_a2ATJy98"};
             StringBuilder str = new StringBuilder("{"
                     + "        com.wurmonline.server.Message mess;");
             for (String anInfoTabLine : infoTabLine) {
@@ -341,12 +373,11 @@ public class MiscChanges {
             Util.instrumentDeclared(thisClass, ctMethodsItems, "improveItem", "isCombine", replace);
             
             // - Check new improve materials - //
-            // TODO: Re-enable when custom items are created that require it.
-            /*replace = "int temp = "+ItemMod.class.getName()+".getModdedImproveTemplateId($1);"
+            replace = "int temp = "+ItemMod.class.getName()+".getModdedImproveTemplateId($1);"
             		+ "if(temp != -10){"
             		+ "  return temp;"
             		+ "}";
-            Util.insertBeforeDeclared(thisClass, ctMethodsItems, "getImproveTemplateId", replace);*/
+            Util.insertBeforeDeclared(thisClass, ctMethodsItems, "getImproveTemplateId", replace);
             
             // - Remove fatiguing actions requiring you to be on the ground - //
             CtClass ctAction = classPool.get("com.wurmonline.server.behaviours.Action");
@@ -401,8 +432,16 @@ public class MiscChanges {
         	Util.instrumentDeclared(thisClass, ctArrows, "addToHitCreature", "addAttacker", replace);
 
         	Util.setReason("Broadcast death tabs to GL-Freedom.");
-        	Util.insertBeforeDeclared(thisClass, ctPlayers, "broadCastDeathInfo", MiscChanges.class.getName()+".broadCastDeaths($1, $2);");
-        	//ctPlayers.getDeclaredMethod("broadCastDeathInfo").insertBefore("mod.sin.wyvern.MiscChanges.broadCastDeaths($1, $2);");
+        	replace = MiscChanges.class.getName()+".broadCastDeaths($1, $2);";
+            Util.insertBeforeDeclared(thisClass, ctPlayers, "broadCastDeathInfo", replace);
+
+            Util.setReason("Broadcast player death tabs always.");
+            replace = MiscChanges.class.getName()+".broadCastDeathsPvE($0, $0.attackers);";
+            Util.insertBeforeDeclared(thisClass, ctPlayer, "modifyRanking", replace);
+
+            Util.setReason("Disable PvP only death tabs.");
+            replace = "$_ = true;";
+            Util.instrumentDeclared(thisClass, ctPlayers, "broadCastDeathInfo", "isThisAPvpServer", replace);
 
         	Util.setReason("Attempt to prevent libila from losing faith when crossing servers.");
             CtClass ctIntraServerConnection = classPool.get("com.wurmonline.server.intra.IntraServerConnection");
@@ -692,7 +731,6 @@ public class MiscChanges {
             // How to add a skill!
             /*CtClass ctSkillSystem = classPool.get("com.wurmonline.server.skills.SkillSystem");
             CtConstructor ctSkillSystemConstructor = ctSkillSystem.getClassInitializer();
-            logathing("Test first");
             ctSkillSystemConstructor.insertAfter("com.wurmonline.server.skills.SkillSystem.addSkillTemplate(new "+SkillTemplate.class.getName()+"(10096,
                      \"Battle Yoyos\", 4000.0f, new int[]{1022}, 1209600000l, (short) 4, true, true));");*/
 
@@ -741,51 +779,12 @@ public class MiscChanges {
             replace = "$_ = 1;";
             Util.instrumentDeclared(thisClass, ctAbilities, "isInProperLocation", "getTemplateId", replace);
 
-            /*Util.setReason("Debug Login Handler when creating a new player via an exception.");
-            CtClass ctLoginHandler = classPool.get("com.wurmonline.server.LoginHandler");
-            replace = "$_ = $proceed($$);" +
-                    "logger.info(ex.getMessage());";
-            Util.instrumentDeclared(thisClass, ctLoginHandler, "handleLogin", "doNewPlayer", replace);
-            replace = "$_ = $proceed($$);" +
-                    "logger.info(\"addPlayer(\"+$1+\")\");";
-            Util.instrumentDeclared(thisClass, ctLoginHandler, "handleLogin", "addPlayer", replace);
-            replace = "$_ = $proceed($$);" +
-                    "logger.info(\"initialisePlayer(\"+$1+\")\");";
-            Util.instrumentDeclared(thisClass, ctLoginHandler, "handleLogin", "initialisePlayer", replace);
-            replace = "$_ = $proceed($$);" +
-                    "logger.info(\"createBodyParts\");";
-            Util.instrumentDeclared(thisClass, ctLoginHandler, "handleLogin", "createBodyParts", replace);
-            replace = "logger.info(\"loadSkills\");" +
-                    "$_ = $proceed($$);";
-            Util.instrumentDeclared(thisClass, ctLoginHandler, "handleLogin", "loadSkills", replace);
-            replace = "logger.info(\"loadAllItemsForCreature1(\"+$1+\")\");" +
-                    "logger.info(\"loadAllItemsForCreature2(\"+$1.getStatus()+\")\");" +
-                    "logger.info(\"loadAllItemsForCreature3(\"+$2+\")\");" +
-                    "try{" +
-                    "  $_ = $proceed($$);" +
-                    "}catch(com.wurmonline.server.NoSuchItemException ex){" +
-                    "  logger.info(ex.getMessage());" +
+            Util.setReason("Make the key of the heavens only usable on PvE");
+            replace = "if($1.getTemplateId() == 794 && com.wurmonline.server.Servers.localServer.PVPSERVER){" +
+                    "  $2.getCommunicator().sendNormalServerMessage(\"The \"+$1.getName()+\" may not be used on Arena.\");" +
+                    "  return false;" +
                     "}";
-            Util.instrumentDeclared(thisClass, ctLoginHandler, "handleLogin", "loadAllItemsForCreature", replace);
-
-            // -- Items method debugging -- //
-            Util.setReason("Debug Items method loadAllitemsForCreature");
-            CtClass ctItems = classPool.get("com.wurmonline.server.Items");
-            replace = "logger.info(\"creature = \"+$1+\", inventoryId = \"+$2);";
-            Util.insertBeforeDeclared(thisClass, ctItems, "loadAllItemsForCreature", replace);
-            replace = "logger.info(\"loadPossessions(\"+$1+\")\");" +
-                    "$_ = $proceed($$);";
-            Util.instrumentDeclared(thisClass, ctItems, "loadAllItemsForCreature", "loadPossessions", replace);
-
-            replace = "logger.info(\"sendMapInfo - Communicator: \"+$0);" +
-                    "$_ = $proceed($$);";
-            Util.instrumentDeclared(thisClass, ctLoginHandler, "handleLogin", "sendMapInfo", replace);
-            replace = "logger.info(\"loadAllPrivatePOIForPlayer(\"+$1+\")\");" +
-                    "$_ = $proceed($$);";
-            Util.instrumentDeclared(thisClass, ctLoginHandler, "handleLogin", "loadAllPrivatePOIForPlayer", replace);
-            replace = "$_ = $proceed($$);" +
-                    "logger.info(\"resetLastSentToolbelt\");";
-            Util.instrumentDeclared(thisClass, ctLoginHandler, "handleLogin", "resetLastSentToolbelt", replace);*/
+            Util.insertBeforeDeclared(thisClass, ctAbilities, "isInProperLocation", replace);
 
             Util.setReason("Make drinks less filling.");
             CtClass[] params13 = {
@@ -795,10 +794,66 @@ public class MiscChanges {
                     CtClass.floatType
             };
             String desc13 = Descriptor.ofMethod(CtClass.booleanType, params13);
-            replace = "$_ = $proceed($1, $2, $3*5);";
+            replace = "if(template != 128){" +
+                    "  $_ = $proceed($1, $2, $3*5);" +
+                    "}else{" +
+                    "  $_ = $proceed($$);" +
+                    "}";
             Util.instrumentDescribed(thisClass, ctMethodsItems, "drink", desc13, "sendActionControl", replace);
-            replace = "$_ = $proceed($1/5, $2, $3, $4, $5);";
+            replace = "if(template != 128){" +
+                    "  $_ = $proceed($1/5, $2, $3, $4, $5);" +
+                    "}else{" +
+                    "  $_ = $proceed($$);" +
+                    "}";
             Util.instrumentDescribed(thisClass, ctMethodsItems, "drink", desc13, "modifyThirst", replace);
+
+            Util.setReason("Disable Gem Augmentation skill from converting.");
+            CtClass ctMethodsReligion = classPool.get("com.wurmonline.server.behaviours.MethodsReligion");
+            replace = "$_ = $proceed($1, $2, true, $4);";
+            Util.instrumentDeclared(thisClass, ctMethodsReligion, "listen", "skillCheck", replace);
+
+            Util.setReason("Disable GM commands from displaying in /help unless the player is a GM.");
+            CtClass ctServerTweaksHandler = classPool.get("com.wurmonline.server.ServerTweaksHandler");
+            replace = "if($1.getPower() < 1){" +
+                    "  return;" +
+                    "}";
+            Util.insertBeforeDeclared(thisClass, ctServerTweaksHandler, "sendHelp", replace);
+
+            Util.setReason("Make damage less likely to interrupt actions during combat.");
+            replace = "$1 = $1/2;";
+            Util.insertBeforeDeclared(thisClass, ctCreature, "maybeInterruptAction", replace);
+
+            Util.setReason("Fix mission null pointer exception.");
+            CtClass ctEpicServerStatus = classPool.get("com.wurmonline.server.epic.EpicServerStatus");
+            replace = "if(itemplates.size() < 1){" +
+                    "  com.wurmonline.server.epic.EpicServerStatus.setupMissionItemTemplates();" +
+                    "}";
+            Util.insertBeforeDeclared(thisClass, ctEpicServerStatus, "getRandomItemTemplateUsed", replace);
+
+            Util.setReason("Fix bug causing high cast spells to reduce power.");
+            CtClass ctSpellEffect = classPool.get("com.wurmonline.server.spells.SpellEffect");
+            replace = "{" +
+                    "  final float mod = 5.0f * (1.0f - java.lang.Math.min($0.getPower(), 100f) / 100.0f);" +
+                    "  $0.setPower(mod + $1);" +
+                    "}";
+            Util.setBodyDeclared(thisClass, ctSpellEffect, "improvePower", replace);
+
+            Util.setReason("Disable smelting pots from being used.");
+            CtClass ctItemBehaviour = classPool.get("com.wurmonline.server.behaviours.ItemBehaviour");
+            CtClass[] params14 = {
+                    ctAction,
+                    ctCreature,
+                    ctItem,
+                    ctItem,
+                    CtClass.shortType,
+                    CtClass.floatType
+            };
+            String desc14 = Descriptor.ofMethod(CtClass.booleanType, params14);
+            replace = "if($5 == 519){" +
+                    "  $2.getCommunicator().sendNormalServerMessage(\"Smelting is disabled.\");" +
+                    "  return true;" +
+                    "}";
+            Util.insertBeforeDescribed(thisClass, ctItemBehaviour, "action", desc14, replace);
 
         } catch (CannotCompileException | NotFoundException | IllegalArgumentException | ClassCastException e) {
             throw new HookException(e);

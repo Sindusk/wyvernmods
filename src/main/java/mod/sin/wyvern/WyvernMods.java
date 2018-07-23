@@ -5,38 +5,29 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Properties;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
-import com.wurmonline.server.Items;
+import com.wurmonline.server.Message;
 import com.wurmonline.server.creatures.Communicator;
 import com.wurmonline.server.creatures.Creature;
-import com.wurmonline.server.creatures.CreatureTemplate;
-import com.wurmonline.server.creatures.CreatureTemplateFactory;
 import com.wurmonline.server.items.*;
+import com.wurmonline.server.kingdom.Kingdoms;
 import mod.sin.actions.items.SorcerySplitAction;
 import mod.sin.lib.Util;
 import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 import org.gotti.wurmunlimited.modloader.classhooks.HookException;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
 import org.gotti.wurmunlimited.modloader.interfaces.*;
-import org.gotti.wurmunlimited.modsupport.ModSupportDb;
 import org.gotti.wurmunlimited.modsupport.actions.ModActions;
 import org.gotti.wurmunlimited.modsupport.creatures.ModCreatures;
 import org.gotti.wurmunlimited.modsupport.vehicles.ModVehicleBehaviours;
 
 import com.wurmonline.server.TimeConstants;
 import com.wurmonline.server.players.Player;
-import com.wurmonline.server.skills.SkillList;
-import com.wurmonline.server.skills.SkillSystem;
-import com.wurmonline.server.skills.SkillTemplate;
 
 import javassist.CannotCompileException;
 import javassist.ClassPool;
@@ -51,7 +42,7 @@ import mod.sin.wyvern.bestiary.MethodsBestiary;
 import mod.sin.wyvern.mastercraft.Mastercraft;
 
 public class WyvernMods
-implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCreatedListener, ServerStartedListener, ServerPollListener, PlayerLoginListener {
+implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCreatedListener, ServerStartedListener, ServerPollListener, PlayerLoginListener, ChannelMessageListener {
 	private static Logger logger = Logger.getLogger(WyvernMods.class.getName());
 	public static boolean espCounter = false;
 	public static boolean enableDepots = false;
@@ -155,6 +146,8 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
             Mastercraft.preInit();
             Mastercraft.addNewTitles();
             SupplyDepots.preInit();
+            KeyEvent.preInit();
+            //GemAugmentation.preInit();
 
             Class<WyvernMods> thisClass = WyvernMods.class;
 			ClassPool classPool = HookManager.getInstance().getClassPool();
@@ -288,6 +281,7 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 			ModActions.registerAction(new LeaderboardAction());
 			ModActions.registerAction(new AddSubGroupAction());
 			ModActions.registerAction(new SorcerySplitAction());
+			ModActions.registerAction(new LeaderboardSkillAction());
 			logger.info("Registering Arena actions.");
 			ModActions.registerAction(new SorceryCombineAction());
 			//ModActions.registerAction(new VillageTeleportAction()); // [3/28/18] Disabled - Highway Portals added instead.
@@ -408,6 +402,16 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 				lastPolledTerrainSmooth = System.currentTimeMillis();
 			}
 		}
+	}
+
+	@Override
+	public MessagePolicy onKingdomMessage(Message message) {
+		String window = message.getWindow();
+		if(window.startsWith("GL-Freedom") && KeyEvent.isActive()){
+			KeyEvent.handlePlayerMessage(message);
+		}
+
+		return MessagePolicy.PASS;
 	}
 
 }

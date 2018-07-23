@@ -9,6 +9,7 @@ import com.wurmonline.server.creatures.Creatures;
 import com.wurmonline.server.items.*;
 import com.wurmonline.server.villages.Village;
 import com.wurmonline.server.villages.Villages;
+import mod.piddagoras.duskombat.DamageEngine;
 import mod.sin.creatures.Reaper;
 import mod.sin.creatures.SpectralDrake;
 import mod.sin.items.AffinityOrb;
@@ -29,14 +30,14 @@ public class LootBounty {
 	protected static final Random random = new Random();
 	
 	public static void displayLootAssistance(Creature mob){
-		if(Bounty.dealtDamage.containsKey(mob.getWurmId())){
+		if(DamageEngine.dealtDamage.containsKey(mob.getWurmId())){
 			logger.info("Found the damageDealt entry, parsing...");
     		ArrayList<String> names = new ArrayList<String>();
     		ArrayList<Double> damages = new ArrayList<Double>();
-    		for(long creatureId : Bounty.dealtDamage.get(mob.getWurmId()).keySet()){
+    		for(long creatureId : DamageEngine.dealtDamage.get(mob.getWurmId()).keySet()){
     			if(Players.getInstance().getPlayerOrNull(creatureId) != null){
     				names.add(Players.getInstance().getPlayerOrNull(creatureId).getName());
-    				damages.add(Bounty.dealtDamage.get(mob.getWurmId()).get(creatureId));
+    				damages.add(DamageEngine.dealtDamage.get(mob.getWurmId()).get(creatureId));
     			}else{
     				if(Creatures.getInstance().getCreatureOrNull(creatureId) != null){
     					logger.info("Skipping creature "+Creatures.getInstance().getCreatureOrNull(creatureId).getName()+" in loot assistance.");
@@ -145,7 +146,7 @@ public class LootBounty {
     }
 	
 	public static void blessWorldWithMoonVeins(Creature mob){
-		int i = 10+Server.rand.nextInt(6);
+		int i = 8+Server.rand.nextInt(5);
 		while(i > 0){
 			int x = random.nextInt(Server.surfaceMesh.getSize());
 			int y = random.nextInt(Server.surfaceMesh.getSize());
@@ -158,8 +159,8 @@ public class LootBounty {
 				Server.setCaveResource(x, y, 400+random.nextInt(600));
 				Village v = Villages.getVillage(x, y, true);
 		        if (v == null) {
-		            for (int vx = -50; vx < 50; vx += 5) {
-		                for (int vy = -50; vy < 50 && (v = Villages.getVillage(x + vx, y + vy, true)) == null; vy += 5) {
+		            for (int vx = -20; vx < 20; vx += 5) {
+		                for (int vy = -20; vy < 20 && (v = Villages.getVillage(x + vx, y + vy, true)) == null; vy += 5) {
 		                }
 		                if(v != null){
 		                    break;
@@ -168,6 +169,7 @@ public class LootBounty {
 		        }
 		        if(v != null){
 		        	HistoryManager.addHistory(mob.getTemplate().getName(), "blesses the world with a "+tileType.getName()+" near "+v.getName()+"!");
+		        	MiscChanges.sendServerTabMessage("rumors",mob.getTemplate().getName()+" blesses the world with a "+tileType.getName()+" near "+v.getName()+"!", 255, 255, 255);
 		        }
 				logger.info("Placed a "+tileType.getName()+" at "+x+", "+y+" - "+height+" height");
 				i--;

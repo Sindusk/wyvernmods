@@ -26,25 +26,6 @@ public class Bounty {
 	//protected static WyvernMods mod;
 	public static HashMap<String, Integer> reward = new HashMap<>();
 
-	// Using a hook in CombatEngine.addWound, we call this function to create a list of creatures that actually inflicted damage.
-	public static HashMap<Long, Map<Long, Double>> dealtDamage = new HashMap<>();
-	public static void addDealtDamage(long defender, long attacker, double damage){
-		if(dealtDamage.containsKey(defender)){
-			Map<Long, Double> dealers = dealtDamage.get(defender);
-			if(!dealers.containsKey(attacker)){
-				dealers.put(attacker, damage);
-			}else{
-				double newDam = dealers.get(attacker);
-				newDam += damage;
-				dealers.put(attacker, newDam);
-			}
-		}else{
-			Map<Long, Double> dealers = new HashMap<>();
-			dealers.put(attacker, damage);
-			dealtDamage.put(defender, dealers);
-		}
-	}
-	
     public static long lastAttacked(Map<Long, Long> attackers, long playerId){
     	return System.currentTimeMillis()-attackers.get(playerId);
     }
@@ -219,7 +200,7 @@ public class Bounty {
           			+ "}");*/
           
           // -- When a creature takes damage, track the damage taken -- //
-          CtClass[] params2 = {
+          /*CtClass[] params2 = {
         		  ctCreature,
         		  ctCreature,
         		  CtClass.byteType,
@@ -235,11 +216,10 @@ public class Bounty {
           };
           String desc2 = Descriptor.ofMethod(CtClass.booleanType, params2);
           CtClass ctCombatEngine = classPool.get("com.wurmonline.server.combat.CombatEngine");
-          replace = ""
-          		+ "if($1 != null && $2 != null){"
+          replace = "if($1 != null && $2 != null){"
           		+ "  "+Bounty.class.getName()+".addDealtDamage($2.getWurmId(), $1.getWurmId(), $5);"
           		+ "}";
-          Util.insertBeforeDescribed(thisClass, ctCombatEngine, "addWound", desc2, replace);
+          Util.insertBeforeDescribed(thisClass, ctCombatEngine, "addWound", desc2, replace);*/
           //ctCombatEngine.getMethod("addWound", desc2).insertBefore("if($1 != null && $2 != null){mod.sin.wyvern.bounty.MethodsBounty.addDealtDamage($2.getWurmId(), $1.getWurmId(), $5);}");
           
       }

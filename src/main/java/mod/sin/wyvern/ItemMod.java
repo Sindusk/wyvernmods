@@ -50,6 +50,7 @@ public class ItemMod {
 	public static CorpseDecoration CORPSE_DECORATION = new CorpseDecoration();
 	public static DepthDrill DEPTH_DRILL = new DepthDrill();
 	public static DisintegrationRod DISINTEGRATION_ROD = new DisintegrationRod();
+	//public static TitaniumLump ELECTRUM_LUMP = new TitaniumLump();
 	public static EnchantOrb ENCHANT_ORB = new EnchantOrb();
 	public static EternalOrb ETERNAL_ORB = new EternalOrb();
 	public static Eviscerator EVISCERATOR = new Eviscerator();
@@ -115,6 +116,7 @@ public class ItemMod {
 			CORPSE_DECORATION.createTemplate();
 			DEPTH_DRILL.createTemplate();
 			DISINTEGRATION_ROD.createTemplate();
+			//ELECTRUM_LUMP.createTemplate();
 			ENCHANT_ORB.createTemplate();
 			ETERNAL_ORB.createTemplate();
 			EVISCERATOR.createTemplate();
@@ -183,6 +185,7 @@ public class ItemMod {
 		ModActions.registerAction(new EnchantOrbAction());
 		ModActions.registerAction(new EternalOrbAction());
 		ModActions.registerAction(new FriyanTabletAction());
+        ModActions.registerAction(new KeyCombinationAction());
 		ModActions.registerAction(new SealedMapAction());
 		ModActions.registerAction(new SupplyDepotAction());
 		ModActions.registerAction(new TreasureBoxAction());
@@ -197,12 +200,13 @@ public class ItemMod {
 		//COIN_DECORATION.initCreationEntry();
 		//CORPSE_DECORATION.initCreationEntry();
 		DEPTH_DRILL.initCreationEntry();
+		//ELECTRUM_LUMP.initCreationEntry();
 		EVISCERATOR.initCreationEntry();
 		KNUCKLES.initCreationEntry();
 		MASS_STORAGE_UNIT.initCreationEntry();
 		//SKELETON_DECORATION.initCreationEntry();
 		SOUL_FORGE.initCreationEntry();
-		//STATUETTE_BREYK.initCreationEntry();
+		STATUETTE_BREYK.initCreationEntry();
 		//STATUETTE_CYBERHUSKY.initCreationEntry();
 		WARHAMMER.initCreationEntry();
 		WARHAMMER_HEAD.initCreationEntry();
@@ -331,18 +335,30 @@ public class ItemMod {
 		ItemTemplate leather = ItemTemplateFactory.getInstance().getTemplate(ItemList.leather);
 		ReflectionUtil.setPrivateField(leather, ReflectionUtil.getField(leather.getClass(), "combine"), true);
 
-        // Make logs able to be combined.
+        // Make logs able to be combined. Also reduce their volume.
         ItemTemplate log = ItemTemplateFactory.getInstance().getTemplate(ItemList.log);
 		ReflectionUtil.setPrivateField(log, ReflectionUtil.getField(log.getClass(), "combine"), true);
 		ReflectionUtil.setPrivateField(log, ReflectionUtil.getField(log.getClass(), "centimetersZ"), 50);
 		int newVolume = log.getSizeX()*log.getSizeY()*log.getSizeZ();
 		ReflectionUtil.setPrivateField(log, ReflectionUtil.getField(log.getClass(), "volume"), newVolume);
 
+		// Reduce kindling volume as well to make sure they're not larger than logs.
+        ItemTemplate kindling = ItemTemplateFactory.getInstance().getTemplate(ItemList.kindling);
+        ReflectionUtil.setPrivateField(kindling, ReflectionUtil.getField(kindling.getClass(), "centimetersY"), 10);
+        ReflectionUtil.setPrivateField(kindling, ReflectionUtil.getField(kindling.getClass(), "centimetersZ"), 10);
+        int newKindlingVolume = kindling.getSizeX()*kindling.getSizeY()*kindling.getSizeZ();
+        ReflectionUtil.setPrivateField(kindling, ReflectionUtil.getField(kindling.getClass(), "volume"), newKindlingVolume);
+
 		// Set silver mirror price to 10 silver instead of 1 iron.
 		ItemTemplate handMirror = ItemTemplateFactory.getInstance().getTemplate(ItemList.handMirror);
 		ReflectionUtil.setPrivateField(handMirror, ReflectionUtil.getField(handMirror.getClass(), "value"), 200000);
 		ItemTemplate goldMirror = ItemTemplateFactory.getInstance().getTemplate(ItemList.goldenMirror);
 		ReflectionUtil.setPrivateField(goldMirror, ReflectionUtil.getField(goldMirror.getClass(), "value"), 1000000);
+
+		// Creature crates to 10 silver.
+		ItemTemplate creatureCage = ItemTemplateFactory.getInstance().getTemplate(ItemList.creatureCrate);
+        ReflectionUtil.setPrivateField(creatureCage, ReflectionUtil.getField(creatureCage.getClass(), "value"), 100000);
+        ReflectionUtil.setPrivateField(creatureCage, ReflectionUtil.getField(creatureCage.getClass(), "fullprice"), true);
 
 		// Set transmutation rod to 2 gold instead of 50 silver.
 		//ItemTemplate transmutationRod = ItemTemplateFactory.getInstance().getTemplate(668);
@@ -414,9 +430,15 @@ public class ItemMod {
 
         setFragments(AffinityOrb.templateId, 20);
 
+        // Tier 4
         setFragments(ItemList.statueWorg, 40);
         setFragments(ItemList.statueEagle, 40);
 
+        // Tier 5
+        setFragments(ItemList.statueHellHorse, 45);
+        setFragments(ItemList.statueDrake, 45);
+
+        // Tier 6
         setFragments(ItemList.statueFo, 50);
         setFragments(ItemList.statueMagranon, 50);
         setFragments(ItemList.statueLibila, 50);

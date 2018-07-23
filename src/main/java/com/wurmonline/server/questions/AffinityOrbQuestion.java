@@ -22,7 +22,7 @@ public class AffinityOrbQuestion extends Question {
         this.affinityOrb = orb;
     }
 
-    public static HashMap<Integer, Integer> affinityMap = new HashMap<>();
+    public HashMap<Integer, Integer> affinityMap = new HashMap<>();
 
     @Override
     public void answer(Properties answer) {

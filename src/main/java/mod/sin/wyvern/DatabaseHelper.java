@@ -34,7 +34,8 @@ public class DatabaseHelper {
             logger.info("No leaderboard entry for "+p.getName()+". Creating one.");
             try {
                 dbcon = ModSupportDb.getModSupportDb();
-                ps = dbcon.prepareStatement("INSERT INTO LeaderboardOpt (name) VALUES(\"" + p.getName() + "\")");
+                ps = dbcon.prepareStatement("INSERT INTO LeaderboardOpt (name) VALUES(?)");
+                ps.setString(1, p.getName());
                 ps.executeUpdate();
                 ps.close();
             }

@@ -153,7 +153,8 @@ public class Titans {
         if (lCret.isUnique() || lCret.isInvulnerable() || lCret == titan || isTitanMinion(lCret)){
             return;
         }
-        if (!lCret.addWoundOfType(lCret, Wound.TYPE_INFECTION, 1, true, 1.0f, true, 50000f)) {
+        lCret.addWoundOfType(lCret, Wound.TYPE_INFECTION, 1, true, 1.0f, true, 50000f);
+        /*if (!lCret.addWoundOfType(lCret, Wound.TYPE_INFECTION, 1, true, 1.0f, true, 50000f)) {
             Creatures.getInstance().setCreatureDead(lCret);
             Players.getInstance().setCreatureDead(lCret);
             lCret.setTeleportPoints((short)tilex, (short)tiley, titan.getLayer(), 0);
@@ -163,7 +164,7 @@ public class Titans {
             if (!lCret.isPlayer()) {
                 lCret.getMovementScheme().resumeSpeedModifier();
             }
-        }
+        }*/
     }
     public static void ifritMassIncinerateAttack(Creature titan, Creature lCret){
         if (lCret.isUnique() || lCret.isInvulnerable() || lCret == titan || isTitanMinion(lCret)){
@@ -681,7 +682,7 @@ public class Titans {
             for (Creature cret : titans) {
                 if (cret.getBody().isWounded()) {
                     Wounds tWounds = cret.getBody().getWounds();
-                    int toHeal = 2;
+                    int toHeal = 5;
                     Wound w = tWounds.getWounds()[Server.rand.nextInt(tWounds.getWounds().length)];
                     if (w.getSeverity() > toHeal) {
                         w.modifySeverity(-toHeal);

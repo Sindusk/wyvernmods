@@ -98,9 +98,15 @@ public class AffinityCatcherConsumeAction implements ModAction {
                             return true;
                         }
                         Affinities.setAffinity(player.getWurmId(), skillNum, affinity.getNumber() + 1, false);
+                        player.getCommunicator().sendSafeServerMessage("Your affinity grows stronger.");
                         Items.destroyItem(target.getWurmId());
                         return true;
                     }
+                    // Has no affinity in this, so should give them one.
+					Affinities.setAffinity(player.getWurmId(), skillNum, 1, false);
+                    player.getCommunicator().sendSafeServerMessage("You obtain a new affinity.");
+					Items.destroyItem(target.getWurmId());
+					return true;
 				}else{
 					logger.info("Somehow a non-player activated an Affinity Orb...");
 				}

@@ -44,11 +44,16 @@ public class AntiCheat {
         boolean foundSteamIdMap = false;
         try {
             dbcon = ModSupportDb.getModSupportDb();
-            ps = dbcon.prepareStatement("SELECT * FROM SteamIdMap");
+            ps = dbcon.prepareStatement("SELECT * FROM SteamIdMap WHERE NAME=? AND STEAMID=?");
+            ps.setString(1, name);
+            ps.setString(2, steamId);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                if (!rs.getString("NAME").equals(name)) continue;
-                foundSteamIdMap = true;
+                if(!foundSteamIdMap) {
+                    foundSteamIdMap = true;
+                }else{
+                    logger.warning(String.format("Player %s has accessed their account from multiple Steam ID's!", name));
+                }
             }
             rs.close();
             ps.close();
@@ -59,7 +64,9 @@ public class AntiCheat {
             logger.info("No steam id entry for " + name + ". Creating one.");
             try {
                 dbcon = ModSupportDb.getModSupportDb();
-                ps = dbcon.prepareStatement("INSERT INTO SteamIdMap (NAME, STEAMID) VALUES(\"" + name + "\", " + steamId + ")");
+                ps = dbcon.prepareStatement("INSERT INTO SteamIdMap (NAME, STEAMID) VALUES(?, ?)");
+                ps.setString(1, name);
+                ps.setString(2, steamId);
                 ps.executeUpdate();
                 ps.close();
             } catch (SQLException e) {

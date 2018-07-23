@@ -4,8 +4,6 @@ import com.wurmonline.server.DbConnector;
 import com.wurmonline.server.creatures.Creature;
 import com.wurmonline.server.deities.Deities;
 import com.wurmonline.server.skills.SkillList;
-import com.wurmonline.server.skills.SkillSystem;
-import com.wurmonline.server.skills.SkillTemplate;
 import com.wurmonline.server.utils.DbUtilities;
 import net.coldie.tools.BmlForm;
 import org.gotti.wurmunlimited.modsupport.ModSupportDb;
@@ -34,6 +32,29 @@ public class LeaderboardSkillQuestion extends Question {
             LeaderboardQuestion lbq = new LeaderboardQuestion(this.getResponder(), "Leaderboard", "Which leaderboard would you like to view?", this.getResponder().getWurmId());
             lbq.sendQuestion();
         }
+    }
+
+    public int[] getSkilLevelColors(double skill){
+        int[] colors = new int[3];
+        colors[0] = 0; // No red value
+        if(skill >= 90){
+            double percentTowards100 = 1-((100-skill)*0.1); // Division by 10
+            double greenPower = 128 + (128*percentTowards100);
+            colors[1] = (int) Math.min(255, greenPower);
+            colors[2] = (int) Math.max(0, 255-greenPower);
+        }else if(skill >= 50){
+            double percentTowards90 = 1-((90-skill)*0.025); // Division by 40
+            double greenPower = percentTowards90*128;
+            colors[1] = (int) Math.max(128, greenPower);
+            colors[2] = (int) Math.min(255, 255-greenPower);
+        }else{
+            double percentTowards50 = 1-((50-skill)*0.02); // Division by 50
+            double otherPower = 255 - (percentTowards50*255);
+            colors[0] = (int) Math.min(255, otherPower);
+            colors[1] = (int) Math.min(255, Math.max(128, otherPower));
+            colors[2] = 255;
+        }
+        return colors;
     }
 
     protected HashMap<String, Integer> optIn = new HashMap<>();
@@ -95,8 +116,8 @@ public class LeaderboardSkillQuestion extends Question {
         catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        f.addBoldText("Top 20 players in "+this.getQuestion(), new String[0]);
-        f.addText("\n\n", new String[0]);
+        f.addBoldText("Top 20 players in "+this.getQuestion());
+        f.addText("\n\n");
         int i = 0;
         DecimalFormat df = new DecimalFormat(".000");
         while(i < names.size() && i < skills.size()){
@@ -109,19 +130,20 @@ public class LeaderboardSkillQuestion extends Question {
             if(skillNum == SkillList.CHANNELING){
                 extra = " ("+ Deities.getDeityName(deities.get(i))+")";
             }
+            int[] color = getSkilLevelColors(skills.get(i));
             if(names.get(i).equals(this.getResponder().getName())){
                 name = names.get(i);
-                f.addBoldText(df.format(skills.get(i)) + " - " + name + extra);
+                f.addBoldColoredText(df.format(skills.get(i)) + " - " + name + extra, color[0], color[1], color[2]);
             }else{
-                f.addText(df.format(skills.get(i)) + " - " + name + extra);
+                f.addColoredText(df.format(skills.get(i)) + " - " + name + extra, color[0], color[1], color[2]);
             }
             i++;
         }
-        f.addText(" \n", new String[0]);
+        f.addText(" \n");
         f.beginHorizontalFlow();
         f.addButton("Ok", "okay");
         f.endHorizontalFlow();
-        f.addText(" \n", new String[0]);
+        f.addText(" \n");
         this.getResponder().getCommunicator().sendBml(400, 500, true, true, f.toString(), 150, 150, 200, this.title);
     }
 }

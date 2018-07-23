@@ -40,14 +40,14 @@ public class AffinityCatcherCaptureAction implements ModAction {
 	}
 
 	public static boolean hasAffinityCatcher(Creature performer){
-	    logger.info("Checking if creature has affinity catcher.");
+	    //logger.info("Checking if creature has affinity catcher.");
 	    for(Item i : performer.getInventory().getItems()){
 	        if(i.getTemplateId() == AffinityCatcher.templateId){
-	            logger.info("Has affinity catcher.");
+	            //logger.info("Has affinity catcher.");
 	            return true;
             }
         }
-        logger.info("No affinity catcher found.");
+        //logger.info("No affinity catcher found.");
         return false;
     }
 
@@ -94,7 +94,6 @@ public class AffinityCatcherCaptureAction implements ModAction {
 			// Without activated object
 			@Override
             public boolean action(Action act, Creature performer, Item source, Skill skill, short action, float counter) {
-			    logger.info("Action with item.");
 				if(performer instanceof Player){
 					Player player = (Player) performer;
 					if (source.getTemplate().getTemplateId() != AffinityCatcher.templateId){
@@ -134,7 +133,7 @@ public class AffinityCatcherCaptureAction implements ModAction {
                     // Only called if the affinity is not found or it breaks from having less than one.
                     player.getCommunicator().sendNormalServerMessage("You must have an affinity in the skill to capture.");
 				}else{
-					logger.info("Somehow a non-player activated an Affinity Orb...");
+					logger.info("Somehow a non-player activated an Affinity Catcher...");
 				}
 				return true;
 			}

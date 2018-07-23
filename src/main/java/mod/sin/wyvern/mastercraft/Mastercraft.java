@@ -112,6 +112,7 @@ public class Mastercraft {
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("Genocide_GrandDesigner", 808, "Grand Designer", "Grand Designer", -1, "NORMAL");
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("Seleas_CrazyCatLord", 809, "The Crazy Cat Lord", "The Crazy Cat Lord", -1, "NORMAL");
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("Piratemax_Slave", 810, "Slave", "Slave", -1, "NORMAL");
+            ExtendTitleEnum.getSingletonInstance().addExtendEntry("Eltacolad_TrueTaco", 811, "The One True Taco", "The One True Taco", -1, "NORMAL");
 
             // Characteristic Titles
             ExtendTitleEnum.getSingletonInstance().addExtendEntry("MindLogic_Normal", 1000, "Logical", "Logical", 100, "NORMAL");

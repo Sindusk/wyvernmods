@@ -80,6 +80,9 @@ public class PlayerTitles {
         customTitles.put("Piratemax", 810); // Slave
         playerTitles.put("Piratemax", "Boy Next Door");
 
+        donatorTitles.add("Eltacolad");
+        customTitles.put("Eltacolad", 811); // The One True Taco
+
         // Other rewards
         customTitles.put("Critias", 602);
     }

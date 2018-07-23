@@ -296,6 +296,33 @@ public class LeaderboardCustomQuestion extends Question {
             throw new RuntimeException(e);
         }
     }
+    protected void mostCitizens(int limit){
+        Connection dbcon;
+        PreparedStatement ps;
+        ResultSet rs;
+        String name;
+        int skillNum;
+        String mayor;
+        double stat;
+        try {
+            dbcon = DbConnector.getZonesDbCon();
+            ps = dbcon.prepareStatement("SELECT name, maxcitizens, mayor FROM villages WHERE disbanded = 0 ORDER BY maxcitizens DESC LIMIT "+limit);
+            rs = ps.executeQuery();
+            while(rs.next()){
+                name = rs.getString(1);
+                stat = rs.getInt(2);
+                mayor = rs.getString(3);
+                stat++; // Add one citizen to account for mayor.
+                names.add(name);
+                values.add(stat);
+                extra.add(mayor);
+            }
+            DbUtilities.closeDatabaseObjects(ps, rs);
+        }
+        catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Override
     public void sendQuestion() {
@@ -347,24 +374,29 @@ public class LeaderboardCustomQuestion extends Question {
                 ignoreOpt = true;
                 break;
             case 8:
-                limit = 10;
-                topPlayerStats("kills", limit);
+                limit = 100;
+                mostCitizens(limit);
                 ignoreOpt = true;
                 break;
             case 9:
                 limit = 10;
-                topPlayerStats("deaths", limit);
+                topPlayerStats("kills", limit);
                 ignoreOpt = true;
                 break;
             case 10:
+                limit = 10;
+                topPlayerStats("deaths", limit);
+                ignoreOpt = true;
+                break;
+            case 11:
                 limit = 10;
                 topPlayerStats("depots", limit);
                 ignoreOpt = true;
                 break;
         }
 
-        f.addBoldText("Top "+limit+" players in "+this.getQuestion(), new String[0]);
-        f.addText("\n\n", new String[0]);
+        f.addBoldText("Top "+limit+" players in "+this.getQuestion());
+        f.addText("\n\n");
         int i = 0;
         DecimalFormat df = new DecimalFormat(".000");
         if(!format){
@@ -392,11 +424,11 @@ public class LeaderboardCustomQuestion extends Question {
             }
             i++;
         }
-        f.addText(" \n", new String[0]);
+        f.addText(" \n");
         f.beginHorizontalFlow();
         f.addButton("Ok", "okay");
         f.endHorizontalFlow();
-        f.addText(" \n", new String[0]);
+        f.addText(" \n");
         this.getResponder().getCommunicator().sendBml(400, 500, true, true, f.toString(), 150, 150, 200, this.title);
     }
 }
