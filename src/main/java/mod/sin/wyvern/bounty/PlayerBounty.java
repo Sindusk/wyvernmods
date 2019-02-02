@@ -1,12 +1,5 @@
 package mod.sin.wyvern.bounty;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-import java.util.logging.Logger;
-
 import com.wurmonline.server.FailedException;
 import com.wurmonline.server.Server;
 import com.wurmonline.server.Servers;
@@ -17,9 +10,6 @@ import com.wurmonline.server.items.ItemFactory;
 import com.wurmonline.server.items.ItemTemplate;
 import com.wurmonline.server.items.NoSuchTemplateException;
 import com.wurmonline.server.players.Player;
-import com.wurmonline.server.players.Titles.Title;
-import com.wurmonline.server.skills.NoSuchSkillException;
-import com.wurmonline.server.skills.SkillList;
 import mod.piddagoras.duskombat.DamageEngine;
 import mod.sin.armour.SpectralHide;
 import mod.sin.creatures.Reaper;
@@ -27,8 +17,18 @@ import mod.sin.creatures.SpectralDrake;
 import mod.sin.items.AffinityOrb;
 import mod.sin.items.caches.RiftCache;
 import mod.sin.items.caches.TitanCache;
-import mod.sin.wyvern.*;
+import mod.sin.wyvern.Bounty;
+import mod.sin.wyvern.MiscChanges;
+import mod.sin.wyvern.RareSpawns;
+import mod.sin.wyvern.Titans;
 import mod.sin.wyvern.util.ItemUtil;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+import java.util.logging.Logger;
 
 public class PlayerBounty {
 	public static final Logger logger = Logger.getLogger(PlayerBounty.class.getName());
@@ -109,7 +109,7 @@ public class PlayerBounty {
 				fightStrength = "legendary";
 			}
     		player.getCommunicator().sendSafeServerMessage("The spirit recognizes you as a "+fightStrength+" warrior, and rewards you accordingly.");
-			player.addTitle(Title.getTitle(701));
+			//player.addTitle(Title.getTitle(701));
     	}catch (NoSuchTemplateException | FailedException e) {
 			e.printStackTrace();
 		}
@@ -148,7 +148,7 @@ public class PlayerBounty {
                     player.getInventory().insertItem(riftCache, true);
                 }
 				if(Titans.isTitan(mob)){
-					player.addTitle(Title.getTitle(700));
+					//player.addTitle(Title.getTitle(700));
 					Item affinityOrb = ItemFactory.createItem(AffinityOrb.templateId, 99f, mob.getName());
 					player.getInventory().insertItem(affinityOrb, true);
 					Item titanCache = ItemFactory.createItem(TitanCache.templateId, 99f, mob.getName());

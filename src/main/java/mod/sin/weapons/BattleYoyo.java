@@ -39,7 +39,7 @@ public class BattleYoyo implements ItemTypes, MiscConstants {
 		itemBuilder.behaviourType((short) 35);
 		itemBuilder.combatDamage(35);
 		itemBuilder.decayTime(Long.MAX_VALUE);
-		itemBuilder.dimensions(5, 10, 80);
+		itemBuilder.dimensions(5, 10, 20);
 		itemBuilder.primarySkill(SkillList.YOYO);
 		itemBuilder.bodySpaces(MiscConstants.EMPTY_BYTE_PRIMITIVE_ARRAY);
 		itemBuilder.modelName("model.toy.yoyo.");

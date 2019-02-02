@@ -92,6 +92,15 @@ public class EconomicChanges {
             replace = "$_ = "+EconomicChanges.class.getName()+".getNewVillageTiles(vill.getNumTiles());";
             Util.instrumentDeclared(thisClass, ctGuardPlan, "getMonthlyCost", "getNumTiles", replace);
 
+            Util.setReason("Disable upkeep on arena for now until a fix can be found.");
+            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
+                    + "  $_ = false;"
+                    + "}else{" +
+                    "  $_ = $proceed($$);" +
+                    "}";
+            //replace = "$_ = false;";
+            Util.instrumentDeclared(thisClass, ctGuardPlan, "getMonthlyCost", "isUpkeep", replace);
+
             /*Util.setReason("Allow players to get a full deed refund.");
 			replace = "{ return "+EconomicChanges.class.getName()+".getNewDisbandMoney(this, this.getVillage()); }";
 			Util.setBodyDeclared(thisClass, ctGuardPlan, "getDisbandMoneyLeft", replace);*/
@@ -114,8 +123,8 @@ public class EconomicChanges {
             replace = "$1 = "+EconomicChanges.class.getName()+".getNewShopDiff($0, $1, $0.shopDiff);";
             Util.insertBeforeDeclared(thisClass, ctTrade, "addShopDiff", replace);
 
-    } catch ( NotFoundException | IllegalArgumentException | ClassCastException e) {
-        throw new HookException(e);
-    }
+        } catch ( NotFoundException | IllegalArgumentException | ClassCastException e) {
+            throw new HookException(e);
+        }
     }
 }

@@ -30,6 +30,7 @@ public class PlayerTitles {
         return "";
     }
     public static void awardCustomTitles(Player p){
+        /* Disabled until a fix for title implementations is done.
         String name = p.getName();
         if(donatorTitles.contains(name)){
             Titles.Title donator = Titles.Title.getTitle(800);
@@ -38,7 +39,7 @@ public class PlayerTitles {
         if(customTitles.containsKey(name)){
             Titles.Title customTitle = Titles.Title.getTitle(customTitles.get(name));
             p.addTitle(customTitle);
-        }
+        }*/
     }
     public static void preInit(){
         // Donations

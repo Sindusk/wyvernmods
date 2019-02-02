@@ -223,7 +223,7 @@ public class SupplyDepots {
 	}
 	public static void giveCacheReward(Creature performer){
 		Item inv = performer.getInventory();
-		Item enchantOrb = ItemUtil.createEnchantOrb(40f+(Math.min(Server.rand.nextFloat()*40f, Server.rand.nextFloat()*40f)));
+		Item enchantOrb = ItemUtil.createEnchantOrb(60f+(Math.min(Server.rand.nextFloat()*60f, Server.rand.nextFloat()*60f)));
 		if(enchantOrb != null) {
             inv.insertItem(enchantOrb);
         }
@@ -232,16 +232,16 @@ public class SupplyDepots {
 			int[] cacheIds = {
 					ArmourCache.templateId,
 					ArtifactCache.templateId,
-					CrystalCache.templateId, CrystalCache.templateId,
+					CrystalCache.templateId, CrystalCache.templateId, CrystalCache.templateId,
 					DragonCache.templateId, DragonCache.templateId,
 					GemCache.templateId,
 					MoonCache.templateId, MoonCache.templateId,
 					RiftCache.templateId,
 					TreasureMapCache.templateId
 			};
-			int i = 2+Server.rand.nextInt(2); // 2-3 caches.
+			int i = 3+Server.rand.nextInt(2); // 2-3 caches.
 			while(i > 0){
-				Item cache = ItemFactory.createItem(cacheIds[Server.rand.nextInt(cacheIds.length)], 20f+(60f*Server.rand.nextFloat()), "");
+				Item cache = ItemFactory.createItem(cacheIds[Server.rand.nextInt(cacheIds.length)], 40f+(50f*Server.rand.nextFloat()), "");
 				inv.insertItem(cache, true);
 				i--;
 			}

@@ -144,7 +144,7 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
             Bloodlust.preInit();
             AntiCheat.preInit();
             Mastercraft.preInit();
-            Mastercraft.addNewTitles();
+            //Mastercraft.addNewTitles();
             SupplyDepots.preInit();
             KeyEvent.preInit();
             //GemAugmentation.preInit();

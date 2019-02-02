@@ -84,6 +84,9 @@ public class Arena {
     }
 
 	public static void sendHotaMessage(String message){
+	    if (SupplyDepots.host != null) {
+            MiscChanges.sendGlobalFreedomChat(SupplyDepots.host, message, 200, 200, 200);
+        }
 	    DiscordRelay.sendToDiscord("arena", message, true);
     }
 
@@ -114,18 +117,9 @@ public class Arena {
 				}
 				statue.setAuxData((byte)winStreak);
 			}
-			int r = winStreak * 50 & 255;
-			int g = 0;
-			int b = 0;
-			if (winStreak > 5 && winStreak < 16) {
-				r = 0;
-			}
-			if (winStreak > 5 && winStreak < 20) {
-				g = winStreak * 50 & 255;
-			}
-			if (winStreak > 5 && winStreak < 30) {
-				b = winStreak * 50 & 255;
-			}
+			int r = (winStreak + Server.rand.nextInt(5)) * 50 & 255;
+			int g = (winStreak + Server.rand.nextInt(5)) * 80 & 255;
+			int b = (winStreak + Server.rand.nextInt(5)) * 120 & 255;
 			statue.setColor(WurmColor.createColor(r, g, b));
 			statue.getColor();
 			Zone z = Zones.getZone(statue.getTileX(), statue.getTileY(), true);
@@ -180,16 +174,16 @@ public class Arena {
                 statue.insertItem(token, true);
                 i--;
             }
-            // Add 3-5 seryll lumps of medium ql
-            i = 3+Server.rand.nextInt(3); // 3-5 lumps
+            // Add 4-6 seryll lumps of medium ql
+            i = 4+Server.rand.nextInt(3); // 4-6 lumps
             while(i > 0){
                 Item seryll = ItemFactory.createItem(ItemList.seryllBar, 40f+(60f*Server.rand.nextFloat()), null);
                 statue.insertItem(seryll, true);
                 i--;
             }
-            // Add 2-4 silver
-            long iron = 20000; // 2 silver
-            iron += Server.rand.nextInt(20000); // add up to 2 more silver
+            // Add 3-6 silver
+            long iron = 30000; // 3 silver
+            iron += Server.rand.nextInt(30000); // add up to 3 more silver
             Item[] coins = Economy.getEconomy().getCoinsFor(iron);
             for(Item coin : coins){
                 statue.insertItem(coin, true);
@@ -481,12 +475,6 @@ public class Arena {
             String desc3 = Descriptor.ofMethod(CtClass.voidType, params3);
             replace = "$_ = com.wurmonline.server.Servers.localServer.PVPSERVER && !lVehicle.isLocked();";
             Util.instrumentDescribed(thisClass, ctCreature, "setVehicle", desc3, "isThisAChaosServer", replace);
-            
-            // - Allow managing animals on Arena - //
-            CtClass ctManageMenu = classPool.get("com.wurmonline.server.behaviours.ManageMenu");
-            replace = "$_ = false;";
-            Util.instrumentDeclared(thisClass, ctManageMenu, "getBehavioursFor", "isThisAPvpServer", replace);
-            Util.instrumentDeclared(thisClass, ctManageMenu, "action", "isThisAPvpServer", replace);
 
             // - Multiply mine door bash damage by 3 on Arena - //
             CtClass ctTerraforming = classPool.get("com.wurmonline.server.behaviours.Terraforming");

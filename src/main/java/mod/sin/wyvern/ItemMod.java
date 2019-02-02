@@ -6,10 +6,10 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import com.wurmonline.server.Servers;
+import com.wurmonline.server.combat.ArmourTemplate;
 import mod.sin.items.caches.*;
 import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
@@ -17,7 +17,6 @@ import org.gotti.wurmunlimited.modloader.classhooks.InvocationHandlerFactory;
 import org.gotti.wurmunlimited.modsupport.actions.ModActions;
 
 import com.wurmonline.server.behaviours.ActionEntry;
-import com.wurmonline.server.combat.Armour;
 import com.wurmonline.server.combat.Weapon;
 import com.wurmonline.server.creatures.Creature;
 import com.wurmonline.server.items.Item;
@@ -116,7 +115,6 @@ public class ItemMod {
 			CORPSE_DECORATION.createTemplate();
 			DEPTH_DRILL.createTemplate();
 			DISINTEGRATION_ROD.createTemplate();
-			//ELECTRUM_LUMP.createTemplate();
 			ENCHANT_ORB.createTemplate();
 			ETERNAL_ORB.createTemplate();
 			EVISCERATOR.createTemplate();
@@ -200,7 +198,6 @@ public class ItemMod {
 		//COIN_DECORATION.initCreationEntry();
 		//CORPSE_DECORATION.initCreationEntry();
 		DEPTH_DRILL.initCreationEntry();
-		//ELECTRUM_LUMP.initCreationEntry();
 		EVISCERATOR.initCreationEntry();
 		KNUCKLES.initCreationEntry();
 		MASS_STORAGE_UNIT.initCreationEntry();
@@ -227,47 +224,28 @@ public class ItemMod {
 		GLIMMERSCALE_HOSE.initCreationEntry();
 		GLIMMERSCALE_SLEEVE.initCreationEntry();
 		GLIMMERSCALE_VEST.initCreationEntry();*/
-		
-		// Allow sickle heads from steel & moon metals:
-		// [3/28/18] Disabled: Implemented in WU 1.6.
-		/*CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_BLADES, ItemList.anvilLarge, ItemList.steelBar,
-				ItemList.sickleBlade, false, true, 0.0f, false, false, CreationCategories.BLADES);
-		CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_BLADES, ItemList.anvilLarge, ItemList.adamantineBar,
-				ItemList.sickleBlade, false, true, 0.0f, false, false, CreationCategories.BLADES);
-		CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_BLADES, ItemList.anvilLarge, ItemList.glimmerSteelBar,
-				ItemList.sickleBlade, false, true, 0.0f, false, false, CreationCategories.BLADES);
-		CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_BLADES, ItemList.anvilLarge, ItemList.seryllBar,
-				ItemList.sickleBlade, false, true, 0.0f, false, false, CreationCategories.BLADES);
-		// Allow steel staff to be created from moon metals:
-		CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_BLADES, ItemList.anvilLarge, ItemList.adamantineBar,
-				ItemList.staffSteel, false, true, 0.0f, false, false, CreationCategories.BLADES);
-		CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_BLADES, ItemList.anvilLarge, ItemList.glimmerSteelBar,
-				ItemList.staffSteel, false, true, 0.0f, false, false, CreationCategories.BLADES);
-		CreationEntryCreator.createSimpleEntry(SkillList.SMITHING_WEAPON_BLADES, ItemList.anvilLarge, ItemList.seryllBar,
-				ItemList.staffSteel, false, true, 0.0f, false, false, CreationCategories.BLADES);*/
 	}
 	
 	public static void createCustomArmours(){
 		try {
 			logger.info("Beginning custom armour creation.");
-			Map<Integer, Armour> armours = ReflectionUtil.getPrivateField(null, ReflectionUtil.getField(Armour.class, "armours"));
 
-			armours.put(SpectralBoot.templateId, new Armour(SpectralBoot.templateId, 0.002f, 0.3f));
-			armours.put(SpectralCap.templateId, new Armour(SpectralCap.templateId, 0.003f, 0.3f));
-			armours.put(SpectralGlove.templateId, new Armour(SpectralGlove.templateId, 0.002f, 0.3f));
-			armours.put(SpectralHose.templateId, new Armour(SpectralHose.templateId, 0.0075f, 0.3f));
-			armours.put(SpectralJacket.templateId, new Armour(SpectralJacket.templateId, 0.01f, 0.3f));
-			armours.put(SpectralSleeve.templateId, new Armour(SpectralSleeve.templateId, 0.004f, 0.3f));
+			new ArmourTemplate(SpectralBoot.templateId, ArmourTemplate.ARMOUR_TYPE_LEATHER_DRAGON, 0.002f);
+			new ArmourTemplate(SpectralCap.templateId, ArmourTemplate.ARMOUR_TYPE_LEATHER_DRAGON, 0.003f);
+			new ArmourTemplate(SpectralGlove.templateId, ArmourTemplate.ARMOUR_TYPE_LEATHER_DRAGON, 0.002f);
+			new ArmourTemplate(SpectralHose.templateId, ArmourTemplate.ARMOUR_TYPE_LEATHER_DRAGON, 0.0075f);
+			new ArmourTemplate(SpectralJacket.templateId, ArmourTemplate.ARMOUR_TYPE_LEATHER_DRAGON, 0.01f);
+			new ArmourTemplate(SpectralSleeve.templateId, ArmourTemplate.ARMOUR_TYPE_LEATHER_DRAGON, 0.004f);
 
-			armours.put(GlimmerscaleBoot.templateId, new Armour(GlimmerscaleBoot.templateId, 0.002f, 0.15f));
-			armours.put(GlimmerscaleGlove.templateId, new Armour(GlimmerscaleGlove.templateId, 0.001f, 0.15f));
-			armours.put(GlimmerscaleHelmet.templateId, new Armour(GlimmerscaleHelmet.templateId, 0.008f, 0.15f));
-			armours.put(GlimmerscaleHose.templateId, new Armour(GlimmerscaleHose.templateId, 0.05f, 0.15f));
-			armours.put(GlimmerscaleSleeve.templateId, new Armour(GlimmerscaleSleeve.templateId, 0.008f, 0.15f));
-			armours.put(GlimmerscaleVest.templateId, new Armour(GlimmerscaleVest.templateId, 0.05f, 0.15f));
+			new ArmourTemplate(GlimmerscaleBoot.templateId, ArmourTemplate.ARMOUR_TYPE_SCALE_DRAGON, 0.002f);
+			new ArmourTemplate(GlimmerscaleGlove.templateId, ArmourTemplate.ARMOUR_TYPE_SCALE_DRAGON, 0.001f);
+			new ArmourTemplate(GlimmerscaleHelmet.templateId, ArmourTemplate.ARMOUR_TYPE_SCALE_DRAGON, 0.008f);
+			new ArmourTemplate(GlimmerscaleHose.templateId, ArmourTemplate.ARMOUR_TYPE_SCALE_DRAGON, 0.05f);
+			new ArmourTemplate(GlimmerscaleSleeve.templateId, ArmourTemplate.ARMOUR_TYPE_SCALE_DRAGON, 0.008f);
+			new ArmourTemplate(GlimmerscaleVest.templateId, ArmourTemplate.ARMOUR_TYPE_SCALE_DRAGON, 0.05f);
 			
 			//ReflectionUtil.setPrivateField(null, ReflectionUtil.getField(Armour.class, "armours"), armours);
-		} catch (IllegalArgumentException | IllegalAccessException | ClassCastException | NoSuchFieldException e) {
+		} catch (IllegalArgumentException | ClassCastException e) {
 			e.printStackTrace();
 		}
 	}
@@ -277,7 +255,7 @@ public class ItemMod {
 			logger.info("Beginning custom weapon creation.");
 			new Weapon(BattleYoyo.templateId, 6.85f, 3.85f, 0.008f, 2, 2, 0.0f, 0d);
 			new Weapon(Club.templateId, 8.1f, 4.5f, 0.002f, 3, 3, 0.4f, 0.5d);
-			new Weapon(Knuckles.templateId, 3.6f, 2.2f, 0.002f, 1, 1, 0.2f, 0.5d);
+			new Weapon(Knuckles.templateId, 3.7f, 2.2f, 0.002f, 1, 1, 0.2f, 0.5d);
 			new Weapon(Warhammer.templateId, 9.40f, 5.6f, 0.008f, 4, 3, 1f, 0d);
 			//new Weapon(ItemList.stoneChisel, 50f, 1f, 0.5f, 8, 1, 3f, -5f);
 			// Titan weaponry
@@ -359,6 +337,10 @@ public class ItemMod {
 		ItemTemplate creatureCage = ItemTemplateFactory.getInstance().getTemplate(ItemList.creatureCrate);
         ReflectionUtil.setPrivateField(creatureCage, ReflectionUtil.getField(creatureCage.getClass(), "value"), 100000);
         ReflectionUtil.setPrivateField(creatureCage, ReflectionUtil.getField(creatureCage.getClass(), "fullprice"), true);
+
+        // Resurrection Stones to 2 silver instead of 5 silver.
+		ItemTemplate resurrectionStone = ItemTemplateFactory.getInstance().getTemplate(ItemList.resurrectionStone);
+		ReflectionUtil.setPrivateField(resurrectionStone, ReflectionUtil.getField(resurrectionStone.getClass(), "value"), 20000);
 
 		// Set transmutation rod to 2 gold instead of 50 silver.
 		//ItemTemplate transmutationRod = ItemTemplateFactory.getInstance().getTemplate(668);

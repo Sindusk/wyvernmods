@@ -11,6 +11,7 @@ import com.wurmonline.server.items.SimpleCreationEntry;
 import com.wurmonline.server.players.Player;
 import com.wurmonline.server.players.PlayerInfo;
 import com.wurmonline.server.players.PlayerInfoFactory;
+import com.wurmonline.server.players.Titles;
 import com.wurmonline.server.skills.Skill;
 import com.wurmonline.server.skills.SkillList;
 import com.wurmonline.server.villages.Village;
@@ -33,10 +34,7 @@ import org.nyxcode.wurm.discordrelay.DiscordRelay;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class MiscChanges {
@@ -99,7 +97,9 @@ public class MiscChanges {
             }
             catch (NoSuchCreatureException ignored) {}
         }
-	    Players.getInstance().broadCastDeathInfo(player, attackerString.toString());
+        if(!attackerString.toString().isEmpty()) {
+            Players.getInstance().broadCastDeathInfo(player, attackerString.toString());
+        }
     }
 
 	public static void broadCastDeaths(Creature player, String slayers){
@@ -295,6 +295,20 @@ public class MiscChanges {
         }
         return 0;
     }
+
+    public static Titles.Title[] cleanTitles(Titles.Title[] titles){
+        ArrayList<Titles.Title> arrTitles = new ArrayList<>();
+        for(Titles.Title title : titles){
+            logger.info("Checking title "+title);
+            if(title != null){
+                logger.info("Title "+title.getName()+" is valid.");
+                arrTitles.add(title);
+            }else{
+                logger.info("Title invalid. Discarding.");
+            }
+        }
+        return arrTitles.toArray(new Titles.Title[0]);
+    }
 	
 	public static void preInit(){
 		try{
@@ -311,7 +325,7 @@ public class MiscChanges {
                     "Website/Maps: https://www.sarcasuals.com/",
                     "Server Discord: https://discord.gg/r8QNXAC",
                     "Server Data: https://docs.google.com/spreadsheets/d/1yjqTHoxUan4LIldI3jgrXZgXj1M2ENQ4MXniPUz0rE4",
-                    "Server Wiki/Documentation: https://docs.google.com/document/d/1GeaygilS-Z-d1TuGB7awOe9sJNV4o5BTZw_a2ATJy98"};
+                    "Server Wiki/Documentation: https://docs.google.com/document/d/1cbPi7-vZnjaiYrENhaefzjK_Wz7_F1CcPYJtC6uCi98/edit?usp=sharing"};
             StringBuilder str = new StringBuilder("{"
                     + "        com.wurmonline.server.Message mess;");
             for (String anInfoTabLine : infoTabLine) {
@@ -659,13 +673,13 @@ public class MiscChanges {
                     "$_ = $proceed($$);";
             Util.instrumentDeclared(thisClass, ctPlayerInfo, "calculateSleep", "setSleep", replace);
 
-            Util.setReason("Fix intrateleport block bug.");
+            /*Util.setReason("Fix intrateleport block bug.");
             replace = "if($6.contains(\"blocked\")){" +
                     "  logger.info(\"Detected a blocked movement, resetting position back to old.\");" +
                     "  $1 = $0.getMovementScheme().xOld;" +
                     "  $2 = $0.getMovementScheme().yOld;" +
                     "}";
-            Util.insertBeforeDeclared(thisClass, ctCreature, "intraTeleport", replace);
+            Util.insertBeforeDeclared(thisClass, ctCreature, "intraTeleport", replace);*/
 
             Util.setReason("Allow royal smith to improve smithing items faster.");
             replace = "if("+MiscChanges.class.getName()+".royalSmithImprove($1, improve)){" +
@@ -854,6 +868,17 @@ public class MiscChanges {
                     "  return true;" +
                     "}";
             Util.insertBeforeDescribed(thisClass, ctItemBehaviour, "action", desc14, replace);
+
+            /*Util.setReason("Fix title NPE from sorting.");
+            CtClass ctTitleCompoundQuestion = classPool.get("com.wurmonline.server.questions.TitleCompoundQuestion");
+            replace = "titles = "+MiscChanges.class.getName()+".cleanTitles(titles);" +
+                    "int i = 0;" +
+                    "while(i < titles.length){" +
+                    "  logger.info(\"Title: \"+titles[i]);" +
+                    "  i++;" +
+                    "}" +
+                    "$_ = $proceed($$);";
+            Util.instrumentDeclared(thisClass, ctTitleCompoundQuestion, "sendQuestion", "sort", replace);*/
 
         } catch (CannotCompileException | NotFoundException | IllegalArgumentException | ClassCastException e) {
             throw new HookException(e);

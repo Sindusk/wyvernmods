@@ -33,7 +33,7 @@ public class EternalOrb implements ItemTypes, MiscConstants {
 		itemBuilder.difficulty(5.0f);
 		itemBuilder.weightGrams(500);
 		itemBuilder.material(Materials.MATERIAL_CRYSTAL);
-		itemBuilder.value(200000);
+		itemBuilder.value(100000);
 		itemBuilder.isTraded(true);
 		
 		ItemTemplate template = itemBuilder.build();

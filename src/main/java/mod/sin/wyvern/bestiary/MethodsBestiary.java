@@ -524,6 +524,19 @@ public class MethodsBestiary {
 			e.printStackTrace();
 		}
 	}
+
+	private static void setSkill(int templateId, int skillId, float value){
+		try{
+			CreatureTemplate template = CreatureTemplateFactory.getInstance().getTemplate(templateId);
+			if(template != null){
+				Skills skills = ReflectionUtil.getPrivateField(template, ReflectionUtil.getField(template.getClass(), "skills"));
+				skills.learnTemp(skillId, value);
+				ReflectionUtil.setPrivateField(template, ReflectionUtil.getField(template.getClass(), "skills"), skills);
+			}
+		} catch (NoSuchCreatureTemplateException | IllegalArgumentException | IllegalAccessException | ClassCastException | NoSuchFieldException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	private static void setWorgFields(int templateId) {
 		try {
@@ -594,18 +607,18 @@ public class MethodsBestiary {
         setUniqueTypes(CreatureTemplate.CYCLOPS_CID);
 
 		// Dragon natural armour increases:
-		setNaturalArmour(CreatureTemplate.DRAGON_BLUE_CID, 0.035f);
-		setNaturalArmour(CreatureTemplate.DRAGON_WHITE_CID, 0.035f);
-		setNaturalArmour(CreatureTemplate.DRAGON_BLACK_CID, 0.045f);
-		setNaturalArmour(CreatureTemplate.DRAGON_WHITE_CID, 0.035f);
+		setNaturalArmour(CreatureTemplate.DRAGON_BLUE_CID, 0.025f);
+		setNaturalArmour(CreatureTemplate.DRAGON_WHITE_CID, 0.025f);
+		setNaturalArmour(CreatureTemplate.DRAGON_BLACK_CID, 0.035f);
+		setNaturalArmour(CreatureTemplate.DRAGON_WHITE_CID, 0.025f);
 		// Drake natural armour increases:
-		setNaturalArmour(CreatureTemplate.DRAKE_RED_CID, 0.065f);
-		setNaturalArmour(CreatureTemplate.DRAKE_BLUE_CID, 0.065f);
-		setNaturalArmour(CreatureTemplate.DRAKE_WHITE_CID, 0.075f);
-		setNaturalArmour(CreatureTemplate.DRAKE_GREEN_CID, 0.065f);
-		setNaturalArmour(CreatureTemplate.DRAKE_BLACK_CID, 0.055f);
+		setNaturalArmour(CreatureTemplate.DRAKE_RED_CID, 0.055f);
+		setNaturalArmour(CreatureTemplate.DRAKE_BLUE_CID, 0.055f);
+		setNaturalArmour(CreatureTemplate.DRAKE_WHITE_CID, 0.065f);
+		setNaturalArmour(CreatureTemplate.DRAKE_GREEN_CID, 0.055f);
+		setNaturalArmour(CreatureTemplate.DRAKE_BLACK_CID, 0.045f);
 		// Goblin leader natural armour increase:
-		setNaturalArmour(CreatureTemplate.GOBLIN_LEADER_CID, 0.055f);
+		setNaturalArmour(CreatureTemplate.GOBLIN_LEADER_CID, 0.045f);
 
 		// Worg armour reduction on Arena
         if(Servers.localServer.PVPSERVER) {
@@ -630,6 +643,9 @@ public class MethodsBestiary {
 		
 		// Set worg fields
 		setWorgFields(CreatureTemplate.WORG_CID);
+
+		// Set skills for certain creatures
+		setSkill(CreatureTemplate.CYCLOPS_CID, SkillList.GROUP_FIGHTING, 80.0f);
 	}
 
 	protected static void sendParticleEffect(Communicator comm, long creatureId, Creature creature, String particle, float duration){

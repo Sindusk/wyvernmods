@@ -20,10 +20,9 @@ public class AffinityOrb implements ItemTypes, MiscConstants {
 		itemBuilder.name(name, "affinity orbs", "A valuable orb that infuses the user with hidden knowledge.");
 		itemBuilder.descriptions("brilliantly glowing", "strongly glowing", "faintly glowing", "barely glowing");
 		itemBuilder.itemTypes(new short[]{
-				ItemTypes.ITEM_TYPE_MAGIC,
+				ItemTypes.ITEM_TYPE_NODROP,
 				ItemTypes.ITEM_TYPE_FULLPRICE,
-				ItemTypes.ITEM_TYPE_NOSELLBACK,
-				ItemTypes.ITEM_TYPE_ALWAYS_BANKABLE
+				ItemTypes.ITEM_TYPE_NOSELLBACK
 		});
 		itemBuilder.imageNumber((short) 919);
 		itemBuilder.behaviourType((short) 1);

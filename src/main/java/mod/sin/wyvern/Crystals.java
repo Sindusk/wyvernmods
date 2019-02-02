@@ -7,6 +7,7 @@ import com.wurmonline.server.items.ItemSpellEffects;
 import com.wurmonline.server.items.NotOwnedException;
 import com.wurmonline.server.skills.NoSuchSkillException;
 import com.wurmonline.server.skills.SkillList;
+import com.wurmonline.server.spells.SpellEffect;
 import com.wurmonline.shared.constants.Enchants;
 import mod.sin.items.ChaosCrystal;
 import mod.sin.items.EnchantersCrystal;
@@ -63,7 +64,18 @@ public class Crystals {
 			e.printStackTrace();
 		}
 		if(target.getSpellEffects() != null){
-			diff += target.getSpellEffects().getEffects().length*10;
+			for (SpellEffect eff : target.getSpellEffects().getEffects()){
+				// Double power-based penalty for BotD
+				if (eff.type == Enchants.BUFF_BLESSINGDARK){
+					diff += eff.getPower() * 0.1f;
+				}
+				if (eff.type != Enchants.BUFF_BLOODTHIRST) {
+					diff += eff.getPower() * 0.1f;
+				}else{
+					// Bloodthirst penalty (1 per 1000 power)
+					diff += eff.getPower() * 0.001f;
+				}
+			}
 		}
 		return diff;
 	}

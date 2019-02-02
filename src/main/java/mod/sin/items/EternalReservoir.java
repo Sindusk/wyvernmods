@@ -29,6 +29,7 @@ public class EternalReservoir implements ItemTypes, MiscConstants {
 				ItemTypes.ITEM_TYPE_NOTAKE,
 				ItemTypes.ITEM_TYPE_DECORATION,
 				ItemTypes.ITEM_TYPE_USE_GROUND_ONLY,
+				ItemTypes.ITEM_TYPE_HASDATA,
 				ItemTypes.ITEM_TYPE_NEVER_SHOW_CREATION_WINDOW_OPTION,
 				ItemTypes.ITEM_TYPE_NOT_MISSION
 		});
