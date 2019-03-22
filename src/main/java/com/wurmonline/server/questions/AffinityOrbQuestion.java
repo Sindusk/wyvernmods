@@ -39,7 +39,6 @@ public class AffinityOrbQuestion extends Question {
                     //logger.info("Converting "+player.getName()+" to " + Deities.getDeityName(deity));
                     String skillName = SkillSystem.getNameFor(skillNum);
                     logger.info("Adding affinity for skill "+skillName+" to "+player.getName());
-                    Items.destroyItem(affinityOrb.getWurmId());
 
                     Affinity[] affs = Affinities.getAffinities(player.getWurmId());
                     boolean found = false;

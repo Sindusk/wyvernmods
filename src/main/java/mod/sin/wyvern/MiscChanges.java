@@ -5,6 +5,7 @@ import com.wurmonline.server.bodys.Wound;
 import com.wurmonline.server.creatures.Creature;
 import com.wurmonline.server.creatures.Creatures;
 import com.wurmonline.server.creatures.NoSuchCreatureException;
+import com.wurmonline.server.creatures.SpellEffectsEnum;
 import com.wurmonline.server.items.Item;
 import com.wurmonline.server.items.ItemTemplate;
 import com.wurmonline.server.items.SimpleCreationEntry;
@@ -14,6 +15,7 @@ import com.wurmonline.server.players.PlayerInfoFactory;
 import com.wurmonline.server.players.Titles;
 import com.wurmonline.server.skills.Skill;
 import com.wurmonline.server.skills.SkillList;
+import com.wurmonline.server.spells.SpellEffect;
 import com.wurmonline.server.villages.Village;
 import com.wurmonline.server.webinterface.WcKingdomChat;
 import com.wurmonline.server.zones.VolaTile;
@@ -309,6 +311,20 @@ public class MiscChanges {
         }
         return arrTitles.toArray(new Titles.Title[0]);
     }
+
+    public static boolean shouldSendBuff(SpellEffectsEnum effect){
+        // Continue not showing any that don't have a buff in the first place
+        if (!effect.isSendToBuffBar()){
+            return false;
+        }
+        // Resistances and vulnerabilities are 20 - 43
+        if (effect.getTypeId() <= 43 && effect.getTypeId() >= 20){
+            return false;
+        }
+
+        // Is send to buff bar and not something we're stopping, so allow it.
+        return true;
+    }
 	
 	public static void preInit(){
 		try{
@@ -325,7 +341,8 @@ public class MiscChanges {
                     "Website/Maps: https://www.sarcasuals.com/",
                     "Server Discord: https://discord.gg/r8QNXAC",
                     "Server Data: https://docs.google.com/spreadsheets/d/1yjqTHoxUan4LIldI3jgrXZgXj1M2ENQ4MXniPUz0rE4",
-                    "Server Wiki/Documentation: https://docs.google.com/document/d/1cbPi7-vZnjaiYrENhaefzjK_Wz7_F1CcPYJtC6uCi98/edit?usp=sharing"};
+                    "Server Wiki/Documentation: https://docs.google.com/document/d/1cbPi7-vZnjaiYrENhaefzjK_Wz7_F1CcPYJtC6uCi98/edit?usp=sharing",
+                    "Patreon: https://www.patreon.com/sindusk"};
             StringBuilder str = new StringBuilder("{"
                     + "        com.wurmonline.server.Message mess;");
             for (String anInfoTabLine : infoTabLine) {
@@ -844,13 +861,13 @@ public class MiscChanges {
                     "}";
             Util.insertBeforeDeclared(thisClass, ctEpicServerStatus, "getRandomItemTemplateUsed", replace);
 
-            Util.setReason("Fix bug causing high cast spells to reduce power.");
+            /*Util.setReason("Fix bug causing high cast spells to reduce power.");
             CtClass ctSpellEffect = classPool.get("com.wurmonline.server.spells.SpellEffect");
             replace = "{" +
                     "  final float mod = 5.0f * (1.0f - java.lang.Math.min($0.getPower(), 100f) / 100.0f);" +
                     "  $0.setPower(mod + $1);" +
                     "}";
-            Util.setBodyDeclared(thisClass, ctSpellEffect, "improvePower", replace);
+            Util.setBodyDeclared(thisClass, ctSpellEffect, "improvePower", replace);*/
 
             Util.setReason("Disable smelting pots from being used.");
             CtClass ctItemBehaviour = classPool.get("com.wurmonline.server.behaviours.ItemBehaviour");
@@ -879,6 +896,29 @@ public class MiscChanges {
                     "}" +
                     "$_ = $proceed($$);";
             Util.instrumentDeclared(thisClass, ctTitleCompoundQuestion, "sendQuestion", "sort", replace);*/
+
+            /*Util.setReason("Remove buff bar spam from sorceries.");
+            replace = "$_ = false;";
+            Util.instrumentDeclared(thisClass, ctAbilities, "sendEffectsToCreature", "hasAnyAbility", replace);*/
+
+            Util.setReason("Hide buff bar icons for sorceries.");
+            CtClass ctSpellEffectsEnum = classPool.get("com.wurmonline.server.creatures.SpellEffectsEnum");
+            CtClass ctString = classPool.get("java.lang.String");
+            CtClass[] params15 = {
+                    ctSpellEffectsEnum,
+                    CtClass.intType,
+                    ctString
+            };
+            String desc15 = Descriptor.ofMethod(CtClass.voidType, params15);
+            CtClass[] params16 = {
+                    ctSpellEffectsEnum,
+                    CtClass.intType
+            };
+            String desc16 = Descriptor.ofMethod(CtClass.voidType, params16);
+            replace = "$_ = "+MiscChanges.class.getName()+".shouldSendBuff($0);";
+            Util.instrumentDescribed(thisClass, ctCommunicator, "sendAddStatusEffect", desc15, "isSendToBuffBar", replace);
+            Util.setReason("Hide buff bar icons for sorceries.");
+            Util.instrumentDescribed(thisClass, ctCommunicator, "sendAddStatusEffect", desc16, "isSendToBuffBar", replace);
 
         } catch (CannotCompileException | NotFoundException | IllegalArgumentException | ClassCastException e) {
             throw new HookException(e);

@@ -153,7 +153,7 @@ public class Titans {
         if (lCret.isUnique() || lCret.isInvulnerable() || lCret == titan || isTitanMinion(lCret)){
             return;
         }
-        lCret.addWoundOfType(lCret, Wound.TYPE_INFECTION, 1, true, 1.0f, true, 50000f);
+        lCret.addWoundOfType(lCret, Wound.TYPE_INFECTION, 1, true, 1.0f, true, 50000f, 0f, 0f, true, true);
         /*if (!lCret.addWoundOfType(lCret, Wound.TYPE_INFECTION, 1, true, 1.0f, true, 50000f)) {
             Creatures.getInstance().setCreatureDead(lCret);
             Players.getInstance().setCreatureDead(lCret);
@@ -291,7 +291,7 @@ public class Titans {
         }
         t.sendAttachCreatureEffect(lCret, (byte) 8, (byte) 0, (byte) 0, (byte) 0, (byte) 0);
         try {
-            if (lCret.addWoundOfType(titan, Wound.TYPE_INFECTION, lCret.getBody().getRandomWoundPos(), false, 1.0f, false, 25000.0 * (double)lCret.addSpellResistance((short) 448))){
+            if (lCret.addWoundOfType(titan, Wound.TYPE_INFECTION, lCret.getBody().getRandomWoundPos(), false, 1.0f, false, 25000.0 * (double)lCret.addSpellResistance((short) 448), 0f, 0f, true, true)){
                 return;
             }
         } catch (Exception e) {
@@ -389,7 +389,7 @@ public class Titans {
                     Server.getInstance().broadCastAction(titan.getName() + " picks a target at random and Smites "+target.getName()+"!", titan, 50);
                     target.getCommunicator().sendAlertServerMessage(titan.getName() + " smites you.", (byte) 4);
                     try {
-                        target.addWoundOfType(titan, Wound.TYPE_BURN, target.getBody().getRandomWoundPos(), false, 1.0f, false, maxdam);
+                        target.addWoundOfType(titan, Wound.TYPE_BURN, target.getBody().getRandomWoundPos(), false, 1.0f, false, maxdam, 0f, 0f, true, true);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -830,13 +830,15 @@ public class Titans {
                     + "}";
             Util.insertBeforeDeclared(thisClass, ctSmite, "precondition", replace);*/
 
+            /* Disabled in Wurm Unlimited 1.9 - No longer necessary as spells are balanced.
+
             Util.setReason("Disable casting Worm Brains on titans.");
             CtClass ctWormBrains = classPool.get("com.wurmonline.server.spells.WormBrains");
             replace = "if("+Titans.class.getName()+".isTitan($3)){"
                     + "  $2.getCommunicator().sendNormalServerMessage(\"Titans are immune to that spell.\");"
                     + "  return false;"
                     + "}";
-            Util.insertBeforeDeclared(thisClass, ctWormBrains, "precondition", replace);
+            Util.insertBeforeDeclared(thisClass, ctWormBrains, "precondition", replace);*/
 
             CtClass ctCreature = classPool.get("com.wurmonline.server.creatures.Creature");
             Util.setReason("Add spell resistance to titans.");
@@ -844,6 +846,8 @@ public class Titans {
                     "  return 0.05f;" +
                     "}";
             Util.insertBeforeDeclared(thisClass, ctCreature, "addSpellResistance", replace);
+
+            /* Disabled in Wurm Unlimited 1.9 - No longer needed while using DUSKombat.
 
             Util.setReason("Increase titan extra damage to pets.");
             CtClass ctString = classPool.get("java.lang.String");
@@ -870,7 +874,7 @@ public class Titans {
                     "  logger.info(\"Detected titan hit on a pet. Adding damage.\");" +
                     "  $5 = $5 * 2d;" +
                     "}";
-            Util.insertBeforeDescribed(thisClass, ctCombatEngine, "addWound", desc1, replace);
+            Util.insertBeforeDescribed(thisClass, ctCombatEngine, "addWound", desc1, replace);*/
 
         }catch (NotFoundException e) {
             throw new HookException(e);

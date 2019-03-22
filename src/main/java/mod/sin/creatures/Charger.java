@@ -91,7 +91,7 @@ public class Charger implements ModCreature, CreatureTypes {
 
 				vehicle.createPassengerSeats(0);
 				vehicle.setSeatFightMod(0, 0.8f, 1.1f);
-				vehicle.setSeatOffset(0, 0.0f, 0.0f, 0.5f);
+				vehicle.setSeatOffset(0, 0.0f, 0.0f, 0.0f);
 				vehicle.setCreature(true);
 				vehicle.setSkillNeeded(Servers.localServer.PVPSERVER ? 25.0f : 37.0f);
 				vehicle.setName(creature.getName());

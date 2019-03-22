@@ -307,9 +307,12 @@ public class LootBounty {
 	    if(crystalStr > 10000){ // 1 silver
 	    	numCrystals += doRollingCrystalReward(mob, corpse, crystalStr, EnchantersCrystal.templateId, 5, 20000);
 	    }*/
+
 	    boolean sendLootHelp = false;
 	    // Begin loot table drops
         int templateId = mob.getTemplate().getTemplateId();
+
+        // Arena damages player equipment on death
         if(Servers.localServer.PVPSERVER && mob.isPlayer()){
             if(mob.isDeathProtected()) {
                 logger.info("Death protection was active for " + mob.getName() + ". Inserting silver coin reward.");

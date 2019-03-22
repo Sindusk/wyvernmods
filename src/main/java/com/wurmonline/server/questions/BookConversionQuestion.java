@@ -40,7 +40,7 @@ public class BookConversionQuestion extends Question {
                         Deity d = Deities.getDeity(deity);
                         p.setDeity(d);
                         p.setPriest(true);
-                        if(d.hateGod){
+                        if(d.isHateGod()){
                             p.setAlignment(-Math.abs(p.getAlignment()));
                         }else{
                             p.setAlignment(Math.abs(p.getAlignment()));

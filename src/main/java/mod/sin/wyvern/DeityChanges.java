@@ -11,18 +11,19 @@ public class DeityChanges {
     public static void onServerStarted(){
         if(Deities.getDeity(101) != null){ // Edit Thelastdab Player God
             Deity thelastdab = Deities.getDeity(101);
+            // Set template deity
+            thelastdab.setMountainGod(true);
             // Add some defining affinities
-            thelastdab.metalAffinity = true;
-            thelastdab.deathProtector = true;
-            thelastdab.mountainGod = true;
-            thelastdab.warrior = true;
+            thelastdab.setMetalAffinity(true);
+            thelastdab.setDeathProtector(true);
+            thelastdab.setWarrior(true);
             // Remove some affinities
-            thelastdab.learner = false;
-            thelastdab.repairer = false;
-            thelastdab.befriendCreature = false;
-            thelastdab.healer = false;
-            thelastdab.clayAffinity = false;
-            thelastdab.waterGod = false;
+            thelastdab.setLearner(false);
+            thelastdab.setRepairer(false);
+            thelastdab.setBefriendCreature(false);
+            thelastdab.setHealer(false);
+            thelastdab.setClayAffinity(false);
+            thelastdab.setWaterGod(false);
         }
         /*if(Deities.getDeity(102) != null){ // Edit Cyberhusky player god
             Deity cyberhusky = Deities.getDeity(102);

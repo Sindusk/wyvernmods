@@ -9,16 +9,16 @@ import com.wurmonline.server.creatures.Creatures;
 import com.wurmonline.server.items.Item;
 import com.wurmonline.server.players.Player;
 import com.wurmonline.shared.constants.Enchants;
-import javassist.*;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.CtMethod;
+import javassist.NotFoundException;
 import javassist.bytecode.*;
-import javassist.expr.ExprEditor;
-import javassist.expr.FieldAccess;
 import mod.sin.lib.Util;
 import org.gotti.wurmunlimited.modloader.classhooks.HookException;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
 
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.logging.Logger;
 
 public class CombatChanges {
@@ -151,6 +151,8 @@ public class CombatChanges {
         return damage > 1D;
     }
 
+    /* Disabled as of WU 1.9 - No longer necessary and no longer functions.
+
     static void patchCombatDamageCheckCombatEngine(ClassPool classPool) throws NotFoundException, BadBytecode {
         CtClass cls = classPool.getCtClass("com.wurmonline.server.combat.CombatEngine");
         CtClass ctCreature = classPool.get("com.wurmonline.server.creatures.Creature");
@@ -213,9 +215,9 @@ public class CombatChanges {
                 }
             }
         }
-    }
+    }*/
 
-    static void patchCombatDamageCheckCombatHandler(ClassPool classPool) throws NotFoundException, BadBytecode {
+    /*static void patchCombatDamageCheckCombatHandler(ClassPool classPool) throws NotFoundException, BadBytecode {
         CtClass cls = classPool.getCtClass("com.wurmonline.server.creatures.CombatHandler");
         CtMethod method = cls.getMethod("setDamage", "(Lcom/wurmonline/server/creatures/Creature;Lcom/wurmonline/server/items/Item;DBB)Z");
         MethodInfo methodInfo = method.getMethodInfo();
@@ -255,7 +257,7 @@ public class CombatChanges {
                 }
             }
         }
-    }
+    }*/
 
     // Added to CombatHandled
     public static void pollCreatureActionStacks(){
@@ -283,8 +285,11 @@ public class CombatChanges {
                     "$_ = $proceed($$);";
             Util.instrumentDeclared(thisClass, ctCombatHandler, "getCombatRating", "getFlankingModifier", replace);
 
-            Util.setReason("Increase unique damage to pets.");
             CtClass ctCreature = classPool.get("com.wurmonline.server.creatures.Creature");
+
+            /* Disabled in Wurm Unlimited 1.9 - No longer necessary while using DUSKombat.
+
+            Util.setReason("Increase unique damage to pets.");
             CtClass ctString = classPool.get("java.lang.String");
             CtClass ctBattle = classPool.get("com.wurmonline.server.combat.Battle");
             CtClass ctCombatEngine = classPool.get("com.wurmonline.server.combat.CombatEngine");
@@ -313,7 +318,7 @@ public class CombatChanges {
                     "  logger.info(\"Detected pet hit on a unique. Reducing damage.\");" +
                     "  $5 = $5 * 0.5d;" +
                     "}";
-            Util.insertBeforeDescribed(thisClass, ctCombatEngine, "addWound", desc1, replace);
+            Util.insertBeforeDescribed(thisClass, ctCombatEngine, "addWound", desc1, replace);*/
 
             Util.setReason("Adjust weapon damage type based on the potion/salve applied.");
             replace = "int wt = "+CombatChanges.class.getName()+".getWeaponType($1);"
@@ -323,7 +328,6 @@ public class CombatChanges {
                     + "}";
             Util.insertBeforeDeclared(thisClass, ctCombatHandler, "getType", replace);
 
-            Util.setReason("Adjust bloodthirst to epic settings.");
             CtClass ctItem = classPool.get("com.wurmonline.server.items.Item");
             CtClass[] params2 = {
                     ctCreature,
@@ -331,8 +335,12 @@ public class CombatChanges {
                     ctCreature
             };
             String desc2 = Descriptor.ofMethod(CtClass.doubleType, params2);
+
+            /* Disabled in Wurm Unlimited 1.9 - Priest Rework adjusted Bloodthirst in an identical way.
+
+            Util.setReason("Adjust bloodthirst to epic settings.");
             replace = "$_ = true;";
-            Util.instrumentDescribed(thisClass, ctCombatHandler, "getDamage", desc2, "isThisAnEpicOrChallengeServer", replace);
+            Util.instrumentDescribed(thisClass, ctCombatHandler, "getDamage", desc2, "isThisAnEpicOrChallengeServer", replace);*/
 
             Util.setReason("Fix magranon damage bonus stacking.");
             replace = "if(mildStack){" +
@@ -342,7 +350,6 @@ public class CombatChanges {
                     "}";
             Util.instrumentDescribed(thisClass, ctCombatHandler, "getDamage", desc2, "getModifiedFloatEffect", replace);
 
-            Util.setReason("Adjust bloodthirst to epic settings.");
             CtClass ctAttackAction = classPool.get("com.wurmonline.server.creatures.AttackAction");
             CtClass[] params3 = {
                     ctCreature,
@@ -350,8 +357,12 @@ public class CombatChanges {
                     ctCreature
             };
             String desc3 = Descriptor.ofMethod(CtClass.doubleType, params3);
+
+            /* Disabled in Wurm Unlimited 1.9 - Priest Rework adjusted Bloodthirst in an identical way.
+
+            Util.setReason("Adjust bloodthirst to epic settings.");
             replace = "$_ = true;";
-            Util.instrumentDescribed(thisClass, ctCombatHandler, "getDamage", desc3, "isThisAnEpicOrChallengeServer", replace);
+            Util.instrumentDescribed(thisClass, ctCombatHandler, "getDamage", desc3, "isThisAnEpicOrChallengeServer", replace);*/
 
             Util.setReason("Fix magranon damage bonus stacking.");
             replace = "if(mildStack){" +
@@ -451,13 +462,11 @@ public class CombatChanges {
                     CombatChanges.class.getName()+".goodLog(\"Zones.pollNextZones(\"+sleepTime+\") call to Creatures.getInstance().pollAllCreatures(\"+$1+\") [time \"+java.lang.System.currentTimeMillis()+\"]\");";
             Util.instrumentDeclared(thisClass, ctZones, "pollNextZones", "pollAllCreatures", replace);*/
 
-            patchCombatDamageCheckCombatEngine(classPool);
-            patchCombatDamageCheckCombatHandler(classPool);
+            //patchCombatDamageCheckCombatEngine(classPool);
+            //patchCombatDamageCheckCombatHandler(classPool);
 
         } catch ( NotFoundException | IllegalArgumentException | ClassCastException e) {
             throw new HookException(e);
-        } catch (BadBytecode badBytecode) {
-            badBytecode.printStackTrace();
         }
     }
 }

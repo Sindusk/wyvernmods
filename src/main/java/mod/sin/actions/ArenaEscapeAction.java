@@ -38,7 +38,6 @@ public class ArenaEscapeAction implements ModAction {
 		ModActions.registerAction(actionEntry);
 	}
 
-
 	@Override
 	public BehaviourProvider getBehaviourProvider()
 	{
@@ -93,6 +92,7 @@ public class ArenaEscapeAction implements ModAction {
 						}
 						if(counter == 1.0f){
 							performer.getCommunicator().sendNormalServerMessage("You prepare your body and mind to transfer to another realm.");
+							performer.playAnimation("meditate", false);
 							act.setTimeLeft(1800);
 							performer.sendActionControl("Preparing", true, act.getTimeLeft());
 						}else if(counter * 10f > performer.getCurrentAction().getTimeLeft()){

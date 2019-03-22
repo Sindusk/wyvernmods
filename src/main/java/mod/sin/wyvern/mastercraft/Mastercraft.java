@@ -68,7 +68,7 @@ public class Mastercraft {
 		}
 		return mult;
 	}
-	public static void addNewTitles(){
+	/*public static void addNewTitles(){
         try {
             ExtendTitleEnum.builder("com.wurmonline.server.players.Titles$Title");
             // GM/Developer Titles
@@ -146,7 +146,8 @@ public class Mastercraft {
         } catch (BadBytecode | ClassNotFoundException | NotFoundException | CannotCompileException e) {
             logger.warning(e.getMessage());
         }
-    }
+    }*/
+
 	public static void changeExistingTitles(){
 		for (Titles.Title title : Titles.Title.values()) {
 		    if (Objects.equals("Pumpkin King", title.getFemaleName())){

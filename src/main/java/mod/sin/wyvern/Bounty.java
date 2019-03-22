@@ -119,10 +119,20 @@ public class Bounty {
                     }
                 }
             });*/
+
+			// Die method description
+			CtClass ctString = classPool.get("java.lang.String");
+			CtClass[] params1 = new CtClass[]{
+					CtClass.booleanType,
+					ctString,
+					CtClass.booleanType
+			};
+			String desc1 = Descriptor.ofMethod(CtClass.voidType, params1);
+
             replace = "$_ = $proceed($$);"
           		  	//+ "mod.sin.wyvern.bounty.MethodsBounty.checkLootTable(this, corpse);";
           		  	+ LootBounty.class.getName()+".checkLootTable(this, corpse);";
-            Util.instrumentDeclared(thisClass, ctCreature, "die", "setRotation", replace);
+            Util.instrumentDescribed(thisClass, ctCreature, "die", desc1, "setRotation", replace);
             /*ctCreature.getDeclaredMethod("die").instrument(new ExprEditor(){
               public void edit(MethodCall m) throws CannotCompileException {
                   if (m.getMethodName().equals("setRotation")) {
@@ -135,7 +145,7 @@ public class Bounty {
             });*/
 
             // doNew(int templateid, boolean createPossessions, float aPosX, float aPosY, float aRot, int layer, String name, byte gender, byte kingdom, byte ctype, boolean reborn, byte age)
-            CtClass[] params = {
+            CtClass[] params2 = {
             		CtClass.intType,
             		CtClass.booleanType,
             		CtClass.floatType,
@@ -150,8 +160,8 @@ public class Bounty {
             		CtClass.byteType,
             		CtClass.intType
             };
-            String desc = Descriptor.ofMethod(ctCreature, params);
-            Util.insertBeforeDescribed(thisClass, ctCreature, "doNew", desc, "logger.info(\"Creating new creature: \"+templateid+\" - \"+(aPosX/4)+\", \"+(aPosY/4)+\" [\"+com.wurmonline.server.creatures.CreatureTemplateFactory.getInstance().getTemplate(templateid).getName()+\"]\");");
+            String desc2 = Descriptor.ofMethod(ctCreature, params2);
+            Util.insertBeforeDescribed(thisClass, ctCreature, "doNew", desc2, "logger.info(\"Creating new creature: \"+templateid+\" - \"+(aPosX/4)+\", \"+(aPosY/4)+\" [\"+com.wurmonline.server.creatures.CreatureTemplateFactory.getInstance().getTemplate(templateid).getName()+\"]\");");
           // Debugging to show all new creatures created.
           //CtMethod ctDoNew = ctCreature.getMethod("doNew", "(IZFFFILjava/lang/String;BBBZB)Lcom/wurmonline/server/creatures/Creature;");
           //ctDoNew.insertBefore("logger.info(\"Creating new creature: \"+templateid+\" - \"+(aPosX/4)+\", \"+(aPosY/4)+\" [\"+com.wurmonline.server.creatures.CreatureTemplateFactory.getInstance().getTemplate(templateid).getName()+\"]\");");
@@ -159,7 +169,7 @@ public class Bounty {
             replace = "$_ = $proceed($$);"
               		//+ "mod.sin.wyvern.bestiary.MethodsBestiary.modifyNewCreature($1);";
             		+ MethodsBestiary.class.getName()+".modifyNewCreature($1);";
-            Util.instrumentDescribed(thisClass, ctCreature, "doNew", desc, "sendToWorld", replace);
+            Util.instrumentDescribed(thisClass, ctCreature, "doNew", desc2, "sendToWorld", replace);
           /*ctDoNew.instrument(new ExprEditor(){
               public void edit(MethodCall m) throws CannotCompileException {
                   if (m.getMethodName().equals("sendToWorld")) {

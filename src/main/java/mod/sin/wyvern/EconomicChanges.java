@@ -43,7 +43,7 @@ public class EconomicChanges {
             float dam = item.getDamage();
             // =($A$25*A2*A2 / 10000)
             float initialValue = ((float)item.getTemplate().getValue())*qual*qual/10000f;
-            float baseCost = 100000f;
+            float baseCost = 50000f;
             float power = 6.0f;
             // =((10+B2/4.5)*(1-POW(A2/100, $A$27)) + B2*POW(A2/100, $A$27)) * ((100 - $A$29) / 100)
             return (int) (((baseCost+(initialValue/4.5f)) * (1f-Math.pow(qual/100f, power)) + initialValue*Math.pow(qual/100f, power)) * ((100f-dam)/100f) * PRICE_MARKUP);
@@ -87,11 +87,13 @@ public class EconomicChanges {
             final Class<EconomicChanges> thisClass = EconomicChanges.class;
             String replace;
 
+            /* [2/4/19] Disabled - Likely causing issues with upkeep fluctuation.
             Util.setReason("Increase deed upkeep by modifying the amount of tiles it thinks it has.");
             CtClass ctGuardPlan = classPool.get("com.wurmonline.server.villages.GuardPlan");
             replace = "$_ = "+EconomicChanges.class.getName()+".getNewVillageTiles(vill.getNumTiles());";
-            Util.instrumentDeclared(thisClass, ctGuardPlan, "getMonthlyCost", "getNumTiles", replace);
+            Util.instrumentDeclared(thisClass, ctGuardPlan, "getMonthlyCost", "getNumTiles", replace);*/
 
+            /* [2/4/19] Disabled - Probably not necessary anymore.
             Util.setReason("Disable upkeep on arena for now until a fix can be found.");
             replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
                     + "  $_ = false;"
@@ -99,7 +101,7 @@ public class EconomicChanges {
                     "  $_ = $proceed($$);" +
                     "}";
             //replace = "$_ = false;";
-            Util.instrumentDeclared(thisClass, ctGuardPlan, "getMonthlyCost", "isUpkeep", replace);
+            Util.instrumentDeclared(thisClass, ctGuardPlan, "getMonthlyCost", "isUpkeep", replace);*/
 
             /*Util.setReason("Allow players to get a full deed refund.");
 			replace = "{ return "+EconomicChanges.class.getName()+".getNewDisbandMoney(this, this.getVillage()); }";

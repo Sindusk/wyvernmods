@@ -17,10 +17,7 @@ import mod.sin.creatures.SpectralDrake;
 import mod.sin.items.AffinityOrb;
 import mod.sin.items.caches.RiftCache;
 import mod.sin.items.caches.TitanCache;
-import mod.sin.wyvern.Bounty;
-import mod.sin.wyvern.MiscChanges;
-import mod.sin.wyvern.RareSpawns;
-import mod.sin.wyvern.Titans;
+import mod.sin.wyvern.*;
 import mod.sin.wyvern.util.ItemUtil;
 
 import java.io.IOException;
@@ -109,7 +106,7 @@ public class PlayerBounty {
 				fightStrength = "legendary";
 			}
     		player.getCommunicator().sendSafeServerMessage("The spirit recognizes you as a "+fightStrength+" warrior, and rewards you accordingly.");
-			//player.addTitle(Title.getTitle(701));
+			player.addTitle(PlayerTitles.getTitle(PlayerTitles.SPECTRAL));
     	}catch (NoSuchTemplateException | FailedException e) {
 			e.printStackTrace();
 		}
@@ -148,7 +145,7 @@ public class PlayerBounty {
                     player.getInventory().insertItem(riftCache, true);
                 }
 				if(Titans.isTitan(mob)){
-					//player.addTitle(Title.getTitle(700));
+					player.addTitle(PlayerTitles.getTitle(PlayerTitles.TITAN_SLAYER));
 					Item affinityOrb = ItemFactory.createItem(AffinityOrb.templateId, 99f, mob.getName());
 					player.getInventory().insertItem(affinityOrb, true);
 					Item titanCache = ItemFactory.createItem(TitanCache.templateId, 99f, mob.getName());

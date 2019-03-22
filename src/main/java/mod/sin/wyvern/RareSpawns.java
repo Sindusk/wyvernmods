@@ -122,6 +122,8 @@ public class RareSpawns {
                     + "}";
             Util.insertBeforeDeclared(thisClass, ctWormBrains, "precondition", replace);
 
+            /* Disabled in Wurm Unlimited 1.9 - No longer necessary while using DUSKombat.
+
             Util.setReason("Increase titan extra damage to pets.");
             CtClass ctCreature = classPool.get("com.wurmonline.server.creatures.Creature");
             CtClass ctString = classPool.get("java.lang.String");
@@ -148,7 +150,7 @@ public class RareSpawns {
                     //"  logger.info(\"Detected rare spawn hit on a pet. Adding damage.\");" +
                     "  $5 = $5 * 2d;" +
                     "}";
-            Util.insertBeforeDescribed(thisClass, ctCombatEngine, "addWound", desc1, replace);
+            Util.insertBeforeDescribed(thisClass, ctCombatEngine, "addWound", desc1, replace);*/
         }catch (NotFoundException e) {
             throw new HookException(e);
         }

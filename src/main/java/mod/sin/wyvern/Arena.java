@@ -427,6 +427,15 @@ public class Arena {
                 }
             });*/
 
+            // Die method description
+            CtClass ctString = classPool.get("java.lang.String");
+            CtClass[] params8 = new CtClass[]{
+                    CtClass.booleanType,
+                    ctString,
+                    CtClass.booleanType
+            };
+            String desc8 = Descriptor.ofMethod(CtClass.voidType, params8);
+
             // - Ensure corpses are not loot protected on PvP - //
             Util.setReason("Ensure corpses are not loot protected.");
             replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
@@ -434,13 +443,13 @@ public class Arena {
         			+ "}else{"
         			+ "  $_ = $proceed($$);"
         			+ "}";
-            Util.instrumentDeclared(thisClass, ctCreature, "die", "setProtected", replace);
+            Util.instrumentDescribed(thisClass, ctCreature, "die", desc8, "setProtected", replace);
             replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
         			+ "  $_ = true;"
         			+ "}else{"
         			+ "  $_ = $proceed($$);"
         			+ "}";
-            Util.instrumentDeclared(thisClass, ctCreature, "die", "isInPvPZone", replace);
+            Util.instrumentDescribed(thisClass, ctCreature, "die", desc8, "isInPvPZone", replace);
 
             // - Allow players to do actions in PvP houses - //
             CtClass ctMethods = classPool.get("com.wurmonline.server.behaviours.Methods");
@@ -680,15 +689,7 @@ public class Arena {
                     "}else{" +
                     "  $_ = $proceed($$);" +
                     "}";
-            Util.instrumentDeclared(thisClass, ctCreature, "die", "getFavor", replace);
-
-            /*Util.setReason("Nerf resurrection stones.");
-            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){" +
-                    "  $_ = com.wurmonline.server.Server.rand.nextInt(40) > 35;" +
-                    "}else{" +
-                    "  $_ = $proceed($$);" +
-                    "}";
-            Util.instrumentDeclared(thisClass, ctCreature, "die", "isDeathProtected", replace);*/
+            Util.instrumentDescribed(thisClass, ctCreature, "die", desc8, "getFavor", replace);
 
             Util.setReason("Adjust spawn question mechanics.");
             CtClass ctSpawnQuestion = classPool.get("com.wurmonline.server.questions.SpawnQuestion");
@@ -770,7 +771,7 @@ public class Arena {
                     "  keepItems = true;" +
                     "}" +
                     "$_ = $proceed($$);";
-            Util.instrumentDeclaredCount(thisClass, ctCreature, "die", "isOnCurrentServer", 1, replace);
+            Util.instrumentDescribedCount(thisClass, ctCreature, "die", desc8, "isOnCurrentServer", 1, replace);
 
             Util.setReason("Disable player skill loss on Arena.");
             replace = "if(this.isPlayer() && this.isDeathProtected()){" +

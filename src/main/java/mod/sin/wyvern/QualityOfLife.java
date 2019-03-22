@@ -146,10 +146,12 @@ public class QualityOfLife {
             replace = "{ return this.template.holyItem; }";
             Util.setBodyDescribed(thisClass, ctItem, "isHolyItem", desc100, replace);
 
+            /* Disabled in Wurm Unlimited 1.9 - Priest Rework changes removed this restriction.
+
             Util.setReason("Remove requirement for Libila priests to bless creatures before taming.");
             CtClass ctMethodsCreatures = classPool.get("com.wurmonline.server.behaviours.MethodsCreatures");
             replace = "$_ = false;";
-            Util.instrumentDeclared(thisClass, ctMethodsCreatures, "tame", "isPriest", replace);
+            Util.instrumentDeclared(thisClass, ctMethodsCreatures, "tame", "isPriest", replace);*/
 
             Util.setReason("Send gems, source crystals, flint, etc. into vehicle.");
             CtClass[] params2 = {

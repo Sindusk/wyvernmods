@@ -12,10 +12,8 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
 import com.wurmonline.server.Message;
-import com.wurmonline.server.creatures.Communicator;
 import com.wurmonline.server.creatures.Creature;
 import com.wurmonline.server.items.*;
-import com.wurmonline.server.kingdom.Kingdoms;
 import mod.sin.actions.items.SorcerySplitAction;
 import mod.sin.lib.Util;
 import org.gotti.wurmunlimited.modloader.ReflectionUtil;
@@ -248,6 +246,8 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 		ItemMod.createItems();
 		logger.info("Creating Cache items.");
 		Caches.createItems();
+		logger.info("Initiating Title changes.");
+		PlayerTitles.onItemTemplatesCreated();
 		try {
 			logger.info("Editing existing item templates.");
 			ItemMod.modifyItems();

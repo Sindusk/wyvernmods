@@ -27,25 +27,25 @@ public class MountedChanges {
             Item leftFoot = creature.getEquippedItem(BodyPartConstants.LEFT_FOOT);
             leftFoot.setDamage(leftFoot.getDamage()+(leftFoot.getDamageModifier()*0.002f));
             gear.add(leftFoot);
-        } catch (NoSuchItemException | NoSpaceException ignored) {
+        } catch (NoSpaceException ignored) {
         }
         try {
             Item rightFoot = creature.getEquippedItem(BodyPartConstants.RIGHT_FOOT);
             rightFoot.setDamage(rightFoot.getDamage()+(rightFoot.getDamageModifier()*0.002f));
             gear.add(rightFoot);
-        } catch (NoSuchItemException | NoSpaceException ignored) {
+        } catch (NoSpaceException ignored) {
         }
         try {
             Item leftHand = creature.getEquippedItem(BodyPartConstants.LEFT_HAND);
             leftHand.setDamage(leftHand.getDamage()+(leftHand.getDamageModifier()*0.002f));
             gear.add(leftHand);
-        } catch (NoSuchItemException | NoSpaceException ignored) {
+        } catch (NoSpaceException ignored) {
         }
         try {
             Item rightHand = creature.getEquippedItem(BodyPartConstants.RIGHT_HAND);
             rightHand.setDamage(rightHand.getDamage()+(rightHand.getDamageModifier()*0.002f));
             gear.add(rightHand);
-        } catch (NoSuchItemException | NoSpaceException ignored) {
+        } catch (NoSpaceException ignored) {
         }
         for(Item shoe : gear){
             factor += Math.max(10f, shoe.getCurrentQualityLevel()) / 2000f;
@@ -96,7 +96,7 @@ public class MountedChanges {
                     saddleFactor += saddle.getRarity() * 0.03f;
                     factor *= saddleFactor;
                 }
-            } catch (NoSuchItemException | NoSpaceException ignored) {
+            } catch (NoSpaceException ignored) {
             }
             factor *= creature.getMovementScheme().getSpeedModifier();
         }

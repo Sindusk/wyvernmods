@@ -20,7 +20,6 @@ public class AffinityOrb implements ItemTypes, MiscConstants {
 		itemBuilder.name(name, "affinity orbs", "A valuable orb that infuses the user with hidden knowledge.");
 		itemBuilder.descriptions("brilliantly glowing", "strongly glowing", "faintly glowing", "barely glowing");
 		itemBuilder.itemTypes(new short[]{
-				ItemTypes.ITEM_TYPE_NODROP,
 				ItemTypes.ITEM_TYPE_FULLPRICE,
 				ItemTypes.ITEM_TYPE_NOSELLBACK
 		});

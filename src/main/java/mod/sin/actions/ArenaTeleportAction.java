@@ -86,18 +86,19 @@ public class ArenaTeleportAction implements ModAction {
 						}
 						if(counter == 1.0f){
 							performer.getCommunicator().sendNormalServerMessage("You sit and begin to transfer your mind.");
+							performer.playAnimation("meditate", false);
 							act.setTimeLeft(600);
 							performer.sendActionControl("Transferring", true, act.getTimeLeft());
 						}else if(act.currentSecond() == 10){
-							performer.getCommunicator().sendAlertServerMessage("You are about to enter a PvP environment.", (byte) 3);
+							performer.getCommunicator().sendAlertServerMessage("You are about to enter a full PvP environment.", (byte) 3);
 						}else if(act.currentSecond() == 20){
-							performer.getCommunicator().sendNormalServerMessage("Death will leave your corpse and return you here. Anyone may loot your corpse in the arena.", (byte) 3);
+							performer.getCommunicator().sendNormalServerMessage("Death will not drop your items. Instead they will be damaged heavily and returned to you upon respawn.", (byte) 3);
 						}else if(act.currentSecond() == 30){
-							performer.getCommunicator().sendNormalServerMessage("Upon transfer, you will be placed in a random location. This could be safely outside of danger, or directly on a group of enemies.", (byte) 3);
+							performer.getCommunicator().sendNormalServerMessage("If you are part of a deed, you will arrive at the token. Otherwise, you will be placed in a random location.", (byte) 3);
 						}else if(act.currentSecond() == 40){
 							performer.getCommunicator().sendNormalServerMessage("You can equip creatures such as horses by simply leading them. Taming is not required in the Arena.", (byte) 3);
 						}else if(act.currentSecond() == 55){
-							performer.getCommunicator().sendNormalServerMessage("It appears you have accepted these conditions. Transferring to the arena. Good luck.", (byte) 3);
+							performer.getCommunicator().sendNormalServerMessage("It appears you have accepted these conditions. Transferring to the Revenant Arena. Good luck.", (byte) 3);
 						}else if(counter * 10f > performer.getCurrentAction().getTimeLeft()){
 							ServerEntry targetserver = Servers.localServer.serverNorth;
 							if(targetserver == null){

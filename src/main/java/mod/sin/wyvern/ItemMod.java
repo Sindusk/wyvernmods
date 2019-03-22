@@ -253,10 +253,10 @@ public class ItemMod {
 	public static void createCustomWeapons(){
 		try {
 			logger.info("Beginning custom weapon creation.");
-			new Weapon(BattleYoyo.templateId, 6.85f, 3.85f, 0.008f, 2, 2, 0.0f, 0d);
-			new Weapon(Club.templateId, 8.1f, 4.5f, 0.002f, 3, 3, 0.4f, 0.5d);
-			new Weapon(Knuckles.templateId, 3.7f, 2.2f, 0.002f, 1, 1, 0.2f, 0.5d);
-			new Weapon(Warhammer.templateId, 9.40f, 5.6f, 0.008f, 4, 3, 1f, 0d);
+			new Weapon(BattleYoyo.templateId, 6.85f, 3.75f, 0.012f, 2, 2, 0.0f, 0d);
+			new Weapon(Club.templateId, 8.3f, 4.5f, 0.002f, 3, 3, 0.4f, 0.5d);
+			new Weapon(Knuckles.templateId, 3.8f, 2.2f, 0.002f, 1, 1, 0.2f, 0.5d);
+			new Weapon(Warhammer.templateId, 9.50f, 5.6f, 0.015f, 4, 3, 1f, 0d);
 			//new Weapon(ItemList.stoneChisel, 50f, 1f, 0.5f, 8, 1, 3f, -5f);
 			// Titan weaponry
 			new Weapon(MaartensMight.templateId, 11, 5, 0.02f, 4, 4, 1.0f, 0d);
@@ -327,6 +327,10 @@ public class ItemMod {
         int newKindlingVolume = kindling.getSizeX()*kindling.getSizeY()*kindling.getSizeZ();
         ReflectionUtil.setPrivateField(kindling, ReflectionUtil.getField(kindling.getClass(), "volume"), newKindlingVolume);
 
+        // Allow sleep powder to be dropped.
+        ItemTemplate sleepPowder = ItemTemplateFactory.getInstance().getTemplate(ItemList.sleepPowder);
+		ReflectionUtil.setPrivateField(sleepPowder, ReflectionUtil.getField(sleepPowder.getClass(), "nodrop"), false);
+
 		// Set silver mirror price to 10 silver instead of 1 iron.
 		ItemTemplate handMirror = ItemTemplateFactory.getInstance().getTemplate(ItemList.handMirror);
 		ReflectionUtil.setPrivateField(handMirror, ReflectionUtil.getField(handMirror.getClass(), "value"), 200000);
@@ -341,6 +345,10 @@ public class ItemMod {
         // Resurrection Stones to 2 silver instead of 5 silver.
 		ItemTemplate resurrectionStone = ItemTemplateFactory.getInstance().getTemplate(ItemList.resurrectionStone);
 		ReflectionUtil.setPrivateField(resurrectionStone, ReflectionUtil.getField(resurrectionStone.getClass(), "value"), 20000);
+
+		// Shaker Orbs to 2 silver instead of 5 silver.
+		ItemTemplate shakerOrb = ItemTemplateFactory.getInstance().getTemplate(ItemList.shakerOrb);
+		ReflectionUtil.setPrivateField(shakerOrb, ReflectionUtil.getField(shakerOrb.getClass(), "value"), 20000);
 
 		// Set transmutation rod to 2 gold instead of 50 silver.
 		//ItemTemplate transmutationRod = ItemTemplateFactory.getInstance().getTemplate(668);

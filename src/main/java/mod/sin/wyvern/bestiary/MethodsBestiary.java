@@ -457,6 +457,17 @@ public class MethodsBestiary {
 			e.printStackTrace();
 		}
 	}
+
+	private static void setCombatRating(int templateId, float value){
+		try{
+			CreatureTemplate template = CreatureTemplateFactory.getInstance().getTemplate(templateId);
+			if(template != null){
+				ReflectionUtil.setPrivateField(template, ReflectionUtil.getField(template.getClass(), "baseCombatRating"), value);
+			}
+		} catch (NoSuchCreatureTemplateException | IllegalArgumentException | IllegalAccessException | ClassCastException | NoSuchFieldException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	private static void setNaturalArmour(int templateId, float value){
 		try{
@@ -646,6 +657,9 @@ public class MethodsBestiary {
 
 		// Set skills for certain creatures
 		setSkill(CreatureTemplate.CYCLOPS_CID, SkillList.GROUP_FIGHTING, 80.0f);
+
+		// Set combat rating for valrei creatures to improve their bounty
+		setCombatRating(CreatureTemplate.SON_OF_NOGUMP_CID, 30.0f);
 	}
 
 	protected static void sendParticleEffect(Communicator comm, long creatureId, Creature creature, String particle, float duration){
@@ -737,6 +751,15 @@ public class MethodsBestiary {
                 });
             }
 
+			// Die method description
+			CtClass ctString = classPool.get("java.lang.String");
+			CtClass[] params5 = new CtClass[]{
+					CtClass.booleanType,
+					ctString,
+					CtClass.booleanType
+			};
+			String desc5 = Descriptor.ofMethod(CtClass.voidType, params5);
+
             Util.setReason("Deny chargers walking through walls.");
             CtClass ctPathFinder = classPool.get("com.wurmonline.server.creatures.ai.PathFinder");
             replace = "if("+MethodsBestiary.class.getName()+".denyPathingOverride($0)){" +
@@ -749,7 +772,7 @@ public class MethodsBestiary {
             Util.instrumentDeclared(thisClass, ctCreature, "startPathingToTile", "isGhost", replace);
             Util.instrumentDeclared(thisClass, ctCreature, "moveAlongPath", "isGhost", replace);
             Util.instrumentDeclared(thisClass, ctCreature, "takeSimpleStep", "isGhost", replace);
-            Util.instrumentDeclared(thisClass, ctCreature, "die", "isGhost", replace);
+            Util.instrumentDescribed(thisClass, ctCreature, "die", desc5, "isGhost", replace);
 
             Util.setReason("Apply random types to creatures in the wilderness.");
             CtClass[] params2 = {
@@ -809,7 +832,7 @@ public class MethodsBestiary {
                     + "if("+MethodsBestiary.class.getName()+".hasCustomCorpseSize(this)){"
                     + "  "+MethodsBestiary.class.getName()+".setCorpseSizes(this, corpse);"
                     + "}";
-            Util.instrumentDeclared(thisClass, ctCreature, "die", "addItem", replace);
+            Util.instrumentDescribed(thisClass, ctCreature, "die", desc5, "addItem", replace);
 
             Util.setReason("Add spell resistance to custom creatures.");
             replace = "float cResist = "+MethodsBestiary.class.getName()+".getCustomSpellResistance(this);" +
@@ -833,7 +856,7 @@ public class MethodsBestiary {
                     + "}else{"
                     + "  $_ = $proceed($$);"
                     + "}";
-            Util.instrumentDeclared(thisClass, ctCreature, "die", "isGhost", replace);
+            Util.instrumentDescribed(thisClass, ctCreature, "die", desc5, "isGhost", replace);
 
             Util.setReason("Attach special effects to creatures.");
             CtClass ctVirtualZone = classPool.get("com.wurmonline.server.zones.VirtualZone");

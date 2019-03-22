@@ -5,10 +5,7 @@ import com.wurmonline.server.Items;
 import com.wurmonline.server.behaviours.Action;
 import com.wurmonline.server.behaviours.ActionEntry;
 import com.wurmonline.server.creatures.Creature;
-import com.wurmonline.server.items.Item;
-import com.wurmonline.server.items.ItemFactory;
-import com.wurmonline.server.items.ItemSpellEffects;
-import com.wurmonline.server.items.NoSuchTemplateException;
+import com.wurmonline.server.items.*;
 import com.wurmonline.server.players.Player;
 import com.wurmonline.server.skills.Skill;
 import com.wurmonline.server.spells.Spell;
@@ -88,6 +85,10 @@ public class EternalOrbAction implements ModAction {
 					}
 					if(source.getWurmId() == target.getWurmId()){
 						player.getCommunicator().sendNormalServerMessage("You cannot absorb the orb with itself!");
+						return true;
+					}
+					if(target.getTemplateId() == ItemList.arrowHunting || target.getTemplateId() == ItemList.arrowWar){
+						player.getCommunicator().sendNormalServerMessage("You cannot use Eternal Orbs on arrows.");
 						return true;
 					}
 					ItemSpellEffects teffs = target.getSpellEffects();

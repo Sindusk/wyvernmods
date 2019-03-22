@@ -67,6 +67,8 @@ public class Bloodlust {
             final Class<Bloodlust> thisClass = Bloodlust.class;
             String replace;
 
+            /* Disabled in Wurm Unlimited 1.9 - May need to be revisited in the future.
+
             Util.setReason("Hook for bloodlust system.");
             CtClass ctCreature = classPool.get("com.wurmonline.server.creatures.Creature");
             CtClass ctString = classPool.get("java.lang.String");
@@ -97,8 +99,8 @@ public class Bloodlust {
                     "  float lustMult = "+Bloodlust.class.getName()+".getLustMult($1);" +
                     "  $5 = $5 * lustMult;" +
                     "}";
-            Util.insertBeforeDescribed(thisClass, ctCombatEngine, "addWound", desc1, replace);
-        } catch ( NotFoundException | IllegalArgumentException | ClassCastException e) {
+            Util.insertBeforeDescribed(thisClass, ctCombatEngine, "addWound", desc1, replace);*/
+        } catch (  IllegalArgumentException | ClassCastException e) {
             throw new HookException(e);
         }
     }
