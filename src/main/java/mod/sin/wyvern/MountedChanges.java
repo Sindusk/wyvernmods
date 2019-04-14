@@ -1,10 +1,7 @@
 package mod.sin.wyvern;
 
-import com.wurmonline.server.NoSuchItemException;
 import com.wurmonline.server.creatures.Creature;
-import com.wurmonline.server.creatures.NoArmourException;
 import com.wurmonline.server.items.Item;
-import com.wurmonline.server.items.ItemList;
 import com.wurmonline.server.items.NoSpaceException;
 import com.wurmonline.shared.constants.BodyPartConstants;
 import com.wurmonline.shared.constants.Enchants;
@@ -25,26 +22,34 @@ public class MountedChanges {
         ArrayList<Item> gear = new ArrayList<>();
         try {
             Item leftFoot = creature.getEquippedItem(BodyPartConstants.LEFT_FOOT);
-            leftFoot.setDamage(leftFoot.getDamage()+(leftFoot.getDamageModifier()*0.002f));
-            gear.add(leftFoot);
+            if (leftFoot != null) {
+                leftFoot.setDamage(leftFoot.getDamage() + (leftFoot.getDamageModifier() * 0.002f));
+                gear.add(leftFoot);
+            }
         } catch (NoSpaceException ignored) {
         }
         try {
             Item rightFoot = creature.getEquippedItem(BodyPartConstants.RIGHT_FOOT);
-            rightFoot.setDamage(rightFoot.getDamage()+(rightFoot.getDamageModifier()*0.002f));
-            gear.add(rightFoot);
+            if (rightFoot != null) {
+                rightFoot.setDamage(rightFoot.getDamage() + (rightFoot.getDamageModifier() * 0.002f));
+                gear.add(rightFoot);
+            }
         } catch (NoSpaceException ignored) {
         }
         try {
             Item leftHand = creature.getEquippedItem(BodyPartConstants.LEFT_HAND);
-            leftHand.setDamage(leftHand.getDamage()+(leftHand.getDamageModifier()*0.002f));
-            gear.add(leftHand);
+            if (leftHand != null) {
+                leftHand.setDamage(leftHand.getDamage() + (leftHand.getDamageModifier() * 0.002f));
+                gear.add(leftHand);
+            }
         } catch (NoSpaceException ignored) {
         }
         try {
             Item rightHand = creature.getEquippedItem(BodyPartConstants.RIGHT_HAND);
-            rightHand.setDamage(rightHand.getDamage()+(rightHand.getDamageModifier()*0.002f));
-            gear.add(rightHand);
+            if (rightHand != null) {
+                rightHand.setDamage(rightHand.getDamage() + (rightHand.getDamageModifier() * 0.002f));
+                gear.add(rightHand);
+            }
         } catch (NoSpaceException ignored) {
         }
         for(Item shoe : gear){

@@ -12,7 +12,9 @@ public class DeityChanges {
         if(Deities.getDeity(101) != null){ // Edit Thelastdab Player God
             Deity thelastdab = Deities.getDeity(101);
             // Set template deity
+            thelastdab.setTemplateDeity(Deities.DEITY_MAGRANON);
             thelastdab.setMountainGod(true);
+            thelastdab.setHateGod(false); // Rolled Libila
             // Add some defining affinities
             thelastdab.setMetalAffinity(true);
             thelastdab.setDeathProtector(true);
@@ -24,6 +26,13 @@ public class DeityChanges {
             thelastdab.setHealer(false);
             thelastdab.setClayAffinity(false);
             thelastdab.setWaterGod(false);
+        }
+        if(Deities.getDeity(102) != null){
+            Deity reevi = Deities.getDeity(102);
+            // Set template deity
+            reevi.setTemplateDeity(Deities.DEITY_MAGRANON);
+            reevi.setMountainGod(true);
+            reevi.setWaterGod(false); // Rolled Vynora
         }
         /*if(Deities.getDeity(102) != null){ // Edit Cyberhusky player god
             Deity cyberhusky = Deities.getDeity(102);

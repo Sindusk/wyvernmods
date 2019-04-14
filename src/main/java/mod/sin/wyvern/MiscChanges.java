@@ -920,6 +920,17 @@ public class MiscChanges {
             Util.setReason("Hide buff bar icons for sorceries.");
             Util.instrumentDescribed(thisClass, ctCommunicator, "sendAddStatusEffect", desc16, "isSendToBuffBar", replace);
 
+            // 1.9 Achievement fix [Bdew]
+            classPool.getCtClass("com.wurmonline.server.players.Achievements").getMethod("loadAllAchievements", "()V")
+                    .instrument(new ExprEditor(){
+                        @Override
+                        public void edit(MethodCall m) throws CannotCompileException {
+                            if (m.getMethodName().equals("getTimestamp"))
+                                m.replace("$_=com.wurmonline.server.utils.DbUtilities.getTimestampOrNull(rs.getString($1)); " +
+                                        "if ($_==null) $_=new java.sql.Timestamp(java.lang.System.currentTimeMillis());");
+                        }
+                    });
+
         } catch (CannotCompileException | NotFoundException | IllegalArgumentException | ClassCastException e) {
             throw new HookException(e);
         }

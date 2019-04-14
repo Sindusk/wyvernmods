@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.wurmonline.server.spells.ItemEnchantment;
 import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 import org.gotti.wurmunlimited.modsupport.actions.ActionPerformer;
 import org.gotti.wurmunlimited.modsupport.actions.BehaviourProvider;
@@ -138,7 +139,12 @@ public class EnchantOrbAction implements ModAction {
                             }
 						}else {
                             try {
-                                Method m = spell.getClass().getDeclaredMethod("precondition", Skill.class, Creature.class, Item.class);
+                            	Method m;
+                            	if (spell instanceof ItemEnchantment){
+                            		m = ItemEnchantment.class.getDeclaredMethod("precondition", Skill.class, Creature.class, Item.class);
+								}else {
+									m = spell.getClass().getDeclaredMethod("precondition", Skill.class, Creature.class, Item.class);
+								}
                                 canEnchant = ReflectionUtil.callPrivateMethod(spell, m, player.getChannelingSkill(), performer, target);
                             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException e) {
                                 e.printStackTrace();
