@@ -10,6 +10,7 @@ import com.wurmonline.server.items.ItemFactory;
 import com.wurmonline.server.items.ItemTemplate;
 import com.wurmonline.server.items.NoSuchTemplateException;
 import com.wurmonline.server.players.Player;
+import com.wurmonline.server.players.Titles;
 import mod.piddagoras.duskombat.DamageEngine;
 import mod.sin.armour.SpectralHide;
 import mod.sin.creatures.Reaper;
@@ -106,7 +107,7 @@ public class PlayerBounty {
 				fightStrength = "legendary";
 			}
     		player.getCommunicator().sendSafeServerMessage("The spirit recognizes you as a "+fightStrength+" warrior, and rewards you accordingly.");
-			player.addTitle(PlayerTitles.getTitle(PlayerTitles.SPECTRAL));
+			player.addTitle(Titles.Title.getTitle(PlayerTitles.SPECTRAL));
     	}catch (NoSuchTemplateException | FailedException e) {
 			e.printStackTrace();
 		}
@@ -145,7 +146,7 @@ public class PlayerBounty {
                     player.getInventory().insertItem(riftCache, true);
                 }
 				if(Titans.isTitan(mob)){
-					player.addTitle(PlayerTitles.getTitle(PlayerTitles.TITAN_SLAYER));
+					player.addTitle(Titles.Title.getTitle(PlayerTitles.TITAN_SLAYER));
 					Item affinityOrb = ItemFactory.createItem(AffinityOrb.templateId, 99f, mob.getName());
 					player.getInventory().insertItem(affinityOrb, true);
 					Item titanCache = ItemFactory.createItem(TitanCache.templateId, 99f, mob.getName());

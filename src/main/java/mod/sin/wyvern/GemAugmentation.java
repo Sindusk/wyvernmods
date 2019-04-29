@@ -25,6 +25,11 @@ public class GemAugmentation {
             Class<GemAugmentation> thisClass = GemAugmentation.class;
             String replace;
 
+            Util.setReason("Disable Gem Augmentation skill from converting.");
+            CtClass ctMethodsReligion = classPool.get("com.wurmonline.server.behaviours.MethodsReligion");
+            replace = "$_ = $proceed($1, $2, true, $4);";
+            Util.instrumentDeclared(thisClass, ctMethodsReligion, "listen", "skillCheck", replace);
+
             Util.setReason("Primary Gem Augmentation Hook.");
             CtClass ctMethodsItems = classPool.get("com.wurmonline.server.behaviours.MethodsItems");
             replace = "$_ = "+GemAugmentation.class.getName()+".setGemmedQuality($0, power, maxGain, modifier);";

@@ -204,7 +204,7 @@ public class ItemMod {
 		//SKELETON_DECORATION.initCreationEntry();
 		SOUL_FORGE.initCreationEntry();
 		STATUETTE_BREYK.initCreationEntry();
-		//STATUETTE_CYBERHUSKY.initCreationEntry();
+		STATUETTE_CYBERHUSKY.initCreationEntry();
 		WARHAMMER.initCreationEntry();
 		WARHAMMER_HEAD.initCreationEntry();
 

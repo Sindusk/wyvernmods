@@ -28,7 +28,8 @@ public class ArrowPackHunting {
 		itemBuilder.itemTypes(new short[]{ // {108, 146, 44, 21, 147, 113} - War Arrow
 				ItemTypes.ITEM_TYPE_NAMED,
 				ItemTypes.ITEM_TYPE_REPAIRABLE,
-				ItemTypes.ITEM_TYPE_WOOD
+				ItemTypes.ITEM_TYPE_WOOD,
+				ItemTypes.ITEM_TYPE_WEAPON
 		});
 		itemBuilder.imageNumber((short) 760);
 		itemBuilder.behaviourType((short) 1);

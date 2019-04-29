@@ -121,7 +121,7 @@ public class AntiCheat {
 	    return false;
     }
 	private static int getDummyWallAntiCheat(int tilex, int tiley){
-		return Tiles.encode(Tiles.decodeHeight(Server.caveMesh.data[tilex | tiley << Constants.meshSize]), Tiles.Tile.TILE_CAVE_WALL.id, Tiles.decodeData((int)Server.caveMesh.data[tilex | tiley << Constants.meshSize]));
+		return Tiles.encode(Tiles.decodeHeight(Server.caveMesh.data[tilex | tiley << Constants.meshSize]), Tiles.Tile.TILE_CAVE_WALL.id, Tiles.decodeData(Server.caveMesh.data[tilex | tiley << Constants.meshSize]));
 	}
 	public static void sendCaveStripAntiCheat(Communicator comm, short xStart, short yStart, int width, int height){
 		if (comm.player != null && comm.player.hasLink()) {
@@ -149,7 +149,7 @@ public class AntiCheat {
                         	if(!(Tiles.decodeType(Server.caveMesh.getTile(xx, yy)) == Tiles.Tile.TILE_CAVE_EXIT.id)){
                         	    if(prospecting < 20 && isSurroundedByCaveWalls(xx, yy)){
                                     bb.putInt(getDummyWallAntiCheat(xx, yy));
-                                }else if(prospecting > 20 && playerCanSeeVein(xx, yy, distance)){
+                                }else if(WyvernMods.prospectingVision && prospecting > 20 && playerCanSeeVein(xx, yy, distance)){
                                     bb.putInt(Server.caveMesh.data[xx | yy << Constants.meshSize]);
                                 }else if(!isSurroundedByCaveWalls(xx, yy)){
                                     bb.putInt(Server.caveMesh.data[xx | yy << Constants.meshSize]);
@@ -178,6 +178,8 @@ public class AntiCheat {
             }
         }
 	}
+
+	@Deprecated
 	public static boolean isVisibleThroughTerrain(Creature performer, Creature defender){
 		int trees = 0;
         //int treetilex = -1;
@@ -230,6 +232,8 @@ public class AntiCheat {
         }
         return true;
 	}
+
+	@Deprecated
 	public static boolean isVisibleToAntiCheat(Creature cret, Creature watcher) {
         if (!cret.isVisible()) {
             return cret.getPower() > 0 && cret.getPower() <= watcher.getPower();
@@ -276,17 +280,18 @@ public class AntiCheat {
 			String replace;
 
             // - Change the caveStrip method to the custom one, so we can edit what the clients see! - //
-			CtClass ctCommunicator = classPool.get("com.wurmonline.server.creatures.Communicator");
-			replace = "{ mod.sin.wyvern.AntiCheat.sendCaveStripAntiCheat(this, $$); }";
-			Util.setBodyDeclared(thisClass, ctCommunicator, "sendCaveStrip", replace);
-        	/*ctCommunicator.getDeclaredMethod("sendCaveStrip").setBody("{"
-        			+ "  mod.sin.wyvern.AntiCheat.sendCaveStripAntiCheat(this, $$);"
-        			+ "}");*/
+            if (WyvernMods.enableSpoofHiddenOre) {
+                CtClass ctCommunicator = classPool.get("com.wurmonline.server.creatures.Communicator");
+                replace = "{ mod.sin.wyvern.AntiCheat.sendCaveStripAntiCheat(this, $$); }";
+                Util.setBodyDeclared(thisClass, ctCommunicator, "sendCaveStrip", replace);
+            }
 
-            Util.setReason("Map Steam ID's to Modsupport table.");
-            CtClass ctLoginHandler = classPool.get("com.wurmonline.server.LoginHandler");
-            replace = AntiCheat.class.getName()+".mapPlayerSteamId($1, $2);";
-            Util.insertBeforeDeclared(thisClass, ctLoginHandler, "preValidateLogin", replace);
+            if (WyvernMods.mapSteamIds) {
+                Util.setReason("Map Steam ID's to Modsupport table.");
+                CtClass ctLoginHandler = classPool.get("com.wurmonline.server.LoginHandler");
+                replace = AntiCheat.class.getName() + ".mapPlayerSteamId($1, $2);";
+                Util.insertBeforeDeclared(thisClass, ctLoginHandler, "preValidateLogin", replace);
+            }
 
             // - Change the creature isVisibleTo method to the custom one, so we can edit what the clients see! - //
 			/*CtClass ctCreature = classPool.get("com.wurmonline.server.creatures.Creature");

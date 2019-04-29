@@ -216,31 +216,19 @@ public class Arena {
 
             // - Allow horse gear to be added/removed from horses without branding or taming (PvP Only) - //
             CtClass ctCommunicator = classPool.get("com.wurmonline.server.creatures.Communicator");
-            replace = "if(this.player.getPower() > 0){" +
-                    "  $_ = this.player;" +
-                    "}else if(com.wurmonline.server.Servers.isThisAPvpServer() && owner.getDominator() != this.player){"
-            		+ "  $_ = owner.getLeader();"
-            		+ "}else{"
-            		+ "  $_ = $proceed($$);"
-            		+ "}";
-            Util.instrumentDeclared(thisClass, ctCommunicator, "reallyHandle_CMD_MOVE_INVENTORY", "getDominator", replace);
-            Util.instrumentDeclared(thisClass, ctCommunicator, "equipCreatureCheck", "getDominator", replace);
-            /*ctCommunicator.getDeclaredMethod("reallyHandle_CMD_MOVE_INVENTORY").instrument(new ExprEditor(){
-                public void edit(MethodCall m) throws CannotCompileException {
-                    if (m.getMethodName().equals("getDominator")) {
-                        m.replace("if(com.wurmonline.server.Servers.isThisAPvpServer() && owner.getDominator() != this.player){"
-                        		+ "  $_ = owner.getLeader();"
-                        		+ "}else{"
-                        		+ "  if(this.player.getPower() > 0){"
-                        		+ "    $_ = this.player;"
-                        		+ "  }else{"
-                        		+ "    $_ = $proceed($$);"
-                        		+ "  }"
-                        		+ "}");
-                        return;
-                    }
-                }
-            });*/
+            if (WyvernMods.equipHorseGearByLeading) {
+                Util.setReason("Allow equipping horse gear without taming.");
+                replace = "if(this.player.getPower() > 0){" +
+                        "  $_ = this.player;" +
+                        "}else if(com.wurmonline.server.Servers.isThisAPvpServer() && owner.getDominator() != this.player){"
+                        + "  $_ = owner.getLeader();"
+                        + "}else{"
+                        + "  $_ = $proceed($$);"
+                        + "}";
+                Util.instrumentDeclared(thisClass, ctCommunicator, "reallyHandle_CMD_MOVE_INVENTORY", "getDominator", replace);
+                Util.setReason("Allow equipping horse gear without taming.");
+                Util.instrumentDeclared(thisClass, ctCommunicator, "equipCreatureCheck", "getDominator", replace);
+            }
             
             // - Allow lockpicking on PvP server, as well as treasure chests on PvE - //
             CtClass ctItemBehaviour = classPool.get("com.wurmonline.server.behaviours.ItemBehaviour");
@@ -256,69 +244,72 @@ public class Arena {
             		CtClass.floatType
             };
             String desc1 = Descriptor.ofMethod(CtClass.booleanType, params1);
-            Util.setReason("Allow lockpicking on the PvP server and improve PvE treasure chest lockpicking.");
-            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
-            		+ "  $_ = true;"
-            		+ "}else{"
-            		+ "  $_ = target.getLastOwnerId() == -10 || target.getLastOwnerId() == 0 || target.getTemplateId() == 995;"
-            		+ "}";
-            Util.instrumentDescribed(thisClass, ctItemBehaviour, "action", desc1, "isInPvPZone", replace);
-
             CtClass ctMethodsItems = classPool.get("com.wurmonline.server.behaviours.MethodsItems");
-            replace = "$_ = $proceed($$);"
-            		+ "if($_ == -10 || $_ == 0){ ok = true; }";
-            Util.instrumentDeclared(thisClass, ctMethodsItems, "picklock", "getLastOwnerId", replace);
-            /*ctMethodsItems.getDeclaredMethod("picklock").instrument(new ExprEditor(){
-                public void edit(MethodCall m) throws CannotCompileException {
-                    if (m.getMethodName().equals("getLastOwnerId")) {
-                        m.replace("$_ = $proceed($$);"
-                        		+ "if($_ == -10 || $_ == 0){ ok = true; }");
-                        return;
-                    }
-                }
-            });*/
+            if (WyvernMods.lockpickingImprovements) {
+                Util.setReason("Allow lockpicking on the PvP server and improve PvE treasure chest lockpicking.");
+                replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
+                        + "  $_ = true;"
+                        + "}else{"
+                        + "  $_ = target.getLastOwnerId() == -10 || target.getLastOwnerId() == 0 || target.getTemplateId() == 995;"
+                        + "}";
+                Util.instrumentDescribed(thisClass, ctItemBehaviour, "action", desc1, "isInPvPZone", replace);
+
+                Util.setReason("Allow lockpicking if a container is not owned by a player.");
+                replace = "$_ = $proceed($$);"
+                        + "if($_ == -10 || $_ == 0){ ok = true; }";
+                Util.instrumentDeclared(thisClass, ctMethodsItems, "picklock", "getLastOwnerId", replace);
+            }
             
             // - Disable villages and PMK's on the PvP server - //
             CtClass ctVillageFoundationQuestion = classPool.get("com.wurmonline.server.questions.VillageFoundationQuestion");
-            Util.setReason("Allow placing deed outside of kingdom border.");
-            replace = "$_ = (byte) 4;";
-            Util.instrumentDeclared(thisClass, ctVillageFoundationQuestion, "checkSize", "getKingdom", replace);
+            if (WyvernMods.placeDeedsOutsideKingdomInfluence) {
+                Util.setReason("Allow placing deed outside of kingdom border.");
+                replace = "$_ = (byte) 4;";
+                Util.instrumentDeclared(thisClass, ctVillageFoundationQuestion, "checkSize", "getKingdom", replace);
+            }
 
             CtClass ctKingdomFoundationQuestion = classPool.get("com.wurmonline.server.questions.KingdomFoundationQuestion");
-            Util.setReason("Disable PMK's on the Arena server.");
-            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
-            		+ "  this.getResponder().getCommunicator().sendSafeServerMessage(\"Player-Made Kingdoms are disabled on this server.\");"
-            		+ "  return;"
-            		+ "}";
-            Util.insertBeforeDeclared(thisClass, ctKingdomFoundationQuestion, "sendQuestion", replace);
+            if (WyvernMods.disablePMKs) {
+                Util.setReason("Disable PMK's on the Arena server.");
+                replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
+                        + "  this.getResponder().getCommunicator().sendSafeServerMessage(\"Player-Made Kingdoms are disabled on this server.\");"
+                        + "  return;"
+                        + "}";
+                Util.insertBeforeDeclared(thisClass, ctKingdomFoundationQuestion, "sendQuestion", replace);
+            }
 
             // - Disable champion players altogether - //
             CtClass ctRealDeathQuestion = classPool.get("com.wurmonline.server.questions.RealDeathQuestion");
-            Util.setReason("Disable player champions.");
-            replace = "this.getResponder().getCommunicator().sendSafeServerMessage(\"Champion players are disabled on this server.\");"
-            		+ "return;";
-            Util.insertBeforeDeclared(thisClass, ctRealDeathQuestion, "sendQuestion", replace);
+            if (WyvernMods.disablePlayerChampions) {
+                Util.setReason("Disable player champions.");
+                replace = "this.getResponder().getCommunicator().sendSafeServerMessage(\"Champion players are disabled on this server.\");"
+                        + "return;";
+                Util.insertBeforeDeclared(thisClass, ctRealDeathQuestion, "sendQuestion", replace);
+            }
             
             // - Re-sort player aggression on the PvP server - //
             CtClass ctPlayer = classPool.get("com.wurmonline.server.players.Player");
-            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
-            		+ "  return "+Arena.class.getName()+".getArenaAttitude(this, $1);"
-            		+ "}";
-            Util.insertBeforeDeclared(thisClass, ctPlayer, "getAttitude", replace);
+            if (WyvernMods.arenaAggression) {
+                Util.setReason("Adjust creature-player aggression on the PvP server.");
+                replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
+                        + "  return " + Arena.class.getName() + ".getArenaAttitude(this, $1);"
+                        + "}";
+                Util.insertBeforeDeclared(thisClass, ctPlayer, "getAttitude", replace);
 
-            Util.setReason("Re-sort creature-player aggression on the PvP server.");
-            replace = "" +
-                    "if(com.wurmonline.server.Servers.localServer.PVPSERVER && ($1.isPlayer() || this.isPlayer())){" +
-                    "  if($1.citizenVillage != null && this.citizenVillage != null){" +
-                    "    if($1.citizenVillage == this.citizenVillage){" +
-                    "      return 1;" +
-                    "    }" +
-                    "    if($1.citizenVillage.isAlly(this.citizenVillage)){" +
-                    "      return 1;" +
-                    "    }" +
-                    "  }" +
-                    "}";
-            Util.insertBeforeDeclared(thisClass, ctCreature, "getAttitude", replace);
+                Util.setReason("Re-sort creature-player aggression on the PvP server.");
+                replace = "" +
+                        "if(com.wurmonline.server.Servers.localServer.PVPSERVER && ($1.isPlayer() || this.isPlayer())){" +
+                        "  if($1.citizenVillage != null && this.citizenVillage != null){" +
+                        "    if($1.citizenVillage == this.citizenVillage){" +
+                        "      return 1;" +
+                        "    }" +
+                        "    if($1.citizenVillage.isAlly(this.citizenVillage)){" +
+                        "      return 1;" +
+                        "    }" +
+                        "  }" +
+                        "}";
+                Util.insertBeforeDeclared(thisClass, ctCreature, "getAttitude", replace);
+            }
 
             // - Hook for (ENEMY) declaration to allow for enemy presence blocking - //
             CtClass ctVirtualZone = classPool.get("com.wurmonline.server.zones.VirtualZone");
@@ -331,101 +322,71 @@ public class Arena {
             		CtClass.floatType
             };
             String desc2 = Descriptor.ofMethod(CtClass.booleanType, params2);
-            replace = "if(this.watcher.isPlayer()){" +
-                    "  if("+PlayerTitles.class.getName()+".hasCustomTitle(creature)){" +
-                    "    suff = suff + "+PlayerTitles.class.getName()+".getCustomTitle(creature);" +
-                    "  }" +
-                    "  if(com.wurmonline.server.Servers.localServer.PVPSERVER && creature.isPlayer() && "+Arena.class.getName()+".getArenaAttitude((com.wurmonline.server.players.Player)this.watcher, creature) == 2){"
-            		+ "  suff = suff + \" (ENEMY)\";"
-            		+ "  enemy = true;" +
-                    "  }"
-            		+ "}"
-            		+ "$_ = $proceed($$);";
-            Util.instrumentDescribed(thisClass, ctVirtualZone, "addCreature", desc2, "isChampion", replace);
+            if (WyvernMods.enemyTitleHook) {
+                Util.setReason("Add hook for custom titles on all servers and arena aggression ENEMY suffix on PvP servers.");
+                replace = "if(this.watcher.isPlayer()){" +
+                        "  if(" + PlayerTitles.class.getName() + ".hasCustomTitle(creature)){" +
+                        "    suff = suff + " + PlayerTitles.class.getName() + ".getCustomTitle(creature);" +
+                        "  }" +
+                        "  if(com.wurmonline.server.Servers.localServer.PVPSERVER && creature.isPlayer() && " + Arena.class.getName() + ".getArenaAttitude((com.wurmonline.server.players.Player)this.watcher, creature) == 2){"
+                        + "  suff = suff + \" (ENEMY)\";"
+                        + "  enemy = true;" +
+                        "  }"
+                        + "}"
+                        + "$_ = $proceed($$);";
+                Util.instrumentDescribed(thisClass, ctVirtualZone, "addCreature", desc2, "isChampion", replace);
+            }
             
             // - Modify when an enemy is present or not to use attitude instead of kingdom - //
-            replace = "if(this.watcher.isPlayer() && creature.isPlayer() && com.wurmonline.server.Servers.localServer.PVPSERVER && "+Arena.class.getName()+".getArenaAttitude((com.wurmonline.server.players.Player)this.watcher, creature) == 2){"
-            		+ "  $_ = 1;"
-            		+ "}else{"
-            		+ "  $_ = $proceed($$);"
-            		+ "}";
-            Util.instrumentDeclared(thisClass, ctVirtualZone, "checkIfEnemyIsPresent", "getKingdomId", replace);
-            /*ctVirtualZone.getDeclaredMethod("checkIfEnemyIsPresent").instrument(new ExprEditor(){
-                public void edit(MethodCall m) throws CannotCompileException {
-                    if (m.getMethodName().equals("getKingdomId")) {
-                        m.replace("if(this.watcher.isPlayer() && creature.isPlayer() && com.wurmonline.server.Servers.localServer.PVPSERVER && mod.sin.wyvern.Arena.getArenaAttitude((com.wurmonline.server.players.Player)this.watcher, creature) == 2){"
-                        		+ "  $_ = 1;"
-                        		+ "}else{"
-                        		+ "  $_ = $proceed($$);"
-                        		+ "}");
-                        return;
-                    }
-                }
-            });*/
+            if (WyvernMods.enemyPresenceOnAggression) {
+                Util.setReason("Apply enemy presence based on aggression instead of kingdom.");
+                replace = "if(this.watcher.isPlayer() && creature.isPlayer() && com.wurmonline.server.Servers.localServer.PVPSERVER && " + Arena.class.getName() + ".getArenaAttitude((com.wurmonline.server.players.Player)this.watcher, creature) == 2){"
+                        + "  $_ = 1;"
+                        + "}else{"
+                        + "  $_ = $proceed($$);"
+                        + "}";
+                Util.instrumentDeclared(thisClass, ctVirtualZone, "checkIfEnemyIsPresent", "getKingdomId", replace);
+            }
 
             // - Block twigs and stones on the PvP server - //
             CtClass ctMethodsCreatures = classPool.get("com.wurmonline.server.behaviours.MethodsCreatures");
-            Util.setReason("Block farwalker twigs and stones on PvP.");
-            replace = "$_ = com.wurmonline.server.Servers.localServer.PVPSERVER;";
-            Util.instrumentDeclared(thisClass, ctMethodsCreatures, "teleportCreature", "isInPvPZone", replace);
-            /*ctMethodsCreatures.getDeclaredMethod("teleportCreature").instrument(new ExprEditor(){
-                public void edit(MethodCall m) throws CannotCompileException {
-                    if (m.getMethodName().equals("isInPvPZone")) {
-                        m.replace("$_ = com.wurmonline.server.Servers.localServer.PVPSERVER;");
-                        return;
-                    }
-                }
-            });*/
-
-            // - After respawn on PvP, send directly to PvE server - //
-            /*CtClass ctSpawnQuestion = classPool.get("com.wurmonline.server.questions.SpawnQuestion");
-            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
-            		+ "  "+Arena.class.getName()+".respawnPlayer(this.getResponder(), com.wurmonline.server.Servers.localServer);"
-            		+ "  return;"
-            		+ "}";
-            Util.insertBeforeDeclared(thisClass, ctSpawnQuestion, "sendQuestion", replace);*/
-            /*ctSpawnQuestion.getDeclaredMethod("sendQuestion").insertBefore(""
-            		+ "if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
-            		+ "  mod.sin.wyvern.Arena.respawnPlayer(this.getResponder(), com.wurmonline.server.Servers.localServer);"
-            		+ "  return;"
-            		+ "}");*/
+            if (WyvernMods.disableFarwalkerItems) {
+                Util.setReason("Block farwalker twigs and stones on PvP.");
+                replace = "$_ = com.wurmonline.server.Servers.localServer.PVPSERVER;";
+                Util.instrumentDeclared(thisClass, ctMethodsCreatures, "teleportCreature", "isInPvPZone", replace);
+            }
 
             // - Allow affinity stealing and battle rank changes - //
-            Util.setReason("Allow affinity stealing and battle rank changes.");
-            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
-        			+ "  $_ = true;"
-        			+ "}else{"
-        			+ "  $_ = $proceed($$);"
-        			+ "}";
-            Util.instrumentDeclared(thisClass, ctPlayer, "modifyRanking", "isEnemyOnChaos", replace);
+            if (WyvernMods.alwaysAllowAffinitySteal) {
+                Util.setReason("Allow affinity stealing and battle rank changes.");
+                replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
+                        + "  $_ = true;"
+                        + "}else{"
+                        + "  $_ = $proceed($$);"
+                        + "}";
+                Util.instrumentDeclared(thisClass, ctPlayer, "modifyRanking", "isEnemyOnChaos", replace);
+            }
 
             //CtClass ctCreature = classPool.get("com.wurmonline.server.creatures.Creature");
-            Util.setReason("Increase fight skill gain on PvP server.");
-            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
-        			+ "  p.getFightingSkill().setKnowledge(pskill + (skillGained*1.5d), false);"
-        			+ "}"
-        			+ "$_ = $proceed($$);";
-            Util.instrumentDeclared(thisClass, ctCreature, "modifyFightSkill", "checkInitialTitle", replace);
+            if (WyvernMods.adjustFightSkillGain) {
+                Util.setReason("Adjust fight skill gain on PvP server.");
+                replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
+                        + "  p.getFightingSkill().setKnowledge(pskill + (skillGained*1.5d), false);"
+                        + "}"
+                        + "$_ = $proceed($$);";
+                Util.instrumentDeclared(thisClass, ctCreature, "modifyFightSkill", "checkInitialTitle", replace);
+            }
             
             // - Fix nearby enemy check to find aggression instead of kingdom - //
-            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
-        			+ "  $_ = c.getAttitude(performer) != 2 && c.getAttitude(performer) != 1;"
-        			+ "}else{"
-        			+ "  $_ = $proceed($$);"
-        			+ "}";
-            Util.instrumentDeclared(thisClass, ctMethodsItems, "isEnemiesNearby", "isFriendlyKingdom", replace);
-            /*ctMethodsItems.getDeclaredMethod("isEnemiesNearby").instrument(new ExprEditor(){
-                public void edit(MethodCall m) throws CannotCompileException {
-                    if (m.getMethodName().equals("isFriendlyKingdom")) {
-                        m.replace("if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
-                    			+ "  $_ = c.getAttitude(performer) != 2;"
-                    			+ "}else{"
-                    			+ "  $_ = $proceed($$);"
-                    			+ "}");
-                        return;
-                    }
-                }
-            });*/
+            if (WyvernMods.useAggressionForNearbyEnemies) {
+                Util.setReason("Fix nearby enemy check to use aggression instead of kingdom.");
+                replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
+                        + "  $_ = c.getAttitude(performer) != 2 && c.getAttitude(performer) != 1;"
+                        + "}else{"
+                        + "  $_ = $proceed($$);"
+                        + "}";
+                Util.instrumentDeclared(thisClass, ctMethodsItems, "isEnemiesNearby", "isFriendlyKingdom", replace);
+            }
 
             // Die method description
             CtClass ctString = classPool.get("java.lang.String");
@@ -437,144 +398,137 @@ public class Arena {
             String desc8 = Descriptor.ofMethod(CtClass.voidType, params8);
 
             // - Ensure corpses are not loot protected on PvP - //
-            Util.setReason("Ensure corpses are not loot protected.");
-            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
-        			+ "  $_ = $proceed(false);"
-        			+ "}else{"
-        			+ "  $_ = $proceed($$);"
-        			+ "}";
-            Util.instrumentDescribed(thisClass, ctCreature, "die", desc8, "setProtected", replace);
-            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
-        			+ "  $_ = true;"
-        			+ "}else{"
-        			+ "  $_ = $proceed($$);"
-        			+ "}";
-            Util.instrumentDescribed(thisClass, ctCreature, "die", desc8, "isInPvPZone", replace);
+            if (WyvernMods.disablePvPCorpseProtection) {
+                Util.setReason("Ensure corpses are not loot protected.");
+                replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
+                        + "  $_ = $proceed(false);"
+                        + "}else{"
+                        + "  $_ = $proceed($$);"
+                        + "}";
+                Util.instrumentDescribed(thisClass, ctCreature, "die", desc8, "setProtected", replace);
+                Util.setReason("Ensure corpses are not loot protected.");
+                replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
+                        + "  $_ = true;"
+                        + "}else{"
+                        + "  $_ = $proceed($$);"
+                        + "}";
+                Util.instrumentDescribed(thisClass, ctCreature, "die", desc8, "isInPvPZone", replace);
+            }
 
             // - Allow players to do actions in PvP houses - //
             CtClass ctMethods = classPool.get("com.wurmonline.server.behaviours.Methods");
-            Util.setReason("Enable players to do actions in PvP houses.");
-            replace = "$_ = com.wurmonline.server.Servers.localServer.PVPSERVER;";
-            Util.instrumentDeclared(thisClass, ctMethods, "isNotAllowedMessage", "isEnemy", replace);
+            if (WyvernMods.bypassHousePermissions) {
+                Util.setReason("Enable players to do actions in PvP houses.");
+                replace = "$_ = com.wurmonline.server.Servers.localServer.PVPSERVER;";
+                Util.instrumentDeclared(thisClass, ctMethods, "isNotAllowedMessage", "isEnemy", replace);
+            }
 
             // - Allow stealing against deity wishes without being punished on Arena - //
-            //CtClass ctAction = classPool.get("com.wurmonline.server.behaviours.Action");
-            Util.setReason("Allow stealing against deity wishes without being punished.");
-            replace = "$_ = $proceed($$) || com.wurmonline.server.Servers.localServer.PVPSERVER;";
-            Util.instrumentDeclared(thisClass, ctAction, "checkLegalMode", "isLibila", replace);
-            /*ctAction.getDeclaredMethod("checkLegalMode").instrument(new ExprEditor(){
-                public void edit(MethodCall m) throws CannotCompileException {
-                    if (m.getMethodName().equals("isLibila")) {
-                        m.replace("$_ = $proceed($$) || com.wurmonline.server.Servers.localServer.PVPSERVER;");
-                        return;
-                    }
-                }
-            });*/
+            if (WyvernMods.allowStealingAgainstDeityWishes) {
+                Util.setReason("Allow stealing against deity wishes without being punished.");
+                replace = "$_ = $proceed($$) || com.wurmonline.server.Servers.localServer.PVPSERVER;";
+                Util.instrumentDeclared(thisClass, ctAction, "checkLegalMode", "isLibila", replace);
+            }
 
             // - Allow taking ownership of vehicles on Arena - //
-            // TODO: Fix.
-            Util.setReason("Allow taking ownership of vehicles on Arena.");
-            CtClass[] params3 = new CtClass[]{
-            		CtClass.longType,
-            		CtClass.booleanType,
-            		CtClass.byteType,
-            		CtClass.intType,
-            		CtClass.intType
-            };
-            String desc3 = Descriptor.ofMethod(CtClass.voidType, params3);
-            replace = "$_ = com.wurmonline.server.Servers.localServer.PVPSERVER && !lVehicle.isLocked();";
-            Util.instrumentDescribed(thisClass, ctCreature, "setVehicle", desc3, "isThisAChaosServer", replace);
+            if (WyvernMods.sameKingdomVehicleTheft) {
+                Util.setReason("Allow taking ownership of vehicles on Arena.");
+                CtClass[] params3 = new CtClass[]{
+                        CtClass.longType,
+                        CtClass.booleanType,
+                        CtClass.byteType,
+                        CtClass.intType,
+                        CtClass.intType
+                };
+                String desc3 = Descriptor.ofMethod(CtClass.voidType, params3);
+                replace = "$_ = com.wurmonline.server.Servers.localServer.PVPSERVER && !lVehicle.isLocked();";
+                Util.instrumentDescribed(thisClass, ctCreature, "setVehicle", desc3, "isThisAChaosServer", replace);
+            }
 
             // - Multiply mine door bash damage by 3 on Arena - //
             CtClass ctTerraforming = classPool.get("com.wurmonline.server.behaviours.Terraforming");
-            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
-            		+ "  damage *= 3d;"
-            		+ "}"
-            		+ "$_ = $proceed($$);";
-            Util.instrumentDeclared(thisClass, ctTerraforming, "destroyMineDoor", "getOrCreateTile", replace);
-            /*ctTerraforming.getDeclaredMethod("destroyMineDoor").instrument(new ExprEditor(){
-                public void edit(MethodCall m) throws CannotCompileException {
-                    if (m.getMethodName().equals("getOrCreateTile")) {
-                        m.replace("if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
-                        		+ "  damage *= 3d;"
-                        		+ "}"
-                        		+ "$_ = $proceed($$);");
-                        return;
-                    }
-                }
-            });*/
+            if (WyvernMods.adjustMineDoorDamage) {
+                Util.setReason("Adjust mine door bash damage.");
+                replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
+                        + "  damage *= 3d;"
+                        + "}"
+                        + "$_ = $proceed($$);";
+                Util.instrumentDeclared(thisClass, ctTerraforming, "destroyMineDoor", "getOrCreateTile", replace);
+            }
 
             // - Prevent tons of errors for legality on Arena. - //
-            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
-            		+ "  return true;"
-            		+ "}";
-            Util.insertBeforeDeclared(thisClass, ctCreature, "isOkToKillBy", replace);
-            /*ctCreature.getDeclaredMethod("isOkToKillBy").insertBefore(""
-            		+ "if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
-            		+ "  return true;"
-            		+ "}");*/
-            Util.insertBeforeDeclared(thisClass, ctCreature, "hasBeenAttackedBy", replace);
-            /*ctCreature.getDeclaredMethod("hasBeenAttackedBy").insertBefore(""
-            		+ "if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
-            		+ "  return true;"
-            		+ "}");*/
+            if (WyvernMods.sameKingdomPermissionsAdjustments) {
+                Util.setReason("Adjust same-kingdom permissions on Arena.");
+                replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
+                        + "  return true;"
+                        + "}";
+                Util.insertBeforeDeclared(thisClass, ctCreature, "isOkToKillBy", replace);
+                Util.setReason("Adjust same-kingdom permissions on Arena.");
+                Util.insertBeforeDeclared(thisClass, ctCreature, "hasBeenAttackedBy", replace);
+            }
             
             // - Disable CA Help on Arena - //
-			Util.setReason("Disable CA HELP on Arena.");
-            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
-            		+ "  return false;"
-            		+ "}";
-            Util.insertBeforeDeclared(thisClass, ctPlayer, "seesPlayerAssistantWindow", replace);
+            if (WyvernMods.disableCAHelpOnPvP) {
+                Util.setReason("Disable CA HELP on PvP servers.");
+                replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){"
+                        + "  return false;"
+                        + "}";
+                Util.insertBeforeDeclared(thisClass, ctPlayer, "seesPlayerAssistantWindow", replace);
+            }
 
-            Util.setReason("Make players who are non-allied enemies of villages.");
-			CtClass ctVillage = classPool.get("com.wurmonline.server.villages.Village");
-			CtClass[] params4 = new CtClass[]{
-					ctCreature,
-					CtClass.booleanType
-			};
-			String desc4 = Descriptor.ofMethod(CtClass.booleanType, params4);
-            replace = "" +
-					"if(com.wurmonline.server.Servers.localServer.PVPSERVER && $1.isPlayer()){" +
-					"  if($1.getPower() > 0){" +
-					"    return false;" +
-					"  }" +
-					"  if(this.isCitizen($1) || this.isAlly($1)){" +
-					"    return false;" +
-					"  }" +
-					"  return true;" +
-					"}" +
-                    // Additional code added to ensure village guards do not attack titans or rare creatures.
-                    "if("+Titans.class.getName()+".isTitan($1) || "+RareSpawns.class.getName()+".isRareCreature($1)){" +
-                    "  return false;" +
-                    "}";
-            Util.insertBeforeDescribed(thisClass, ctVillage, "isEnemy", desc4, replace);
+            CtClass ctVillage = classPool.get("com.wurmonline.server.villages.Village");
+            if (WyvernMods.sameKingdomVillageWarfare) {
+                Util.setReason("Make players who are non-allied enemies of villages.");
+                CtClass[] params4 = new CtClass[]{
+                        ctCreature,
+                        CtClass.booleanType
+                };
+                String desc4 = Descriptor.ofMethod(CtClass.booleanType, params4);
+                replace = "" +
+                        "if(com.wurmonline.server.Servers.localServer.PVPSERVER && $1.isPlayer()){" +
+                        "  if($1.getPower() > 0){" +
+                        "    return false;" +
+                        "  }" +
+                        "  if(this.isCitizen($1) || this.isAlly($1)){" +
+                        "    return false;" +
+                        "  }" +
+                        "  return true;" +
+                        "}" +
+                        // Additional code added to ensure village guards do not attack titans or rare creatures.
+                        "if(" + Titans.class.getName() + ".isTitan($1) || " + RareSpawns.class.getName() + ".isRareCreature($1)){" +
+                        "  return false;" +
+                        "}";
+                Util.insertBeforeDescribed(thisClass, ctVillage, "isEnemy", desc4, replace);
 
-            Util.setReason("Make all deeds enemies of eachother unless allied.");
-            CtClass[] params5 = new CtClass[]{
-                    ctVillage
-            };
-            String desc5 = Descriptor.ofMethod(CtClass.booleanType, params5);
-            replace = "{ if($1 == null){" +
-                    "    return false;" +
-                    "  }" +
-                    "  if($1.kingdom != this.kingdom){" +
-                    "    return true;" +
-                    "  }" +
-                    "  if(com.wurmonline.server.Servers.localServer.PVPSERVER){" +
-                    "  if(this.isAlly($1)){" +
-                    "    return false;" +
-                    "  }" +
-                    "  if($0 == $1){" +
-                    "    return false;" +
-                    "  }" +
-                    "  return true;" +
-                    "}" +
-                    "return false; }";
-            Util.setBodyDescribed(thisClass, ctVillage, "isEnemy", desc5, replace);
+                Util.setReason("Make all deeds enemies of eachother unless allied.");
+                CtClass[] params5 = new CtClass[]{
+                        ctVillage
+                };
+                String desc5 = Descriptor.ofMethod(CtClass.booleanType, params5);
+                replace = "{ if($1 == null){" +
+                        "    return false;" +
+                        "  }" +
+                        "  if($1.kingdom != this.kingdom){" +
+                        "    return true;" +
+                        "  }" +
+                        "  if(com.wurmonline.server.Servers.localServer.PVPSERVER){" +
+                        "  if(this.isAlly($1)){" +
+                        "    return false;" +
+                        "  }" +
+                        "  if($0 == $1){" +
+                        "    return false;" +
+                        "  }" +
+                        "  return true;" +
+                        "}" +
+                        "return false; }";
+                Util.setBodyDescribed(thisClass, ctVillage, "isEnemy", desc5, replace);
+            }
 
-            Util.setReason("Change HotA reward");
-            replace = Arena.class.getName()+".createNewHotaPrize(this, $1);";
-            Util.setBodyDeclared(thisClass, ctVillage, "createHotaPrize", replace);
+            if (WyvernMods.adjustHotARewards) {
+                Util.setReason("Adjust HotA rewards.");
+                replace = Arena.class.getName() + ".createNewHotaPrize(this, $1);";
+                Util.setBodyDeclared(thisClass, ctVillage, "createHotaPrize", replace);
+            }
 
             CtClass ctGuardPlan = classPool.get("com.wurmonline.server.villages.GuardPlan");
             CtClass[] params6 = new CtClass[]{
@@ -582,122 +536,140 @@ public class Arena {
                     CtClass.intType
             };
             String desc6 = Descriptor.ofMethod(CtClass.intType, params6);
-            Util.setReason("Cap maximum guards to 5.");
-            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){" +
-                    "  return Math.min(5, Math.max(3, $1 * $2 / 49));" +
-                    "}";
-            Util.insertBeforeDescribed(thisClass, ctGuardPlan, "getMaxGuards", desc6, replace);
+            if (WyvernMods.capMaximumGuards) {
+                Util.setReason("Cap maximum guards to 5.");
+                replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){" +
+                        "  return Math.min(5, Math.max(3, $1 * $2 / 49));" +
+                        "}";
+                Util.insertBeforeDescribed(thisClass, ctGuardPlan, "getMaxGuards", desc6, replace);
+            }
 
-            Util.setReason("Disable towers");
-            CtClass ctAdvancedCreationEntry = classPool.get("com.wurmonline.server.items.AdvancedCreationEntry");
-            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){" +
-                    "  performer.getCommunicator().sendAlertServerMessage(\"Towers are disabled for now. A new system is in progress.\");" +
-                    "  throw new com.wurmonline.server.NoSuchItemException(\"Towers are disabled.\");" +
-                    "}else{" +
-                    "  $_ = $proceed($$);" +
-                    "}";
-            Util.instrumentDeclared(thisClass, ctAdvancedCreationEntry, "cont", "isTowerTooNear", replace);
-            Util.instrumentDeclared(thisClass, ctAdvancedCreationEntry, "run", "isTowerTooNear", replace);
+            if (WyvernMods.disableTowerConstruction) {
+                Util.setReason("Disable towers from being constructed.");
+                CtClass ctAdvancedCreationEntry = classPool.get("com.wurmonline.server.items.AdvancedCreationEntry");
+                replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){" +
+                        "  performer.getCommunicator().sendAlertServerMessage(\"Towers are disabled.\");" +
+                        "  throw new com.wurmonline.server.NoSuchItemException(\"Towers are disabled.\");" +
+                        "}else{" +
+                        "  $_ = $proceed($$);" +
+                        "}";
+                Util.instrumentDeclared(thisClass, ctAdvancedCreationEntry, "cont", "isTowerTooNear", replace);
+                Util.setReason("Disable towers from being constructed.");
+                Util.instrumentDeclared(thisClass, ctAdvancedCreationEntry, "run", "isTowerTooNear", replace);
+            }
 
-            Util.setReason("Reduce local range (player).");
-            replace = "if($3 > 5){" +
-                    "  $_ = $proceed($1, $2, 50);" +
-                    "}else{" +
-                    "  $_ = $proceed($$);" +
-                    "}";
-            Util.instrumentDeclared(thisClass, ctVirtualZone, "coversCreature", "isWithinDistanceTo", replace);
-            Util.setReason("Reduce local range (creature).");
-            replace = "$_ = true;";
-            Util.instrumentDeclared(thisClass, ctVirtualZone, "coversCreature", "isPlayer", replace);
+            if (WyvernMods.adjustLocalRange) {
+                Util.setReason("Reduce local range (player).");
+                replace = "if($3 > 5){" +
+                        "  $_ = $proceed($1, $2, 50);" +
+                        "}else{" +
+                        "  $_ = $proceed($$);" +
+                        "}";
+                Util.instrumentDeclared(thisClass, ctVirtualZone, "coversCreature", "isWithinDistanceTo", replace);
+                Util.setReason("Reduce local range (creature).");
+                replace = "$_ = true;";
+                Util.instrumentDeclared(thisClass, ctVirtualZone, "coversCreature", "isPlayer", replace);
+            }
 
-            CtClass ctKarmaQuestion = classPool.get("com.wurmonline.server.questions.KarmaQuestion");
-            Util.setReason("Disable Karma teleport.");
-            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){" +
-                    "  $_ = true;" +
-                    "}else{" +
-                    "  $_ = $proceed($$);" +
-                    "}";
-            Util.instrumentDeclared(thisClass, ctKarmaQuestion, "answer", "isInPvPZone", replace);
+            if (WyvernMods.disableKarmaTeleport) {
+                CtClass ctKarmaQuestion = classPool.get("com.wurmonline.server.questions.KarmaQuestion");
+                Util.setReason("Disable Karma teleport.");
+                replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){" +
+                        "  $_ = true;" +
+                        "}else{" +
+                        "  $_ = $proceed($$);" +
+                        "}";
+                Util.instrumentDeclared(thisClass, ctKarmaQuestion, "answer", "isInPvPZone", replace);
+            }
 
-            Util.setReason("Make players only able to lead one creature.");
-            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){" +
-                    "  return this.followers == null || this.followers.size() < 1;" +
-                    "}";
-            Util.insertBeforeDeclared(thisClass, ctPlayer, "mayLeadMoreCreatures", replace);
+            if (WyvernMods.limitLeadCreatures) {
+                Util.setReason("Make players only able to lead one creature.");
+                replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){" +
+                        "  return this.followers == null || this.followers.size() < 1;" +
+                        "}";
+                Util.insertBeforeDeclared(thisClass, ctPlayer, "mayLeadMoreCreatures", replace);
+            }
 
-            CtClass ctMethodsStructure = classPool.get("com.wurmonline.server.behaviours.MethodsStructure");
-            Util.setReason("Increase bash timer to 15 seconds.");
-            replace = "time = 600;" +
-                    "$_ = $proceed($$);";
-            Util.instrumentDeclared(thisClass, ctMethodsStructure, "destroyWall", "getStructure", replace);
+            if (WyvernMods.adjustBashTimer) {
+                CtClass ctMethodsStructure = classPool.get("com.wurmonline.server.behaviours.MethodsStructure");
+                Util.setReason("Increase bash timer.");
+                replace = "time = 600;" +
+                        "$_ = $proceed($$);";
+                Util.instrumentDeclared(thisClass, ctMethodsStructure, "destroyWall", "getStructure", replace);
+            }
 
-            CtClass ctHota = classPool.get("com.wurmonline.server.epic.Hota");
-            Util.setReason("Display discord message for HotA announcements.");
-            replace = Arena.class.getName()+".sendHotaMessage($1);" +
-                    "$_ = $proceed($$);";
-            Util.instrumentDeclared(thisClass, ctHota, "poll", "broadCastSafe", replace);
-            Util.setReason("Display discord message for HotA wins.");
-            Util.instrumentDeclared(thisClass, ctHota, "win", "broadCastSafe", replace);
-            Util.setReason("Display discord message for HotA conquers & neutralizes.");
-            replace = "if($2.getData1() == 0){" +
-                    "  "+Arena.class.getName()+".sendHotaMessage($1.getName() + \" neutralizes the \" + $2.getName() + \".\");" +
-                    "}else{" +
-                    "  "+Arena.class.getName()+".sendHotaMessage($1.getName() + \" conquers the \" + $2.getName() + \".\");" +
-                    "}";
-            Util.insertBeforeDeclared(thisClass, ctHota, "addPillarConquered", replace);
+            if (WyvernMods.discordRelayHotAMessages) {
+                CtClass ctHota = classPool.get("com.wurmonline.server.epic.Hota");
+                Util.setReason("Display discord message for HotA announcements.");
+                replace = Arena.class.getName() + ".sendHotaMessage($1);" +
+                        "$_ = $proceed($$);";
+                Util.instrumentDeclared(thisClass, ctHota, "poll", "broadCastSafe", replace);
+                Util.setReason("Display discord message for HotA wins.");
+                Util.instrumentDeclared(thisClass, ctHota, "win", "broadCastSafe", replace);
+                Util.setReason("Display discord message for HotA conquers & neutralizes.");
+                replace = "if($2.getData1() == 0){" +
+                        "  " + Arena.class.getName() + ".sendHotaMessage($1.getName() + \" neutralizes the \" + $2.getName() + \".\");" +
+                        "}else{" +
+                        "  " + Arena.class.getName() + ".sendHotaMessage($1.getName() + \" conquers the \" + $2.getName() + \".\");" +
+                        "}";
+                Util.insertBeforeDeclared(thisClass, ctHota, "addPillarConquered", replace);
+            }
 
-            // handle_TARGET_and_TARGET_HOSTILE
-            CtClass ctCreatureBehaviour = classPool.get("com.wurmonline.server.behaviours.CreatureBehaviour");
-            Util.setReason("Allow players to attack enemy guards.");
-            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){" +
-                    "  $_ = false;" +
-                    "}else{" +
-                    "  $_ = $proceed($$);" +
-                    "}";
-            Util.instrumentDeclared(thisClass, ctCreatureBehaviour, "handle_TARGET_and_TARGET_HOSTILE", "isFriendlyKingdom", replace);
+            if (WyvernMods.allowAttackingSameKingdomGuards) {
+                CtClass ctCreatureBehaviour = classPool.get("com.wurmonline.server.behaviours.CreatureBehaviour");
+                Util.setReason("Allow players to attack enemy guards.");
+                replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){" +
+                        "  $_ = false;" +
+                        "}else{" +
+                        "  $_ = $proceed($$);" +
+                        "}";
+                Util.instrumentDeclared(thisClass, ctCreatureBehaviour, "handle_TARGET_and_TARGET_HOSTILE", "isFriendlyKingdom", replace);
+            }
 
-            Util.setReason("Fix templars attacking themselves.");
-            replace = "if($1.isSpiritGuard()){" +
-                    "  return;" +
-                    "}";
-            Util.insertBeforeDeclared(thisClass, ctVillage, "addTarget", replace);
+            if (WyvernMods.fixGuardsAttackingThemselves) {
+                Util.setReason("Fix templars attacking themselves.");
+                replace = "if($1.isSpiritGuard()){" +
+                        "  return;" +
+                        "}";
+                Util.insertBeforeDeclared(thisClass, ctVillage, "addTarget", replace);
+            }
 
-            Util.setReason("Keep mine doors open for shorter durations.");
-            replace = "$_ = true;";
-            Util.instrumentDeclared(thisClass, ctCreature, "checkOpenMineDoor", "isThisAChaosServer", replace);
+            if (WyvernMods.reducedMineDoorOpenTime) {
+                Util.setReason("Keep mine doors open for 30 seconds instead of 120 seconds.");
+                replace = "$_ = true;";
+                Util.instrumentDeclared(thisClass, ctCreature, "checkOpenMineDoor", "isThisAChaosServer", replace);
+            }
 
-            Util.setReason("Fix fight skill gains against enemy players.");
-            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){" +
-                    "  if($0 == this){" +
-                    "    $_ = -1;" +
-                    "  }else{" +
-                    "    $_ = $proceed($$);" +
-                    "  }" +
-                    "}else{" +
-                    "  $_ = $proceed($$);" +
-                    "}";
-            Util.instrumentDeclared(thisClass, ctCreature, "modifyFightSkill", "getKingdomId", replace);
+            if (WyvernMods.allowSameKingdomFightSkillGains) {
+                Util.setReason("Fix fight skill gains against enemy players.");
+                replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){" +
+                        "  if($0 == this){" +
+                        "    $_ = -1;" +
+                        "  }else{" +
+                        "    $_ = $proceed($$);" +
+                        "  }" +
+                        "}else{" +
+                        "  $_ = $proceed($$);" +
+                        "}";
+                Util.instrumentDeclared(thisClass, ctCreature, "modifyFightSkill", "getKingdomId", replace);
+            }
 
-            Util.setReason("Enable archering enemies on deeds.");
-            replace = "$_ = true;";
-            Util.instrumentDeclared(thisClass, ctVillage, "mayAttack", "isEnemyOnChaos", replace);
+            if (WyvernMods.allowArcheringOnSameKingdomDeeds) {
+                Util.setReason("Enable archering enemies on deeds.");
+                replace = "$_ = true;";
+                Util.instrumentDeclared(thisClass, ctVillage, "mayAttack", "isEnemyOnChaos", replace);
+            }
 
-            // Server.rand.nextFloat()*(35/(1-2*desiredPercent))
-            Util.setReason("Nerf magranon faith protection.");
-            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){" +
-                    "  $_ = com.wurmonline.server.Server.rand.nextInt(40);" +
-                    "}else{" +
-                    "  $_ = $proceed($$);" +
-                    "}";
-            Util.instrumentDescribed(thisClass, ctCreature, "die", desc8, "getFavor", replace);
+            if (WyvernMods.sendNewSpawnQuestionOnPvP) {
+                Util.setReason("Adjust spawn question mechanics.");
+                CtClass ctSpawnQuestion = classPool.get("com.wurmonline.server.questions.SpawnQuestion");
+                replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){" +
+                        Arena.class.getName() + ".sendNewSpawnQuestion(this);" +
+                        "return;" +
+                        "}";
+                Util.insertBeforeDeclared(thisClass, ctSpawnQuestion, "sendQuestion", replace);
+            }
 
-            Util.setReason("Adjust spawn question mechanics.");
-            CtClass ctSpawnQuestion = classPool.get("com.wurmonline.server.questions.SpawnQuestion");
-            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){" +
-                    Arena.class.getName()+".sendNewSpawnQuestion(this);" +
-                    "return;" +
-                    "}";
-            Util.insertBeforeDeclared(thisClass, ctSpawnQuestion, "sendQuestion", replace);
             CtClass ctMeshIO = classPool.get("com.wurmonline.mesh.MeshIO");
             CtClass[] params7 = new CtClass[]{
                     ctCreature,
@@ -711,20 +683,25 @@ public class Arena {
                     CtClass.booleanType
             };
             String desc7 = Descriptor.ofMethod(CtClass.booleanType, params7);
-            replace = Arena.class.getName()+".sendHotaMessage($1+\" \"+$2);" +
-                    "$_ = $proceed($$);";
-            Util.instrumentDescribed(thisClass, ctTerraforming, "dig", desc7, "addHistory", replace);
+            if (WyvernMods.sendArtifactDigsToDiscord) {
+                Util.setReason("Announce digging up artifacts on Discord.");
+                replace = Arena.class.getName() + ".sendHotaMessage($1+\" \"+$2);" +
+                        "$_ = $proceed($$);";
+                Util.instrumentDescribed(thisClass, ctTerraforming, "dig", desc7, "addHistory", replace);
+            }
 
             // Creature performer, Item source, int tilex, int tiley, int tile, float counter, boolean corner, MeshIO mesh, boolean toPile
-            Util.setReason("Set favored kingdom for PvP");
-            CtClass ctDeities = classPool.get("com.wurmonline.server.deities.Deities");
-            replace = "{ return (byte) 4; }";
-            Util.setBodyDeclared(thisClass, ctDeities, "getFavoredKingdom", replace);
+            if (WyvernMods.makeFreedomFavoredKingdom) {
+                CtClass ctDeities = classPool.get("com.wurmonline.server.deities.Deities");
+                Util.setReason("Set favored kingdom for PvP");
+                replace = "{ return (byte) 4; }";
+                Util.setBodyDeclared(thisClass, ctDeities, "getFavoredKingdom", replace);
 
-            Util.setReason("Set favored kingdom for PvP");
-            CtClass ctDeity = classPool.get("com.wurmonline.server.deities.Deity");
-            replace = "{ return (byte) 4; }";
-            Util.setBodyDeclared(thisClass, ctDeities, "getFavoredKingdom", replace);
+                CtClass ctDeity = classPool.get("com.wurmonline.server.deities.Deity");
+                Util.setReason("Set favored kingdom for PvP");
+                replace = "{ return (byte) 4; }";
+                Util.setBodyDeclared(thisClass, ctDeities, "getFavoredKingdom", replace);
+            }
 
             /*Util.setReason("Decrease PvP combat damage.");
             CtClass ctString = classPool.get("java.lang.String");
@@ -753,51 +730,62 @@ public class Arena {
                     "}";
             Util.insertBeforeDescribed(thisClass, ctCombatEngine, "addWound", desc8, replace);*/
 
+            /* Removed in favor of DUSKombat.
             Util.setReason("Reduce player vs player damage by half.");
             CtClass ctCombatHandler = classPool.get("com.wurmonline.server.creatures.CombatHandler");
             replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER && ($1.isDominated() || $1.isPlayer()) && $0.creature.isPlayer()){" +
                     //"  logger.info(\"Detected player hit against player/pet opponent. Halving damage.\");" +
                     "  $3 = $3 * 0.7d;" +
                     "}";
-            Util.insertBeforeDeclared(thisClass, ctCombatHandler, "setDamage", replace);
+            Util.insertBeforeDeclared(thisClass, ctCombatHandler, "setDamage", replace);*/
 
-            Util.setReason("Disable crown influence from spreading to enemies.");
-            replace = "$_ = $0.getAttitude(this) == 1;";
-            Util.instrumentDeclared(thisClass, ctPlayer, "spreadCrownInfluence", "isFriendlyKingdom", replace);
+            if (WyvernMods.crownInfluenceOnAggression) {
+                Util.setReason("Disable crown influence from spreading to enemies.");
+                replace = "$_ = $0.getAttitude(this) == 1;";
+                Util.instrumentDeclared(thisClass, ctPlayer, "spreadCrownInfluence", "isFriendlyKingdom", replace);
+            }
 
-            Util.setReason("Disable item drops from players on Arena.");
-            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER && this.isPlayer()){" +
-                    "  this.getCommunicator().sendSafeServerMessage(\"You have died on the Arena server and your items are kept safe.\");" +
-                    "  keepItems = true;" +
-                    "}" +
-                    "$_ = $proceed($$);";
-            Util.instrumentDescribedCount(thisClass, ctCreature, "die", desc8, "isOnCurrentServer", 1, replace);
+            if (WyvernMods.disableOWFL) {
+                Util.setReason("Disable item drops from players on Arena.");
+                replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER && this.isPlayer()){" +
+                        "  this.getCommunicator().sendSafeServerMessage(\"You have died on the Arena server and your items are kept safe.\");" +
+                        "  keepItems = true;" +
+                        "}" +
+                        "$_ = $proceed($$);";
+                Util.instrumentDescribedCount(thisClass, ctCreature, "die", desc8, "isOnCurrentServer", 1, replace);
+            }
 
-            Util.setReason("Disable player skill loss on Arena.");
-            replace = "if(this.isPlayer() && this.isDeathProtected()){" +
-                    "  this.getCommunicator().sendSafeServerMessage(\"You have died with a Resurrection Stone and your knowledge is kept safe.\");" +
-                    "  return;" +
-                    "}else{" +
-                    "  this.getCommunicator().sendAlertServerMessage(\"You have died without a Resurrection Stone, resulting in some of your knowledge being lost.\");" +
-                    "}";
-            Util.insertBeforeDeclared(thisClass, ctCreature, "punishSkills", replace);
+            if (WyvernMods.resurrectionStonesProtectSkill) {
+                Util.setReason("Disable player skill loss on Arena.");
+                replace = "if(this.isPlayer() && this.isDeathProtected()){" +
+                        "  this.getCommunicator().sendSafeServerMessage(\"You have died with a Resurrection Stone and your knowledge is kept safe.\");" +
+                        "  return;" +
+                        "}else{" +
+                        "  this.getCommunicator().sendAlertServerMessage(\"You have died without a Resurrection Stone, resulting in some of your knowledge being lost.\");" +
+                        "}";
+                Util.insertBeforeDeclared(thisClass, ctCreature, "punishSkills", replace);
+            }
 
-            Util.setReason("Disable player fight skill loss on Arena.");
-            replace = "if(this.isPlayer() && this.isDeathProtected()){" +
-                    "  $_ = null;" +
-                    "}else{" +
-                    "  $_ = $proceed($$);" +
-                    "}";
-            Util.instrumentDeclaredCount(thisClass, ctCreature, "modifyFightSkill", "setKnowledge", 1, replace);
+            if (WyvernMods.resurrectionStonesProtectFightSkill) {
+                Util.setReason("Disable player fight skill loss if they have a resurrection stone.");
+                replace = "if(this.isPlayer() && this.isDeathProtected()){" +
+                        "  $_ = null;" +
+                        "}else{" +
+                        "  $_ = $proceed($$);" +
+                        "}";
+                Util.instrumentDeclaredCount(thisClass, ctCreature, "modifyFightSkill", "setKnowledge", 1, replace);
+            }
 
-            Util.setReason("Disable player affinity loss on Arena.");
-            replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER && this.isPlayer() && this.isDeathProtected()){" +
-                    "  this.getCommunicator().sendSafeServerMessage(\"Your resurrection stone keeps your affinities safe from your slayers.\");" +
-                    "  $_ = "+Arena.class.getName()+".getNullAffinities();" +
-                    "}else{" +
-                    "  $_ = $proceed($$);" +
-                    "}";
-            Util.instrumentDeclared(thisClass, ctPlayer, "modifyRanking", "getAffinities", replace);
+            if (WyvernMods.resurrectionStonesProtectAffinities) {
+                Util.setReason("Disable player affinity loss on Arena.");
+                replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER && this.isPlayer() && this.isDeathProtected()){" +
+                        "  this.getCommunicator().sendSafeServerMessage(\"Your resurrection stone keeps your affinities safe from your slayers.\");" +
+                        "  $_ = " + Arena.class.getName() + ".getNullAffinities();" +
+                        "}else{" +
+                        "  $_ = $proceed($$);" +
+                        "}";
+                Util.instrumentDeclared(thisClass, ctPlayer, "modifyRanking", "getAffinities", replace);
+            }
 
             /*Util.setReason("Enable stealing from deeds.");
             replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){" +
@@ -806,6 +794,14 @@ public class Arena {
                     "  $_ = $proceed($$);" +
                     "}";
             Util.instrumentDeclared(thisClass, ctMethodsItems, "checkIfStealing", "mayPass", replace);*/
+
+            if (WyvernMods.bypassPlantedPermissionChecks) {
+                Util.setReason("Allow movement of planted items on Arena regardless of permission status.");
+                replace = "if(com.wurmonline.server.Servers.localServer.PVPSERVER){" +
+                        "  return true;" +
+                        "}";
+                Util.insertBeforeDeclared(thisClass, ctItem, "checkPlantedPermissions", replace);
+            }
 
 
 		}catch (NotFoundException e) {

@@ -325,7 +325,7 @@ public class MiscChanges {
         // Is send to buff bar and not something we're stopping, so allow it.
         return true;
     }
-	
+
 	public static void preInit(){
 		try{
 			ClassPool classPool = HookManager.getInstance().getClassPool();
@@ -334,214 +334,263 @@ public class MiscChanges {
 
 			// - Create Server tab with initial messages - //
         	CtClass ctPlayers = classPool.get("com.wurmonline.server.Players");
-            CtMethod m = ctPlayers.getDeclaredMethod("sendStartGlobalKingdomChat");
-            String infoTabTitle = "Server";
-            // Initial messages:
-            String[] infoTabLine = {"Server Thread: https://forum.wurmonline.com/index.php?/topic/162067-revenant-modded-pvepvp-3x-action-new-skillgain/",
-                    "Website/Maps: https://www.sarcasuals.com/",
-                    "Server Discord: https://discord.gg/r8QNXAC",
-                    "Server Data: https://docs.google.com/spreadsheets/d/1yjqTHoxUan4LIldI3jgrXZgXj1M2ENQ4MXniPUz0rE4",
-                    "Server Wiki/Documentation: https://docs.google.com/document/d/1cbPi7-vZnjaiYrENhaefzjK_Wz7_F1CcPYJtC6uCi98/edit?usp=sharing",
-                    "Patreon: https://www.patreon.com/sindusk"};
-            StringBuilder str = new StringBuilder("{"
-                    + "        com.wurmonline.server.Message mess;");
-            for (String anInfoTabLine : infoTabLine) {
-                str.append("        mess = new com.wurmonline.server.Message(player, (byte)16, \"").append(infoTabTitle).append("\",\"").append(anInfoTabLine).append("\", 0, 255, 0);").append("        player.getCommunicator().sendMessage(mess);");
+        	if (WyvernMods.enableInfoTab) {
+                CtMethod m = ctPlayers.getDeclaredMethod("sendStartGlobalKingdomChat");
+                String infoTabTitle = WyvernMods.infoTabName;
+                // Initial messages:
+                //String[] infoTabLine = (String[]) WyvernMods.infoTabLines.toArray();
+                /*String[] infoTabLine = {"Server Thread: https://forum.wurmonline.com/index.php?/topic/162067-revenant-modded-pvepvp-3x-action-new-skillgain/",
+                        "Website/Maps: https://www.sarcasuals.com/",
+                        "Server Discord: https://discord.gg/r8QNXAC",
+                        "Server Data: https://docs.google.com/spreadsheets/d/1yjqTHoxUan4LIldI3jgrXZgXj1M2ENQ4MXniPUz0rE4",
+                        "Server Wiki/Documentation: https://docs.google.com/document/d/1cbPi7-vZnjaiYrENhaefzjK_Wz7_F1CcPYJtC6uCi98/edit?usp=sharing",
+                        "Patreon: https://www.patreon.com/sindusk"};*/
+                StringBuilder str = new StringBuilder("{ com.wurmonline.server.Message mess;");
+                for (String anInfoTabLine : WyvernMods.infoTabLines) {
+                    str.append(" mess = new com.wurmonline.server.Message(player, (byte)16, \"").append(infoTabTitle).append("\",\"").append(anInfoTabLine).append("\", 0, 255, 0);").append("        player.getCommunicator().sendMessage(mess);");
+                }
+                str.append("}");
+                m.insertAfter(str.toString());
             }
-            str.append("}");
-            m.insertAfter(str.toString());
 
             // - Enable bridges to be built inside/over/through houses - //
             CtClass ctPlanBridgeChecks = classPool.get("com.wurmonline.server.structures.PlanBridgeChecks");
-            replace = "{ return new com.wurmonline.server.structures.PlanBridgeCheckResult(false); }";
-            Util.setBodyDeclared(thisClass, ctPlanBridgeChecks, "checkForBuildings", replace);
+        	if (WyvernMods.ignoreBridgeChecks) {
+        	    Util.setReason("Disable bridge construction checks.");
+                replace = "{ return new com.wurmonline.server.structures.PlanBridgeCheckResult(false); }";
+                Util.setBodyDeclared(thisClass, ctPlanBridgeChecks, "checkForBuildings", replace);
+            }
 
             // - Disable mailboxes from being used while loaded - //
             CtClass ctItem = classPool.get("com.wurmonline.server.items.Item");
-            replace = "$_ = $proceed($$);"
-            		+ "com.wurmonline.server.items.Item theTarget = com.wurmonline.server.Items.getItem(targetId);"
-            		+ "if(theTarget != null && theTarget.getTemplateId() >= 510 && theTarget.getTemplateId() <= 513){"
-            		+ "  if(theTarget.getTopParent() != theTarget.getWurmId()){"
-            		+ "    mover.getCommunicator().sendNormalServerMessage(\"Mailboxes cannot be used while loaded.\");"
-            		+ "    return false;"
-            		+ "  }"
-            		+ "}";
-            Util.instrumentDeclared(thisClass, ctItem, "moveToItem", "getOwnerId", replace);
+        	if (WyvernMods.disableMailboxUsageWhileLoaded) {
+        	    Util.setReason("Disable mailbox usage while loaded.");
+                replace = "$_ = $proceed($$);"
+                        + "com.wurmonline.server.items.Item theTarget = com.wurmonline.server.Items.getItem(targetId);"
+                        + "if(theTarget != null && theTarget.getTemplateId() >= 510 && theTarget.getTemplateId() <= 513){"
+                        + "  if(theTarget.getTopParent() != theTarget.getWurmId()){"
+                        + "    mover.getCommunicator().sendNormalServerMessage(\"Mailboxes cannot be used while loaded.\");"
+                        + "    return false;"
+                        + "  }"
+                        + "}";
+                Util.instrumentDeclared(thisClass, ctItem, "moveToItem", "getOwnerId", replace);
+            }
 
-            // - Enable creature custom colors - (Used for creating custom color creatures eg. Lilith) - //
             CtClass ctCreature = classPool.get("com.wurmonline.server.creatures.Creature");
-            /*replace = "{ return true; }";
-            Util.setBodyDeclared(thisClass, ctCreature, "hasCustomColor", replace);*/
 
-            // - Increase the amount of checks for new unique spawns by 5x - //
+            // - Increase the amount of checks for new legendary creature to spawn - //
             CtClass ctServer = classPool.get("com.wurmonline.server.Server");
-            replace = "for(int i = 0; i < 5; i++){"
-            		+ "  $_ = $proceed($$);"
-            		+ "}";
-            Util.instrumentDeclared(thisClass, ctServer, "run", "checkDens", replace);
+            if (WyvernMods.increasedLegendaryCreatures) {
+                Util.setReason("Increase chances of a Legendary Creature spawning.");
+                replace = "for(int i = 0; i < "+String.valueOf(WyvernMods.increasedLegendaryFrequency)+"; i++){"
+                        + "  $_ = $proceed($$);"
+                        + "}";
+                Util.instrumentDeclared(thisClass, ctServer, "run", "checkDens", replace);
+            }
             
-            // - Add Facebreyker to the list of spawnable uniques - //
+            // - Add Facebreyker to the list of spawnable legendary creatures - //
             CtClass ctDens = classPool.get("com.wurmonline.server.zones.Dens");
-            replace = "com.wurmonline.server.zones.Dens.checkTemplate(2147483643, whileRunning);";
-            Util.insertBeforeDeclared(thisClass, ctDens, "checkDens", replace);
-            //ctDens.getDeclaredMethod("checkDens").insertAt(0, "com.wurmonline.server.zones.Dens.checkTemplate(2147483643, whileRunning);");
+            if (WyvernMods.allowFacebreykerNaturalSpawn) {
+                Util.setReason("Add Facebreyker to the natural legendary spawn list.");
+                replace = "com.wurmonline.server.zones.Dens.checkTemplate(2147483643, whileRunning);";
+                Util.insertBeforeDeclared(thisClass, ctDens, "checkDens", replace);
+            }
 
             // - Announce player titles in the Server tab - //
             CtClass ctPlayer = classPool.get("com.wurmonline.server.players.Player");
-            replace = "$_ = $proceed($$);"
-            		+ "if(!com.wurmonline.server.Servers.localServer.PVPSERVER && this.getPower() < 1){"
-            		+ "  "+MiscChanges.class.getName()+".sendServerTabMessage(\"event\", this.getName()+\" just earned the title of \"+title.getName(this.isNotFemale())+\"!\", 200, 100, 0);"
-            		+ "}";
-            Util.instrumentDeclared(thisClass, ctPlayer, "addTitle", "sendNormalServerMessage", replace);
+            if (WyvernMods.announcePlayerTitles) {
+                Util.setReason("Announce player titles in the server tab.");
+                replace = "$_ = $proceed($$);"
+                        + "if(!com.wurmonline.server.Servers.localServer.PVPSERVER && this.getPower() < 1){"
+                        + "  " + MiscChanges.class.getName() + ".sendServerTabMessage(\"event\", this.getName()+\" just earned the title of \"+title.getName(this.isNotFemale())+\"!\", 200, 100, 0);"
+                        + "}";
+                Util.instrumentDeclared(thisClass, ctPlayer, "addTitle", "sendNormalServerMessage", replace);
+            }
 
             // - Make leather not suck even after it's able to be combined. - //
             CtClass ctMethodsItems = classPool.get("com.wurmonline.server.behaviours.MethodsItems");
-            replace = "if(com.wurmonline.server.behaviours.MethodsItems.getImproveTemplateId(target) != 72){"
-            		+ "  $_ = $proceed($$);"
-            		+ "}else{"
-            		+ "  $_ = false;"
-            		+ "}";
-            Util.instrumentDeclared(thisClass, ctMethodsItems, "improveItem", "isCombine", replace);
+            if (WyvernMods.improveCombinedLeather) {
+                Util.setReason("Allow leather to improve beyond QL after being combinable.");
+                replace = "if(com.wurmonline.server.behaviours.MethodsItems.getImproveTemplateId(target) != 72){"
+                        + "  $_ = $proceed($$);"
+                        + "}else{"
+                        + "  $_ = false;"
+                        + "}";
+                Util.instrumentDeclared(thisClass, ctMethodsItems, "improveItem", "isCombine", replace);
+            }
             
             // - Check new improve materials - //
-            replace = "int temp = "+ItemMod.class.getName()+".getModdedImproveTemplateId($1);"
-            		+ "if(temp != -10){"
-            		+ "  return temp;"
-            		+ "}";
-            Util.insertBeforeDeclared(thisClass, ctMethodsItems, "getImproveTemplateId", replace);
+            if (WyvernMods.allowModdedImproveTemplates) {
+                Util.setReason("Enable modded improve templates.");
+                replace = "int temp = " + ItemMod.class.getName() + ".getModdedImproveTemplateId($1);"
+                        + "if(temp != -10){"
+                        + "  return temp;"
+                        + "}";
+                Util.insertBeforeDeclared(thisClass, ctMethodsItems, "getImproveTemplateId", replace);
+            }
             
             // - Remove fatiguing actions requiring you to be on the ground - //
             CtClass ctAction = classPool.get("com.wurmonline.server.behaviours.Action");
-            CtConstructor[] ctActionConstructors = ctAction.getConstructors();
-            for(CtConstructor constructor : ctActionConstructors) {
-                constructor.instrument(new ExprEditor() {
-                    public void edit(MethodCall m) throws CannotCompileException {
-                        if (m.getMethodName().equals("isFatigue")) {
-                            m.replace("" +
-                                    "if(com.wurmonline.server.Servers.localServer.PVPSERVER){" +
-                                    "  if(!com.wurmonline.server.behaviours.Actions.isActionDestroy(this.getNumber())){" +
-                                    "    $_ = false;" +
-                                    "  }else{" +
-                                    "    $_ = $proceed($$);" +
-                                    "  }" +
-                                    "}else{" +
-                                    "  $_ = false;" +
-                                    "}");
-                            logger.info("Set isFatigue to false in action constructor.");
+            if (WyvernMods.fatigueActionOverride) {
+                CtConstructor[] ctActionConstructors = ctAction.getConstructors();
+                for (CtConstructor constructor : ctActionConstructors) {
+                    constructor.instrument(new ExprEditor() {
+                        public void edit(MethodCall m) throws CannotCompileException {
+                            if (m.getMethodName().equals("isFatigue")) {
+                                m.replace("" +
+                                        "if(com.wurmonline.server.Servers.localServer.PVPSERVER){" +
+                                        "  if(!com.wurmonline.server.behaviours.Actions.isActionDestroy(this.getNumber())){" +
+                                        "    $_ = false;" +
+                                        "  }else{" +
+                                        "    $_ = $proceed($$);" +
+                                        "  }" +
+                                        "}else{" +
+                                        "  $_ = false;" +
+                                        "}");
+                                logger.info("Set isFatigue to false in action constructor.");
+                            }
+                        }
+                    });
+                }
+            }
+
+            if (WyvernMods.fixPortalIssues) {
+                Util.setReason("Fix Portal Issues.");
+                CtClass ctPortal = classPool.get("com.wurmonline.server.questions.PortalQuestion");
+                Util.instrumentDeclared(thisClass, ctPortal, "sendQuestion", "willLeaveServer", "$_ = true;");
+                Util.setReason("Fix Portal Issues.");
+                Util.instrumentDeclared(thisClass, ctPortal, "sendQuestion", "getKnowledge", "$_ = true;");
+            }
+
+            if (WyvernMods.disableMinimumShieldDamage) {
+                Util.setReason("Disable the minimum 0.01 damage on shield damage, allowing damage modifiers to rule.");
+                CtClass ctCombatHandler = classPool.get("com.wurmonline.server.creatures.CombatHandler");
+                replace = "if($1 < 0.5f){"
+                        + "  $_ = $proceed((float) 0, (float) $2);"
+                        + "}else{"
+                        + "  $_ = $proceed($$);"
+                        + "}";
+                Util.instrumentDeclared(thisClass, ctCombatHandler, "checkShield", "max", replace);
+            }
+
+            if (WyvernMods.disableGMEmoteLimit) {
+                // - Allow GM's to bypass the 5 second emote sound limit. - //
+                Util.setReason("Allow GM's to bypass the 5 second emote sound limit.");
+                replace = "if(this.getPower() > 0){"
+                        + "  return true;"
+                        + "}";
+                Util.insertBeforeDeclared(thisClass, ctPlayer, "mayEmote", replace);
+            }
+
+        	// - Make creatures wander slightly if they are shot from afar by an arrow - //
+        	CtClass ctArrows = classPool.get("com.wurmonline.server.combat.Arrows");
+            if (WyvernMods.creatureArcheryWander) {
+                Util.setReason("Make creatures wander slightly when archered.");
+                replace = "if(!defender.isPathing()){"
+                        + "  defender.startPathing(com.wurmonline.server.Server.rand.nextInt(100));"
+                        + "}"
+                        + "$_ = $proceed($$);";
+                Util.instrumentDeclared(thisClass, ctArrows, "addToHitCreature", "addAttacker", replace);
+            }
+
+            if (WyvernMods.globalDeathTabs) {
+                Util.setReason("Broadcast death tabs to GL-Freedom.");
+                replace = MiscChanges.class.getName() + ".broadCastDeaths($1, $2);";
+                Util.insertBeforeDeclared(thisClass, ctPlayers, "broadCastDeathInfo", replace);
+            }
+
+            /* Disabled 1.9 - PvE Death Tabs are now part of vanilla.
+            Util.setReason("Broadcast player death tabs always.");
+            replace = MiscChanges.class.getName()+".broadCastDeathsPvE($0, $0.attackers);";
+            Util.insertBeforeDeclared(thisClass, ctPlayer, "modifyRanking", replace);*/
+
+            if (WyvernMods.disablePvPOnlyDeathTabs) {
+                Util.setReason("Disable PvP only death tabs.");
+                replace = "$_ = true;";
+                Util.instrumentDeclared(thisClass, ctPlayers, "broadCastDeathInfo", "isThisAPvpServer", replace);
+            }
+
+            if (WyvernMods.fixLibilaCrossingIssues) {
+                Util.setReason("Attempt to prevent libila from losing faith when crossing servers.");
+                CtClass ctIntraServerConnection = classPool.get("com.wurmonline.server.intra.IntraServerConnection");
+                ctIntraServerConnection.getDeclaredMethod("savePlayerToDisk").instrument(new ExprEditor() {
+                    @Override
+                    public void edit(FieldAccess fieldAccess) throws CannotCompileException {
+                        if (Objects.equals("PVPSERVER", fieldAccess.getFieldName())) {
+                            fieldAccess.replace("$_ = false;");
+                            logger.info("Instrumented PVPSERVER = false for Libila faith transfers.");
+                        }
+                    }
+                });
+                ctIntraServerConnection.getDeclaredMethod("savePlayerToDisk").instrument(new ExprEditor() {
+                    @Override
+                    public void edit(FieldAccess fieldAccess) throws CannotCompileException {
+                        if (Objects.equals("HOMESERVER", fieldAccess.getFieldName())) {
+                            fieldAccess.replace("$_ = false;");
+                            logger.info("Instrumented HOMESERVER = false for Libila faith transfers.");
                         }
                     }
                 });
             }
-            
-            Util.setReason("Fix Portal Issues.");
-            CtClass ctPortal = classPool.get("com.wurmonline.server.questions.PortalQuestion");
-            Util.instrumentDeclared(thisClass, ctPortal, "sendQuestion", "willLeaveServer", "$_ = true;");
-            Util.setReason("Fix Portal Issues.");
-            Util.instrumentDeclared(thisClass, ctPortal, "sendQuestion", "getKnowledge", "$_ = true;");
 
-            Util.setReason("Disable the minimum 0.01 damage on shield damage, allowing damage modifiers to rule.");
-        	CtClass ctCombatHandler = classPool.get("com.wurmonline.server.creatures.CombatHandler");
-        	replace = "if($1 < 0.5f){"
-            		+ "  $_ = $proceed((float) 0, (float) $2);"
-            		+ "}else{"
-            		+ "  $_ = $proceed($$);"
-            		+ "}";
-        	Util.instrumentDeclared(thisClass, ctCombatHandler, "checkShield", "max", replace);
+            CtClass ctSkill = classPool.get("com.wurmonline.server.skills.Skill");
+            CtClass[] params4 = {
+                    CtClass.doubleType,
+                    CtClass.booleanType,
+                    CtClass.floatType,
+                    CtClass.booleanType,
+                    CtClass.doubleType
+            };
+            String desc4 = Descriptor.ofMethod(CtClass.voidType, params4);
 
-        	// - Allow GM's to bypass the 5 second emote sound limit. - //
-        	replace = "if(this.getPower() > 0){"
-        			+ "  return true;"
-        			+ "}";
-        	Util.insertBeforeDeclared(thisClass, ctPlayer, "mayEmote", replace);
+            if (WyvernMods.higherFoodAffinities) {
+                Util.setReason("Increase food affinity to give 30% increased skillgain instead of 10%.");
+                replace = "int timedAffinity = (com.wurmonline.server.skills.AffinitiesTimed.isTimedAffinity(pid, this.getNumber()) ? 2 : 0);"
+                        + "advanceMultiplicator *= (double)(1.0f + (float)timedAffinity * 0.1f);"
+                        + "$_ = $proceed($$);";
+                Util.instrumentDescribed(thisClass, ctSkill, "alterSkill", desc4, "hasSleepBonus", replace);
+            }
 
-        	// - Make creatures wander slightly if they are shot from afar by an arrow - //
-        	CtClass ctArrows = classPool.get("com.wurmonline.server.combat.Arrows");
-        	replace = "if(!defender.isPathing()){"
-            		+ "  defender.startPathing(com.wurmonline.server.Server.rand.nextInt(100));"
-            		+ "}"
-            		+ "$_ = $proceed($$);";
-        	Util.instrumentDeclared(thisClass, ctArrows, "addToHitCreature", "addAttacker", replace);
-
-        	Util.setReason("Broadcast death tabs to GL-Freedom.");
-        	replace = MiscChanges.class.getName()+".broadCastDeaths($1, $2);";
-            Util.insertBeforeDeclared(thisClass, ctPlayers, "broadCastDeathInfo", replace);
-
-            Util.setReason("Broadcast player death tabs always.");
-            replace = MiscChanges.class.getName()+".broadCastDeathsPvE($0, $0.attackers);";
-            Util.insertBeforeDeclared(thisClass, ctPlayer, "modifyRanking", replace);
-
-            Util.setReason("Disable PvP only death tabs.");
-            replace = "$_ = true;";
-            Util.instrumentDeclared(thisClass, ctPlayers, "broadCastDeathInfo", "isThisAPvpServer", replace);
-
-        	Util.setReason("Attempt to prevent libila from losing faith when crossing servers.");
-            CtClass ctIntraServerConnection = classPool.get("com.wurmonline.server.intra.IntraServerConnection");
-            ctIntraServerConnection.getDeclaredMethod("savePlayerToDisk").instrument(new ExprEditor() {
-                @Override
-                public void edit(FieldAccess fieldAccess) throws CannotCompileException {
-                    if (Objects.equals("PVPSERVER", fieldAccess.getFieldName())){
-                        fieldAccess.replace("$_ = false;");
-                        logger.info("Instrumented PVPSERVER = false for Libila faith transfers.");
-                    }
-                }
-            });
-            ctIntraServerConnection.getDeclaredMethod("savePlayerToDisk").instrument(new ExprEditor() {
-                @Override
-                public void edit(FieldAccess fieldAccess) throws CannotCompileException {
-                    if (Objects.equals("HOMESERVER", fieldAccess.getFieldName())){
-                        fieldAccess.replace("$_ = false;");
-                        logger.info("Instrumented HOMESERVER = false for Libila faith transfers.");
-                    }
-                }
-            });
-
-            Util.setReason("Increase food affinity to give 30% increased skillgain instead of 10%.");
-    		CtClass ctSkill = classPool.get("com.wurmonline.server.skills.Skill");
-        	CtClass[] params4 = {
-        			CtClass.doubleType,
-        			CtClass.booleanType,
-        			CtClass.floatType,
-        			CtClass.booleanType,
-        			CtClass.doubleType
-        	};
-        	String desc4 = Descriptor.ofMethod(CtClass.voidType, params4);
-        	replace = "int timedAffinity = (com.wurmonline.server.skills.AffinitiesTimed.isTimedAffinity(pid, this.getNumber()) ? 2 : 0);"
-            		+ "advanceMultiplicator *= (double)(1.0f + (float)timedAffinity * 0.1f);"
-            		+ "$_ = $proceed($$);";
-        	Util.instrumentDescribed(thisClass, ctSkill, "alterSkill", desc4, "hasSleepBonus", replace);
-
-        	Util.setReason("Double the rate at which charcoal piles produce items.");
         	CtClass[] params5 = {
         			CtClass.booleanType,
         			CtClass.booleanType,
         			CtClass.longType
         	};
         	String desc5 = Descriptor.ofMethod(CtClass.booleanType, params5);
-        	replace = "this.createDaleItems();"
-            		+ "decayed = this.setDamage(this.damage + 1.0f * this.getDamageModifier());"
-            		+ "$_ = $proceed($$);";
-        	Util.instrumentDescribed(thisClass, ctItem, "poll", desc5, "createDaleItems", replace);
+        	if (WyvernMods.fasterCharcoalBurn) {
+                Util.setReason("Double the rate at which charcoal piles produce items.");
+                replace = "this.createDaleItems();"
+                        + "decayed = this.setDamage(this.damage + 1.0f * this.getDamageModifier());"
+                        + "$_ = $proceed($$);";
+                Util.instrumentDescribed(thisClass, ctItem, "poll", desc5, "createDaleItems", replace);
+            }
 
         	Util.setReason("Allow traders to display more than 9 items of a single type.");
             CtClass ctTradeHandler = classPool.get("com.wurmonline.server.creatures.TradeHandler");
-        	ctTradeHandler.getDeclaredMethod("addItemsToTrade").instrument(new ExprEditor(){
-                public void edit(MethodCall m) throws CannotCompileException {
-                    if(m.getMethodName().equals("size") && m.getLineNumber() > 200){ // I don't think the line number check matters, but I'm leaving it here anyway.
-                    	m.replace("$_ = 1;");
-                    	logger.info("Instrumented size for trades to allow traders to show more than 9 items at a time.");
+            if (WyvernMods.uncapTraderItemCount) {
+                ctTradeHandler.getDeclaredMethod("addItemsToTrade").instrument(new ExprEditor() {
+                    public void edit(MethodCall m) throws CannotCompileException {
+                        if (m.getMethodName().equals("size") && m.getLineNumber() > 200) { // I don't think the line number check matters, but I'm leaving it here anyway.
+                            m.replace("$_ = 1;");
+                            logger.info("Instrumented size for trades to allow traders to show more than 9 items at a time.");
+                        }
                     }
-                }
-            });
+                });
+            }
 
         	// -- Identify players making over 10 commands per second and causing the server log message -- //
         	CtClass ctCommunicator = classPool.get("com.wurmonline.server.creatures.Communicator");
-        	replace = "$_ = $proceed($$);"
-        			+ "if(this.player != null){"
-        			+ "  logger.info(\"Potential player macro: \"+this.player.getName()+\" [\"+this.commandsThisSecond+\" commands]\");"
-        			+ "}";
-        	Util.instrumentDeclared(thisClass, ctCommunicator, "reallyHandle_CMD_ITEM_CREATION_LIST", "log", replace);
+            if (WyvernMods.logExcessiveActions) {
+                Util.setReason("Log excessive actions per second.");
+                replace = "$_ = $proceed($$);"
+                        + "if(this.player != null){"
+                        + "  logger.info(\"Potential player macro: \"+this.player.getName()+\" [\"+this.commandsThisSecond+\" commands]\");"
+                        + "}";
+                Util.instrumentDeclared(thisClass, ctCommunicator, "reallyHandle_CMD_ITEM_CREATION_LIST", "log", replace);
+            }
         	
         	//1f+0.5f*(1f-Math.pow(2, -Math.pow((eff-1f), pow1)/pow2))
+        	/* Disabled in 1.9 - Fixed with Priest Update.
         	Util.setReason("Fix 100+ quality or power making certain interaction broken.");
         	replace = "{"
         			+ "double pow1 = 1.0;"
@@ -549,7 +598,7 @@ public class MiscChanges {
         			+ "double newEff = $1 >= 1.0 ? 1.0+0.5*(1.0-Math.pow(2.0, -Math.pow(($1-1.0), pow1)/pow2)) : Math.max(0.05, 1.0 - (1.0 - $1) * (1.0 - $1));"
         			+ "return newEff;"
         			+ "}";
-        	Util.setBodyDeclared(thisClass, ctServer, "getBuffedQualityEffect", replace);
+        	Util.setBodyDeclared(thisClass, ctServer, "getBuffedQualityEffect", replace);*/
 
             // double advanceMultiplicator, boolean decay, float times, boolean useNewSystem, double skillDivider)
             CtClass[] params = {
@@ -560,189 +609,220 @@ public class MiscChanges {
                     CtClass.doubleType
             };
             String desc = Descriptor.ofMethod(CtClass.voidType, params);
-            double minRate = 1.0D;
-            double maxRate = 8.0D;
-            double newPower = 2.5;
 
-            Util.setReason("Adjust skill rate to a new, dynamic rate system.");
-            replace = "double minRate = " + String.valueOf(minRate) + ";" +
-                    "double maxRate = " + String.valueOf(maxRate) + ";" +
-                    "double newPower = " + String.valueOf(newPower) + ";" +
-                    "$1 = $1*(minRate+(maxRate-minRate)*Math.pow((100-this.knowledge)*0.01, newPower));";
-            Util.insertBeforeDescribed(thisClass, ctSkill,"alterSkill", desc, replace);
+            if (WyvernMods.useDynamicSkillRate) {
+                double minRate = 1.0D;
+                double maxRate = 8.0D;
+                double newPower = 2.5;
 
-            Util.setReason("Reduce chance of lockpicks breaking.");
-            replace = "$_ = 40f + $proceed($$);";
-            Util.instrumentDeclared(thisClass, ctMethodsItems, "checkLockpickBreakage", "getCurrentQualityLevel", replace);
+                Util.setReason("Adjust skill rate to a new, dynamic rate system.");
+                replace = "double minRate = " + String.valueOf(minRate) + ";" +
+                        "double maxRate = " + String.valueOf(maxRate) + ";" +
+                        "double newPower = " + String.valueOf(newPower) + ";" +
+                        "$1 = $1*(minRate+(maxRate-minRate)*Math.pow((100-this.knowledge)*0.01, newPower));";
+                Util.insertBeforeDescribed(thisClass, ctSkill, "alterSkill", desc, replace);
+            }
 
+            if (WyvernMods.reduceLockpickBreaking) {
+                Util.setReason("Reduce chance of lockpicks breaking.");
+                replace = "$_ = 40f + $proceed($$);";
+                Util.instrumentDeclared(thisClass, ctMethodsItems, "checkLockpickBreakage", "getCurrentQualityLevel", replace);
+            }
+
+            // Allow Freedom players to absorb mycelium
 			CtClass ctTileBehaviour = classPool.get("com.wurmonline.server.behaviours.TileBehaviour");
 			CtMethod[] ctGetBehavioursFors = ctTileBehaviour.getDeclaredMethods("getBehavioursFor");
-			for(CtMethod method : ctGetBehavioursFors){
-				method.instrument(new ExprEditor(){
-					public void edit(MethodCall m) throws CannotCompileException {
-						if (m.getMethodName().equals("getKingdomTemplateId")) {
-							m.replace("$_ = 3;");
-						}
-					}
-				});
-			}
+			if (WyvernMods.allowFreedomMyceliumAbsorb) {
+                for (CtMethod method : ctGetBehavioursFors) {
+                    method.instrument(new ExprEditor() {
+                        public void edit(MethodCall m) throws CannotCompileException {
+                            if (m.getMethodName().equals("getKingdomTemplateId")) {
+                                m.replace("$_ = 3;");
+                            }
+                        }
+                    });
+                }
+            }
 
 			CtClass ctMethodsStructure = classPool.get("com.wurmonline.server.behaviours.MethodsStructure");
-			Util.setReason("Allow players to construct larger houses.");
-			float carpentryMultiplier = 2f;
-			replace = "if(!com.wurmonline.server.Servers.localServer.PVPSERVER){" +
-					"  $_ = $proceed($$)*"+String.valueOf(carpentryMultiplier)+";" +
-					"}else{" +
-					"  $_ = $proceed($$);" +
-					"}";
-			Util.instrumentDeclared(thisClass, ctMethodsStructure, "hasEnoughSkillToExpandStructure", "getKnowledge", replace);
-			Util.setReason("Allow players to construct larger houses.");
-			Util.instrumentDeclared(thisClass, ctMethodsStructure, "hasEnoughSkillToContractStructure", "getKnowledge", replace);
+			if (WyvernMods.largerHouses) {
+                Util.setReason("Allow players to construct larger houses.");
+                float carpentryMultiplier = 2f;
+                replace = "if(!com.wurmonline.server.Servers.localServer.PVPSERVER){" +
+                        "  $_ = $proceed($$)*" + String.valueOf(carpentryMultiplier) + ";" +
+                        "}else{" +
+                        "  $_ = $proceed($$);" +
+                        "}";
+                Util.instrumentDeclared(thisClass, ctMethodsStructure, "hasEnoughSkillToExpandStructure", "getKnowledge", replace);
+                Util.setReason("Allow players to construct larger houses.");
+                Util.instrumentDeclared(thisClass, ctMethodsStructure, "hasEnoughSkillToContractStructure", "getKnowledge", replace);
+            }
 
-            Util.setReason("Reduce power of imbues.");
-            replace = "$_ = Math.max(-80d, -80d+$2);";
-            Util.instrumentDeclared(thisClass, ctMethodsItems, "smear", "max", replace);
+            if (WyvernMods.reduceImbuePower) {
+                Util.setReason("Reduce power of imbues.");
+                replace = "$_ = Math.max(-80d, -80d+$2);";
+                Util.instrumentDeclared(thisClass, ctMethodsItems, "smear", "max", replace);
+            }
 
-            Util.setReason("Update vehicle speeds reliably.");
-            replace = "if($1 == 8){" +
-                    "  $_ = 0;" +
-                    "}else{" +
-                    "  $_ = $proceed($$);" +
-                    "}";
-            Util.instrumentDeclared(thisClass, ctPlayer, "checkVehicleSpeeds", "nextInt", replace);
+            if (WyvernMods.fixVehicleSpeeds) {
+                Util.setReason("Update vehicle speeds reliably.");
+                replace = "if($1 == 8){" +
+                        "  $_ = 0;" +
+                        "}else{" +
+                        "  $_ = $proceed($$);" +
+                        "}";
+                Util.instrumentDeclared(thisClass, ctPlayer, "checkVehicleSpeeds", "nextInt", replace);
+            }
 
-            Util.setReason("Reduce mailing costs by 90%.");
-            CtClass ctMailSendConfirmQuestion = classPool.get("com.wurmonline.server.questions.MailSendConfirmQuestion");
-            replace = "$_ = $_ / 10;";
-            Util.insertAfterDeclared(thisClass, ctMailSendConfirmQuestion, "getCostForItem", replace);
+            if (WyvernMods.reduceMailingCosts) {
+                Util.setReason("Reduce mailing costs by 90%.");
+                CtClass ctMailSendConfirmQuestion = classPool.get("com.wurmonline.server.questions.MailSendConfirmQuestion");
+                replace = "$_ = $_ / 10;";
+                Util.insertAfterDeclared(thisClass, ctMailSendConfirmQuestion, "getCostForItem", replace);
+            }
 
-            Util.setReason("Remove guard tower guards helping against certain types of enemies.");
-            CtClass ctGuardTower = classPool.get("com.wurmonline.server.kingdom.GuardTower");
-            replace = "if($0.isUnique() || "+Titans.class.getName()+".isTitan($0) || "+RareSpawns.class.getName()+".isRareCreature($0)){" +
-                    "  $_ = false;" +
-                    "}else{" +
-                    "  $_ = $proceed($$);" +
-                    "}";
-            Util.instrumentDeclared(thisClass, ctGuardTower, "alertGuards", "isWithinTileDistanceTo", replace);
+            if (WyvernMods.guardTargetChanges) {
+                Util.setReason("Remove guard tower guards helping against certain types of enemies.");
+                CtClass ctGuardTower = classPool.get("com.wurmonline.server.kingdom.GuardTower");
+                replace = "if($0.isUnique() || " + Titans.class.getName() + ".isTitan($0) || " + RareSpawns.class.getName() + ".isRareCreature($0)){" +
+                        "  $_ = false;" +
+                        "}else{" +
+                        "  $_ = $proceed($$);" +
+                        "}";
+                Util.instrumentDeclared(thisClass, ctGuardTower, "alertGuards", "isWithinTileDistanceTo", replace);
+            }
 
             // Enable Strongwall for Libila and other spells on PvE
             CtClass ctSpellGenerator = classPool.get("com.wurmonline.server.spells.SpellGenerator");
-            ctSpellGenerator.getDeclaredMethod("createSpells").instrument(new ExprEditor() {
-                @Override
-                public void edit(FieldAccess fieldAccess) throws CannotCompileException {
-                    if (Objects.equals("PVPSERVER", fieldAccess.getFieldName()))
-                        fieldAccess.replace("$_ = true;");
-                    logger.info("Instrumented SpellGenerator PVPSERVER field to enable all spells.");
-                }
-            });
+			if (WyvernMods.enableLibilaStrongwallPvE) {
+                ctSpellGenerator.getDeclaredMethod("createSpells").instrument(new ExprEditor() {
+                    @Override
+                    public void edit(FieldAccess fieldAccess) throws CannotCompileException {
+                        if (Objects.equals("PVPSERVER", fieldAccess.getFieldName()))
+                            fieldAccess.replace("$_ = true;");
+                        logger.info("Instrumented SpellGenerator PVPSERVER field to enable all spells.");
+                    }
+                });
+            }
 
-            Util.setReason("Make heated food never decay if cooked by a royal cook.");
             CtClass ctTempStates = classPool.get("com.wurmonline.server.items.TempStates");
-            replace = "$_ = $proceed($$);" +
-                    "if(chefMade){" +
-                    "  $0.setName(\"royal \"+$0.getName());" +
-                    "  $0.setHasNoDecay(true);" +
-                    "}";
-            Util.instrumentDeclared(thisClass, ctTempStates, "checkForChange", "setName", replace);
 
-            Util.setReason("Stop royal food decay.");
-            // Item parent, int parentTemp, boolean insideStructure, boolean deeded, boolean saveLastMaintained, boolean inMagicContainer, boolean inTrashbin
-            CtClass[] params11 = {
-                    ctItem,
-                    CtClass.intType,
-                    CtClass.booleanType,
-                    CtClass.booleanType,
-                    CtClass.booleanType,
-                    CtClass.booleanType,
-                    CtClass.booleanType
-            };
-            String desc11 = Descriptor.ofMethod(CtClass.booleanType, params11);
-            replace = "if($0.isFood() && $0.hasNoDecay()){" +
-                    "  $_ = false;" +
-                    "}else{" +
-                    "  $_ = $proceed($$);" +
-                    "}";
-            Util.instrumentDescribed(thisClass, ctItem, "poll", desc11, "setDamage", replace);
+            if (WyvernMods.royalCookNoFoodDecay) {
+                Util.setReason("Make heated food never decay if cooked by a royal cook.");
+                replace = "$_ = $proceed($$);" +
+                        "if(chefMade){" +
+                        "  $0.setName(\"royal \"+$0.getName());" +
+                        "  $0.setHasNoDecay(true);" +
+                        "}";
+                Util.instrumentDeclared(thisClass, ctTempStates, "checkForChange", "setName", replace);
 
-            Util.setReason("Allow mayors to command abandoned vehicles off their deed.");
-            replace = "if("+MiscChanges.class.getName()+".checkMayorCommand($0, $1)){" +
-                    "  return true;" +
-                    "}";
-            Util.insertBeforeDeclared(thisClass, ctItem, "mayCommand", replace);
+                Util.setReason("Stop royal food decay.");
+                // Item parent, int parentTemp, boolean insideStructure, boolean deeded, boolean saveLastMaintained, boolean inMagicContainer, boolean inTrashbin
+                CtClass[] params11 = {
+                        ctItem,
+                        CtClass.intType,
+                        CtClass.booleanType,
+                        CtClass.booleanType,
+                        CtClass.booleanType,
+                        CtClass.booleanType,
+                        CtClass.booleanType
+                };
+                String desc11 = Descriptor.ofMethod(CtClass.booleanType, params11);
+                replace = "if($0.isFood() && $0.hasNoDecay()){" +
+                        "  $_ = false;" +
+                        "}else{" +
+                        "  $_ = $proceed($$);" +
+                        "}";
+                Util.instrumentDescribed(thisClass, ctItem, "poll", desc11, "setDamage", replace);
+            }
 
-            Util.setReason("Modify timed affinity timer.");
+            if (WyvernMods.mayorsCommandAbandonedVehicles) {
+                Util.setReason("Allow mayors to command abandoned vehicles off their deed.");
+                replace = "if(" + MiscChanges.class.getName() + ".checkMayorCommand($0, $1)){" +
+                        "  return true;" +
+                        "}";
+                Util.insertBeforeDeclared(thisClass, ctItem, "mayCommand", replace);
+            }
+
             CtClass ctAffinitiesTimed = classPool.get("com.wurmonline.server.skills.AffinitiesTimed");
-            replace = "$_ = "+MiscChanges.class.getName()+".getFoodOpulenceBonus($0);";
-            Util.instrumentDeclared(thisClass, ctAffinitiesTimed, "addTimedAffinityFromBonus", "getFoodComplexity", replace);
 
-            Util.setReason("Food affinity timer normalization.");
-            replace = "long time = "+WurmCalendar.class.getName()+".getCurrentTime();" +
-                    "if($0.getExpires($1) == null){" +
-                    "  $_ = Long.valueOf(time);" +
-                    "}else{" +
-                    "  $_ = $proceed($$);" +
-                    "}";
-            Util.instrumentDeclared(thisClass, ctAffinitiesTimed, "add", "getExpires", replace);
+            if (WyvernMods.opulenceFoodAffinityTimerIncrease) {
+                Util.setReason("Add opulence bonus to food affinity timers.");
+                replace = "$_ = " + MiscChanges.class.getName() + ".getFoodOpulenceBonus($0);";
+                Util.instrumentDeclared(thisClass, ctAffinitiesTimed, "addTimedAffinityFromBonus", "getFoodComplexity", replace);
+            }
 
-            Util.setReason("Make bed QL affect sleep bonus timer.");
-            CtClass ctPlayerInfo = classPool.get("com.wurmonline.server.players.PlayerInfo");
-            replace = "secs = "+MiscChanges.class.getName()+".getBedBonus(secs, this.bed);" +
-                    "$_ = $proceed($$);";
-            Util.instrumentDeclared(thisClass, ctPlayerInfo, "calculateSleep", "setSleep", replace);
+            if (WyvernMods.disableFoodFirstBiteBonus) {
+                Util.setReason("Food affinity timer normalization.");
+                replace = "long time = " + WurmCalendar.class.getName() + ".getCurrentTime();" +
+                        "if($0.getExpires($1) == null){" +
+                        "  $_ = Long.valueOf(time);" +
+                        "}else{" +
+                        "  $_ = $proceed($$);" +
+                        "}";
+                Util.instrumentDeclared(thisClass, ctAffinitiesTimed, "add", "getExpires", replace);
+            }
 
-            /*Util.setReason("Fix intrateleport block bug.");
-            replace = "if($6.contains(\"blocked\")){" +
-                    "  logger.info(\"Detected a blocked movement, resetting position back to old.\");" +
-                    "  $1 = $0.getMovementScheme().xOld;" +
-                    "  $2 = $0.getMovementScheme().yOld;" +
-                    "}";
-            Util.insertBeforeDeclared(thisClass, ctCreature, "intraTeleport", replace);*/
+            if (WyvernMods.bedQualitySleepBonus) {
+                Util.setReason("Make bed QL affect sleep bonus timer.");
+                CtClass ctPlayerInfo = classPool.get("com.wurmonline.server.players.PlayerInfo");
+                replace = "secs = " + MiscChanges.class.getName() + ".getBedBonus(secs, this.bed);" +
+                        "$_ = $proceed($$);";
+                Util.instrumentDeclared(thisClass, ctPlayerInfo, "calculateSleep", "setSleep", replace);
+            }
 
-            Util.setReason("Allow royal smith to improve smithing items faster.");
-            replace = "if("+MiscChanges.class.getName()+".royalSmithImprove($1, improve)){" +
-                    "  $_ = $proceed($$) * 0.9f;" +
-                    "}else{" +
-                    "  $_ = $proceed($$);" +
-                    "}";
-            Util.instrumentDeclared(thisClass, ctMethodsItems, "improveItem", "getImproveActionTime", replace);
-            Util.setReason("Allow royal smith to improve smithing items faster.");
-            Util.instrumentDeclared(thisClass, ctMethodsItems, "polishItem", "getImproveActionTime", replace);
-            Util.setReason("Allow royal smith to improve smithing items faster. Also make tempering use water enchants.");
-            replace = "if("+MiscChanges.class.getName()+".royalSmithImprove($1, improve)){" +
-                    "  $_ = $proceed($1, target) * 0.9f;" +
-                    "}else{" +
-                    "  $_ = $proceed($1, target);" +
-                    "}";
-            Util.instrumentDeclared(thisClass, ctMethodsItems, "temper", "getImproveActionTime", replace);
+            if (WyvernMods.royalSmithImproveFaster) {
+                Util.setReason("Allow royal smith to improve smithing items faster.");
+                replace = "if(" + MiscChanges.class.getName() + ".royalSmithImprove($1, improve)){" +
+                        "  $_ = $proceed($$) * 0.9f;" +
+                        "}else{" +
+                        "  $_ = $proceed($$);" +
+                        "}";
+                Util.instrumentDeclared(thisClass, ctMethodsItems, "improveItem", "getImproveActionTime", replace);
+                Util.setReason("Allow royal smith to improve smithing items faster.");
+                Util.instrumentDeclared(thisClass, ctMethodsItems, "polishItem", "getImproveActionTime", replace);
+                Util.setReason("Allow royal smith to improve smithing items faster. Also make tempering use water enchants.");
+                replace = "if(" + MiscChanges.class.getName() + ".royalSmithImprove($1, improve)){" +
+                        "  $_ = $proceed($1, target) * 0.9f;" +
+                        "}else{" +
+                        "  $_ = $proceed($1, target);" +
+                        "}";
+                Util.instrumentDeclared(thisClass, ctMethodsItems, "temper", "getImproveActionTime", replace);
+            }
 
             // Fix for body strength not working properly when mounted. (Bdew)
-            ctCreature.getMethod("getTraitMovePercent", "(Z)F").instrument(new ExprEditor() {
-                private boolean first = true;
+            if (WyvernMods.fixMountedBodyStrength) {
+                ctCreature.getMethod("getTraitMovePercent", "(Z)F").instrument(new ExprEditor() {
+                    private boolean first = true;
 
-                @Override
-                public void edit(MethodCall m) throws CannotCompileException {
-                    if (m.getMethodName().equals("getStrengthSkill")) {
-                        if (first)
-                            m.replace("wmod = wmod * 3D; $_ = $proceed() * (this.isUnicorn()?3D:2D);");
-                        else
-                            m.replace("$_ = $proceed() * (this.isUnicorn()?3D:2D);");
-                        first = false;
+                    @Override
+                    public void edit(MethodCall m) throws CannotCompileException {
+                        if (m.getMethodName().equals("getStrengthSkill")) {
+                            if (first)
+                                m.replace("wmod = wmod * 3D; $_ = $proceed() * (this.isUnicorn()?3D:2D);");
+                            else
+                                m.replace("$_ = $proceed() * (this.isUnicorn()?3D:2D);");
+                            first = false;
+                        }
                     }
-                }
-            });
+                });
+            }
 
-            Util.setReason("Modify food fill percent.");
-            CtClass[] params12 = {
-                    ctAction,
-                    ctCreature,
-                    ctItem,
-                    CtClass.floatType
-            };
-            String desc12 = Descriptor.ofMethod(CtClass.booleanType, params12);
-            replace = "$_ = $proceed($1, $2, $3, $4, "+MiscChanges.class.getName()+".getNewFoodFill(qlevel));";
-            Util.instrumentDescribed(thisClass, ctMethodsItems, "eat", desc12, "modifyHunger", replace);
+            if (WyvernMods.adjustedFoodBiteFill) {
+                Util.setReason("Modify food fill percent.");
+                CtClass[] params12 = {
+                        ctAction,
+                        ctCreature,
+                        ctItem,
+                        CtClass.floatType
+                };
+                String desc12 = Descriptor.ofMethod(CtClass.booleanType, params12);
+                replace = "$_ = $proceed($1, $2, $3, $4, " + MiscChanges.class.getName() + ".getNewFoodFill(qlevel));";
+                Util.instrumentDescribed(thisClass, ctMethodsItems, "eat", desc12, "modifyHunger", replace);
+            }
 
             // Fix for butchering not giving skill gain when butchering too many items
+            /* Disabled in 1.9 - No longer necessary due to fishing changes.
             ctMethodsItems.getDeclaredMethod("filet").instrument(new ExprEditor() {
                 private boolean first = true;
 
@@ -757,7 +837,7 @@ public class MiscChanges {
                         }
                     }
                 }
-            });
+            });*/
 
             // How to add a skill!
             /*CtClass ctSkillSystem = classPool.get("com.wurmonline.server.skills.SkillSystem");
@@ -765,171 +845,172 @@ public class MiscChanges {
             ctSkillSystemConstructor.insertAfter("com.wurmonline.server.skills.SkillSystem.addSkillTemplate(new "+SkillTemplate.class.getName()+"(10096,
                      \"Battle Yoyos\", 4000.0f, new int[]{1022}, 1209600000l, (short) 4, true, true));");*/
 
-            Util.setReason("Hook for rare material usage in improvement.");
-            replace = "if("+MiscChanges.class.getName()+".rollRarityImprove($0, usedWeight)){" +
-                    "  rarity = source.getRarity();" +
-                    "}" +
-                    "$_ = $proceed($$);";
-            Util.instrumentDeclared(thisClass, ctMethodsItems, "improveItem", "setWeight", replace);
+            if (WyvernMods.rareMaterialImprove) {
+                Util.setReason("Hook for rare material usage in improvement.");
+                replace = "if(" + MiscChanges.class.getName() + ".rollRarityImprove($0, usedWeight)){" +
+                        "  rarity = source.getRarity();" +
+                        "}" +
+                        "$_ = $proceed($$);";
+                Util.instrumentDeclared(thisClass, ctMethodsItems, "improveItem", "setWeight", replace);
+            }
 
-            Util.setReason("Bad luck protection on rarity windows.");
-            replace = "if($1 == 3600){" +
-                    "  $_ = "+MiscChanges.class.getName()+".getRarityWindowChance(this.getWurmId());" +
-                    "}else{" +
-                    "  $_ = $proceed($$);" +
-                    "}";
-            Util.instrumentDeclared(thisClass, ctPlayer, "poll", "nextInt", replace);
+            if (WyvernMods.rarityWindowBadLuckProtection) {
+                Util.setReason("Bad luck protection on rarity windows.");
+                replace = "if($1 == 3600){" +
+                        "  $_ = " + MiscChanges.class.getName() + ".getRarityWindowChance(this.getWurmId());" +
+                        "}else{" +
+                        "  $_ = $proceed($$);" +
+                        "}";
+                Util.instrumentDeclared(thisClass, ctPlayer, "poll", "nextInt", replace);
+            }
 
             CtClass ctSimpleCreationEntry = classPool.get("com.wurmonline.server.items.SimpleCreationEntry");
-            ctSimpleCreationEntry.getDeclaredMethod("run").instrument(new ExprEditor() {
-                private boolean first = true;
 
-                @Override
-                public void edit(MethodCall m) throws CannotCompileException {
-                    if (m.getMethodName().equals("getRarity")) {
-                        if (first) {
-                            m.replace("byte newRarity = "+MiscChanges.class.getName()+".getNewCreationRarity(this, source, target, template);" +
-                                    "if(newRarity > 0){" +
-                                    "  act.setRarity(newRarity);" +
-                                    "}" +
-                                    "$_ = $proceed($$);");
-                            logger.info("Replaced getRarity in SimpleCreationEntry to allow functional rare creations.");
-                            first = false;
+            if (WyvernMods.rareCreationAdjustments) {
+                ctSimpleCreationEntry.getDeclaredMethod("run").instrument(new ExprEditor() {
+                    private boolean first = true;
+
+                    @Override
+                    public void edit(MethodCall m) throws CannotCompileException {
+                        if (m.getMethodName().equals("getRarity")) {
+                            if (first) {
+                                m.replace("byte newRarity = " + MiscChanges.class.getName() + ".getNewCreationRarity(this, source, target, template);" +
+                                        "if(newRarity > 0){" +
+                                        "  act.setRarity(newRarity);" +
+                                        "}" +
+                                        "$_ = $proceed($$);");
+                                logger.info("Replaced getRarity in SimpleCreationEntry to allow functional rare creations.");
+                                first = false;
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
 
-            Util.setReason("Make armour title benefits always occur.");
-            replace = "$_ = improve.getNumber();";
-            Util.instrumentDeclared(thisClass, ctMethodsItems, "improveItem", "getSkillId", replace);
-            Util.instrumentDeclared(thisClass, ctMethodsItems, "polishItem", "getSkillId", replace);
+            if (WyvernMods.alwaysArmourTitleBenefits) {
+                Util.setReason("Make armour title benefits always occur.");
+                replace = "$_ = improve.getNumber();";
+                Util.instrumentDeclared(thisClass, ctMethodsItems, "improveItem", "getSkillId", replace);
+                Util.setReason("Make armour title benefits always occur.");
+                Util.instrumentDeclared(thisClass, ctMethodsItems, "polishItem", "getSkillId", replace);
+            }
 
-            Util.setReason("Make it so sorceries can be used anywhere with a flat 3x3 altar.");
             CtClass ctAbilities = classPool.get("com.wurmonline.server.players.Abilities");
-            replace = "$_ = 1;";
-            Util.instrumentDeclared(thisClass, ctAbilities, "isInProperLocation", "getTemplateId", replace);
 
-            Util.setReason("Make the key of the heavens only usable on PvE");
-            replace = "if($1.getTemplateId() == 794 && com.wurmonline.server.Servers.localServer.PVPSERVER){" +
-                    "  $2.getCommunicator().sendNormalServerMessage(\"The \"+$1.getName()+\" may not be used on Arena.\");" +
-                    "  return false;" +
-                    "}";
-            Util.insertBeforeDeclared(thisClass, ctAbilities, "isInProperLocation", replace);
+            if (WyvernMods.tomeUsageAnyAltar) {
+                Util.setReason("Make it so sorceries can be used anywhere with a flat 3x3 altar.");
+                replace = "$_ = 1;";
+                Util.instrumentDeclared(thisClass, ctAbilities, "isInProperLocation", "getTemplateId", replace);
+            }
 
-            Util.setReason("Make drinks less filling.");
-            CtClass[] params13 = {
-                    ctAction,
-                    ctCreature,
-                    ctItem,
-                    CtClass.floatType
-            };
-            String desc13 = Descriptor.ofMethod(CtClass.booleanType, params13);
-            replace = "if(template != 128){" +
-                    "  $_ = $proceed($1, $2, $3*5);" +
-                    "}else{" +
-                    "  $_ = $proceed($$);" +
-                    "}";
-            Util.instrumentDescribed(thisClass, ctMethodsItems, "drink", desc13, "sendActionControl", replace);
-            replace = "if(template != 128){" +
-                    "  $_ = $proceed($1/5, $2, $3, $4, $5);" +
-                    "}else{" +
-                    "  $_ = $proceed($$);" +
-                    "}";
-            Util.instrumentDescribed(thisClass, ctMethodsItems, "drink", desc13, "modifyThirst", replace);
+            if (WyvernMods.keyOfHeavensLoginOnly) {
+                Util.setReason("Make the key of the heavens only usable on PvE");
+                replace = "if($1.getTemplateId() == 794 && com.wurmonline.server.Servers.localServer.PVPSERVER){" +
+                        "  $2.getCommunicator().sendNormalServerMessage(\"The \"+$1.getName()+\" must be used on the login server.\");" +
+                        "  return false;" +
+                        "}";
+                Util.insertBeforeDeclared(thisClass, ctAbilities, "isInProperLocation", replace);
+            }
 
-            Util.setReason("Disable Gem Augmentation skill from converting.");
-            CtClass ctMethodsReligion = classPool.get("com.wurmonline.server.behaviours.MethodsReligion");
-            replace = "$_ = $proceed($1, $2, true, $4);";
-            Util.instrumentDeclared(thisClass, ctMethodsReligion, "listen", "skillCheck", replace);
+            if (WyvernMods.lessFillingDrinks) {
+                Util.setReason("Make drinks less filling.");
+                CtClass[] params13 = {
+                        ctAction,
+                        ctCreature,
+                        ctItem,
+                        CtClass.floatType
+                };
+                String desc13 = Descriptor.ofMethod(CtClass.booleanType, params13);
+                replace = "if(template != 128){" +
+                        "  $_ = $proceed($1, $2, $3*5);" +
+                        "}else{" +
+                        "  $_ = $proceed($$);" +
+                        "}";
+                Util.instrumentDescribed(thisClass, ctMethodsItems, "drink", desc13, "sendActionControl", replace);
+                replace = "if(template != 128){" +
+                        "  $_ = $proceed($1/5, $2, $3, $4, $5);" +
+                        "}else{" +
+                        "  $_ = $proceed($$);" +
+                        "}";
+                Util.instrumentDescribed(thisClass, ctMethodsItems, "drink", desc13, "modifyThirst", replace);
+            }
 
-            Util.setReason("Disable GM commands from displaying in /help unless the player is a GM.");
-            CtClass ctServerTweaksHandler = classPool.get("com.wurmonline.server.ServerTweaksHandler");
-            replace = "if($1.getPower() < 1){" +
-                    "  return;" +
-                    "}";
-            Util.insertBeforeDeclared(thisClass, ctServerTweaksHandler, "sendHelp", replace);
+            if (WyvernMods.disableHelpGMCommands) {
+                Util.setReason("Disable GM commands from displaying in /help unless the player is a GM.");
+                CtClass ctServerTweaksHandler = classPool.get("com.wurmonline.server.ServerTweaksHandler");
+                replace = "if($1.getPower() < 1){" +
+                        "  return;" +
+                        "}";
+                Util.insertBeforeDeclared(thisClass, ctServerTweaksHandler, "sendHelp", replace);
+            }
 
-            Util.setReason("Make damage less likely to interrupt actions during combat.");
-            replace = "$1 = $1/2;";
-            Util.insertBeforeDeclared(thisClass, ctCreature, "maybeInterruptAction", replace);
+            if (WyvernMods.reduceActionInterruptOnDamage) {
+                Util.setReason("Make damage less likely to interrupt actions during combat.");
+                replace = "$1 = $1/2;";
+                Util.insertBeforeDeclared(thisClass, ctCreature, "maybeInterruptAction", replace);
+            }
 
-            Util.setReason("Fix mission null pointer exception.");
-            CtClass ctEpicServerStatus = classPool.get("com.wurmonline.server.epic.EpicServerStatus");
-            replace = "if(itemplates.size() < 1){" +
-                    "  com.wurmonline.server.epic.EpicServerStatus.setupMissionItemTemplates();" +
-                    "}";
-            Util.insertBeforeDeclared(thisClass, ctEpicServerStatus, "getRandomItemTemplateUsed", replace);
+            if (WyvernMods.fixMissionNullPointerException) {
+                Util.setReason("Fix mission null pointer exception.");
+                CtClass ctEpicServerStatus = classPool.get("com.wurmonline.server.epic.EpicServerStatus");
+                replace = "if(itemplates.size() < 1){" +
+                        "  com.wurmonline.server.epic.EpicServerStatus.setupMissionItemTemplates();" +
+                        "}";
+                Util.insertBeforeDeclared(thisClass, ctEpicServerStatus, "getRandomItemTemplateUsed", replace);
+            }
 
-            /*Util.setReason("Fix bug causing high cast spells to reduce power.");
-            CtClass ctSpellEffect = classPool.get("com.wurmonline.server.spells.SpellEffect");
-            replace = "{" +
-                    "  final float mod = 5.0f * (1.0f - java.lang.Math.min($0.getPower(), 100f) / 100.0f);" +
-                    "  $0.setPower(mod + $1);" +
-                    "}";
-            Util.setBodyDeclared(thisClass, ctSpellEffect, "improvePower", replace);*/
+            if (WyvernMods.disableSmeltingPots) {
+                Util.setReason("Disable smelting pots from being used.");
+                CtClass ctItemBehaviour = classPool.get("com.wurmonline.server.behaviours.ItemBehaviour");
+                CtClass[] params14 = {
+                        ctAction,
+                        ctCreature,
+                        ctItem,
+                        ctItem,
+                        CtClass.shortType,
+                        CtClass.floatType
+                };
+                String desc14 = Descriptor.ofMethod(CtClass.booleanType, params14);
+                replace = "if($5 == 519){" +
+                        "  $2.getCommunicator().sendNormalServerMessage(\"Smelting is disabled.\");" +
+                        "  return true;" +
+                        "}";
+                Util.insertBeforeDescribed(thisClass, ctItemBehaviour, "action", desc14, replace);
+            }
 
-            Util.setReason("Disable smelting pots from being used.");
-            CtClass ctItemBehaviour = classPool.get("com.wurmonline.server.behaviours.ItemBehaviour");
-            CtClass[] params14 = {
-                    ctAction,
-                    ctCreature,
-                    ctItem,
-                    ctItem,
-                    CtClass.shortType,
-                    CtClass.floatType
-            };
-            String desc14 = Descriptor.ofMethod(CtClass.booleanType, params14);
-            replace = "if($5 == 519){" +
-                    "  $2.getCommunicator().sendNormalServerMessage(\"Smelting is disabled.\");" +
-                    "  return true;" +
-                    "}";
-            Util.insertBeforeDescribed(thisClass, ctItemBehaviour, "action", desc14, replace);
-
-            /*Util.setReason("Fix title NPE from sorting.");
-            CtClass ctTitleCompoundQuestion = classPool.get("com.wurmonline.server.questions.TitleCompoundQuestion");
-            replace = "titles = "+MiscChanges.class.getName()+".cleanTitles(titles);" +
-                    "int i = 0;" +
-                    "while(i < titles.length){" +
-                    "  logger.info(\"Title: \"+titles[i]);" +
-                    "  i++;" +
-                    "}" +
-                    "$_ = $proceed($$);";
-            Util.instrumentDeclared(thisClass, ctTitleCompoundQuestion, "sendQuestion", "sort", replace);*/
-
-            /*Util.setReason("Remove buff bar spam from sorceries.");
-            replace = "$_ = false;";
-            Util.instrumentDeclared(thisClass, ctAbilities, "sendEffectsToCreature", "hasAnyAbility", replace);*/
-
-            Util.setReason("Hide buff bar icons for sorceries.");
-            CtClass ctSpellEffectsEnum = classPool.get("com.wurmonline.server.creatures.SpellEffectsEnum");
-            CtClass ctString = classPool.get("java.lang.String");
-            CtClass[] params15 = {
-                    ctSpellEffectsEnum,
-                    CtClass.intType,
-                    ctString
-            };
-            String desc15 = Descriptor.ofMethod(CtClass.voidType, params15);
-            CtClass[] params16 = {
-                    ctSpellEffectsEnum,
-                    CtClass.intType
-            };
-            String desc16 = Descriptor.ofMethod(CtClass.voidType, params16);
-            replace = "$_ = "+MiscChanges.class.getName()+".shouldSendBuff($0);";
-            Util.instrumentDescribed(thisClass, ctCommunicator, "sendAddStatusEffect", desc15, "isSendToBuffBar", replace);
-            Util.setReason("Hide buff bar icons for sorceries.");
-            Util.instrumentDescribed(thisClass, ctCommunicator, "sendAddStatusEffect", desc16, "isSendToBuffBar", replace);
+            if (WyvernMods.hideSorceryBuffBar) {
+                Util.setReason("Hide buff bar icons for sorceries.");
+                CtClass ctSpellEffectsEnum = classPool.get("com.wurmonline.server.creatures.SpellEffectsEnum");
+                CtClass ctString = classPool.get("java.lang.String");
+                CtClass[] params15 = {
+                        ctSpellEffectsEnum,
+                        CtClass.intType,
+                        ctString
+                };
+                String desc15 = Descriptor.ofMethod(CtClass.voidType, params15);
+                CtClass[] params16 = {
+                        ctSpellEffectsEnum,
+                        CtClass.intType
+                };
+                String desc16 = Descriptor.ofMethod(CtClass.voidType, params16);
+                replace = "$_ = " + MiscChanges.class.getName() + ".shouldSendBuff($0);";
+                Util.instrumentDescribed(thisClass, ctCommunicator, "sendAddStatusEffect", desc15, "isSendToBuffBar", replace);
+                Util.setReason("Hide buff bar icons for sorceries.");
+                Util.instrumentDescribed(thisClass, ctCommunicator, "sendAddStatusEffect", desc16, "isSendToBuffBar", replace);
+            }
 
             // 1.9 Achievement fix [Bdew]
-            classPool.getCtClass("com.wurmonline.server.players.Achievements").getMethod("loadAllAchievements", "()V")
-                    .instrument(new ExprEditor(){
-                        @Override
-                        public void edit(MethodCall m) throws CannotCompileException {
-                            if (m.getMethodName().equals("getTimestamp"))
-                                m.replace("$_=com.wurmonline.server.utils.DbUtilities.getTimestampOrNull(rs.getString($1)); " +
-                                        "if ($_==null) $_=new java.sql.Timestamp(java.lang.System.currentTimeMillis());");
-                        }
-                    });
+            if (WyvernMods.sqlAchievementFix) {
+                classPool.getCtClass("com.wurmonline.server.players.Achievements").getMethod("loadAllAchievements", "()V")
+                        .instrument(new ExprEditor() {
+                            @Override
+                            public void edit(MethodCall m) throws CannotCompileException {
+                                if (m.getMethodName().equals("getTimestamp"))
+                                    m.replace("$_=com.wurmonline.server.utils.DbUtilities.getTimestampOrNull(rs.getString($1)); " +
+                                            "if ($_==null) $_=new java.sql.Timestamp(java.lang.System.currentTimeMillis());");
+                            }
+                        });
+            }
 
         } catch (CannotCompileException | NotFoundException | IllegalArgumentException | ClassCastException e) {
             throw new HookException(e);

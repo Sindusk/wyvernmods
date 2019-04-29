@@ -87,7 +87,6 @@ public class QualityOfLife {
             final Class<QualityOfLife> thisClass = QualityOfLife.class;
             String replace;
 
-            Util.setReason("Allow players to mine directly into vehicles.");
             CtClass ctAction = classPool.get("com.wurmonline.server.behaviours.Action");
             CtClass ctCreature = classPool.get("com.wurmonline.server.creatures.Creature");
             CtClass ctItem = classPool.get("com.wurmonline.server.items.Item");
@@ -106,45 +105,35 @@ public class QualityOfLife {
                     CtClass.floatType
             };
             String desc1 = Descriptor.ofMethod(CtClass.booleanType, params1);
-            replace = "$_ = null;"
-                    + QualityOfLife.class.getName()+".vehicleHook(performer, $0);";
-            Util.instrumentDescribed(thisClass, ctCaveWallBehaviour, "action", desc1, "putItemInfrontof", replace);
+            if (WyvernMods.mineCaveToVehicle) {
+                Util.setReason("Allow players to mine directly into vehicles.");
+                replace = "$_ = null;"
+                        + QualityOfLife.class.getName() + ".vehicleHook(performer, $0);";
+                Util.instrumentDescribed(thisClass, ctCaveWallBehaviour, "action", desc1, "putItemInfrontof", replace);
+            }
 
-            /*Util.setReason("Allow players to surface mine directly into vehicles.");
             CtClass ctTileRockBehaviour = classPool.get("com.wurmonline.server.behaviours.TileRockBehaviour");
-            CtClass[] params2 = {
-                    ctAction,
-                    ctCreature,
-                    ctItem,
-                    CtClass.intType,
-                    CtClass.intType,
-                    CtClass.booleanType,
-                    CtClass.intType,
-                    CtClass.intType,
-                    CtClass.shortType,
-                    CtClass.floatType
-            };
-            String desc2 = Descriptor.ofMethod(CtClass.booleanType, params2);
-            replace = "$_ = $proceed($$);" +
-                    QualityOfLife.class.getName()+".vehicleHook(performer, $0);";
-            Util.instrumentDescribed(thisClass, ctTileRockBehaviour, "action", desc2, "setDataXY", replace);*/
+            if (WyvernMods.mineSurfaceToVehicle) {
+                Util.setReason("Allow players to surface mine directly into vehicles.");
+                replace = "$_ = $proceed($$);" +
+                        QualityOfLife.class.getName() + ".vehicleHook(performer, $0);";
+                Util.instrumentDeclared(thisClass, ctTileRockBehaviour, "mine", "setDataXY", replace);
+            }
 
-            Util.setReason("Allow players to surface mine directly into vehicles.");
-            CtClass ctTileRockBehaviour = classPool.get("com.wurmonline.server.behaviours.TileRockBehaviour");
-            replace = "$_ = $proceed($$);" +
-                    QualityOfLife.class.getName()+".vehicleHook(performer, $0);";
-            Util.instrumentDeclared(thisClass, ctTileRockBehaviour, "mine", "setDataXY", replace);
-
-            Util.setReason("Allow players to chop logs directly into vehicles.");
             CtClass ctMethodsItems = classPool.get("com.wurmonline.server.behaviours.MethodsItems");
-            replace = "$_ = null;" +
-                    QualityOfLife.class.getName()+".vehicleHook(performer, $0);";
-            Util.instrumentDeclared(thisClass, ctMethodsItems, "chop", "putItemInfrontof", replace);
+            if (WyvernMods.chopLogsToVehicle) {
+                Util.setReason("Allow players to chop logs directly into vehicles.");
+                replace = "$_ = null;" +
+                        QualityOfLife.class.getName() + ".vehicleHook(performer, $0);";
+                Util.instrumentDeclared(thisClass, ctMethodsItems, "chop", "putItemInfrontof", replace);
+            }
 
-            Util.setReason("Allow statuettes to be used when not gold/silver.");
-            String desc100 = Descriptor.ofMethod(CtClass.booleanType, new CtClass[]{});
-            replace = "{ return this.template.holyItem; }";
-            Util.setBodyDescribed(thisClass, ctItem, "isHolyItem", desc100, replace);
+            if (WyvernMods.statuetteAnyMaterial) {
+                Util.setReason("Allow statuettes to be used when not gold/silver.");
+                String desc100 = Descriptor.ofMethod(CtClass.booleanType, new CtClass[]{});
+                replace = "{ return this.template.holyItem; }";
+                Util.setBodyDescribed(thisClass, ctItem, "isHolyItem", desc100, replace);
+            }
 
             /* Disabled in Wurm Unlimited 1.9 - Priest Rework changes removed this restriction.
 
@@ -153,30 +142,34 @@ public class QualityOfLife {
             replace = "$_ = false;";
             Util.instrumentDeclared(thisClass, ctMethodsCreatures, "tame", "isPriest", replace);*/
 
-            Util.setReason("Send gems, source crystals, flint, etc. into vehicle.");
-            CtClass[] params2 = {
-                    CtClass.intType,
-                    CtClass.intType,
-                    CtClass.intType,
-                    CtClass.intType,
-                    ctCreature,
-                    CtClass.doubleType,
-                    CtClass.booleanType,
-                    ctAction
-            };
-            String desc2 = Descriptor.ofMethod(ctItem, params2);
-            replace = "$_ = null;" +
-                    QualityOfLife.class.getName()+".vehicleHook(performer, $0);";
-            Util.instrumentDescribed(thisClass, ctTileRockBehaviour, "createGem", desc2, "putItemInfrontof", replace);
+            if (WyvernMods.mineGemsToVehicle) {
+                Util.setReason("Send gems, source crystals, flint, etc. into vehicle.");
+                CtClass[] params2 = {
+                        CtClass.intType,
+                        CtClass.intType,
+                        CtClass.intType,
+                        CtClass.intType,
+                        ctCreature,
+                        CtClass.doubleType,
+                        CtClass.booleanType,
+                        ctAction
+                };
+                String desc2 = Descriptor.ofMethod(ctItem, params2);
+                replace = "$_ = null;" +
+                        QualityOfLife.class.getName() + ".vehicleHook(performer, $0);";
+                Util.instrumentDescribed(thisClass, ctTileRockBehaviour, "createGem", desc2, "putItemInfrontof", replace);
+            }
 
-            CtClass ctPlayer = classPool.get("com.wurmonline.server.players.Player");
-            ctPlayer.getMethod("poll", "()Z").instrument(new ExprEditor() {
-                @Override
-                public void edit(FieldAccess f) throws CannotCompileException {
-                    if (f.getFieldName().equals("vehicle") && f.isReader())
-                        f.replace("$_ = -10L;");
-                }
-            });
+            if (WyvernMods.regenerateStaminaOnVehicleAnySlope) {
+                CtClass ctPlayer = classPool.get("com.wurmonline.server.players.Player");
+                ctPlayer.getMethod("poll", "()Z").instrument(new ExprEditor() {
+                    @Override
+                    public void edit(FieldAccess f) throws CannotCompileException {
+                        if (f.getFieldName().equals("vehicle") && f.isReader())
+                            f.replace("$_ = -10L;");
+                    }
+                });
+            }
 
         } catch ( NotFoundException | IllegalArgumentException | ClassCastException e) {
             throw new HookException(e);

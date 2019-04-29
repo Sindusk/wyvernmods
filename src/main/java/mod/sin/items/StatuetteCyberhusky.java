@@ -17,10 +17,10 @@ import com.wurmonline.server.skills.SkillList;
 public class StatuetteCyberhusky implements ItemTypes, MiscConstants {
 	public static Logger logger = Logger.getLogger(StatuetteCyberhusky.class.getName());
 	public static int templateId;
-	private String name = "statuette of Cyberhusky";
+	private String name = "statuette of Reevi";
 	public void createTemplate() throws IOException{
 		ItemTemplateBuilder itemBuilder = new ItemTemplateBuilder("mod.item.statuette.cyberhusky");
-		itemBuilder.name(name, "statuettes", "A statuette resembling the artists interpretation of the deity Cyberhusky.");
+		itemBuilder.name(name, "statuettes", "A statuette resembling the artists interpretation of the deity Reevi.");
 		itemBuilder.itemTypes(new short[]{ // {108, 52, 22, 44, 87, 92, 147} - Statuette
 				ItemTypes.ITEM_TYPE_NAMED,
 				ItemTypes.ITEM_TYPE_DECORATION,
