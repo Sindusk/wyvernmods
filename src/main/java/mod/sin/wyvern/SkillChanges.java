@@ -37,10 +37,10 @@ public class SkillChanges {
         try {
             Skills parent = ReflectionUtil.getPrivateField(skill, ReflectionUtil.getField(skill.getClass(), "parent"));
             double advanceMultiplicator = (100.0 - skill.getKnowledge()) / (skill.getDifficulty(parent.priest) * skill.getKnowledge() * skill.getKnowledge()) * learnMod * bonus;
-            double negativeDecayRate = 5;
-            double positiveDecayRate = 3;
-            double valueAtZero = 3.74d;
-            double valueAtOneHundred = 0.9d;
+            double negativeDecayRate = (double) WyvernMods.hybridNegativeDecayRate;
+            double positiveDecayRate = (double) WyvernMods.hybridPositiveDecayRate;
+            double valueAtZero = (double) WyvernMods.hybridValueAtZero;
+            double valueAtOneHundred = (double) WyvernMods.hybridValueAtOneHundred;
             //advanceMultiplicator *= Math.pow(2, ((2-Math.pow((100/(100+power)), p))*(100-power)/100));
             //double mult = Math.pow(2, (2-Math.pow(100/(100+power), negativeDecayRate))*Math.pow((100-power)*0.01, positiveDecayRate));
             double mult = valueAtOneHundred*Math.pow(valueAtZero/valueAtOneHundred, (2-Math.pow(100/(100+Math.max(-99,power)), negativeDecayRate))*Math.pow((100-power)*0.01, positiveDecayRate));
@@ -65,65 +65,52 @@ public class SkillChanges {
         return 0;
     }
 
-    public static void onServerStarted(){
-        /*SkillTemplate exorcism = SkillSystem.templates.get(SkillList.EXORCISM);
-        int[] deps = {SkillList.GROUP_ALCHEMY};
+    public static void setSkillName(int id, String newName){
+        SkillTemplate skillTemplate = SkillSystem.templates.get(id);
         try {
-            String newName = "Crystal handling";
-            ReflectionUtil.setPrivateField(exorcism, ReflectionUtil.getField(exorcism.getClass(), "name"), newName);
-            SkillSystem.skillNames.put(exorcism.getNumber(), newName);
-            SkillSystem.namesToSkill.put(newName, exorcism.getNumber());
-            ReflectionUtil.setPrivateField(exorcism, ReflectionUtil.getField(exorcism.getClass(), "dependencies"), deps);
+            ReflectionUtil.setPrivateField(skillTemplate, ReflectionUtil.getField(skillTemplate.getClass(), "name"), newName);
+            SkillSystem.skillNames.put(skillTemplate.getNumber(), newName);
+            SkillSystem.namesToSkill.put(newName, skillTemplate.getNumber());
         } catch (IllegalAccessException | NoSuchFieldException e) {
-            logger.info("Failed to rename exorcism!");
+            logger.info("Failed to rename skill with ID "+id+"!");
             e.printStackTrace();
         }
-        SkillTemplate ballistae = SkillSystem.templates.get(SkillList.BALLISTA);
-        int[] deps2 = {SkillList.GROUP_ALCHEMY};
+    }
+    public static void setSkillDifficulty(int id, float difficulty){
+        SkillTemplate skillTemplate = SkillSystem.templates.get(id);
+        skillTemplate.setDifficulty(difficulty);
+    }
+    public static void setSkillTickTime(int id, long tickTime){
+        SkillTemplate skillTemplate = SkillSystem.templates.get(id);
         try {
-            String newName = "Mystic components";
-            ReflectionUtil.setPrivateField(ballistae, ReflectionUtil.getField(ballistae.getClass(), "name"), newName);
-            SkillSystem.skillNames.put(ballistae.getNumber(), newName);
-            SkillSystem.namesToSkill.put(newName, ballistae.getNumber());
-            ReflectionUtil.setPrivateField(ballistae, ReflectionUtil.getField(ballistae.getClass(), "dependencies"), deps2);
+            ReflectionUtil.setPrivateField(skillTemplate, ReflectionUtil.getField(skillTemplate.getClass(), "tickTime"), tickTime);
         } catch (IllegalAccessException | NoSuchFieldException e) {
-            logger.info("Failed to rename ballistae!");
-            e.printStackTrace();
-        }*/
-        SkillTemplate preaching = SkillSystem.templates.get(SkillList.PREACHING);
-        int[] deps3 = {SkillList.MASONRY};
-        try {
-            String newName = "Gem augmentation";
-            ReflectionUtil.setPrivateField(preaching, ReflectionUtil.getField(preaching.getClass(), "name"), newName);
-            SkillSystem.skillNames.put(preaching.getNumber(), newName);
-            SkillSystem.namesToSkill.put(newName, preaching.getNumber());
-            ReflectionUtil.setPrivateField(preaching, ReflectionUtil.getField(preaching.getClass(), "dependencies"), deps3);
-        } catch (IllegalAccessException | NoSuchFieldException e) {
-            logger.info("Failed to rename preaching!");
+            logger.info("Failed to set tickTime for skill with ID "+id+"!");
             e.printStackTrace();
         }
-        SkillTemplate stealing = SkillSystem.templates.get(SkillList.STEALING);
-        try {
-            ReflectionUtil.setPrivateField(stealing, ReflectionUtil.getField(stealing.getClass(), "tickTime"), 0);
-        } catch (IllegalAccessException | NoSuchFieldException e) {
-            logger.info("Failed to set tickTime for stealing!");
-            e.printStackTrace();
-        }
-        SkillTemplate meditating = SkillSystem.templates.get(SkillList.MEDITATING);
-        try {
-            ReflectionUtil.setPrivateField(meditating, ReflectionUtil.getField(meditating.getClass(), "tickTime"), TimeConstants.HOUR_MILLIS);
-        } catch (IllegalAccessException | NoSuchFieldException e) {
-            logger.info("Failed to set tickTime for meditating!");
-            e.printStackTrace();
-        }
-        meditating.setDifficulty(300f);
+    }
 
-        // Set mining difficulty down to be equivalent to digging.
-        SkillTemplate mining = SkillSystem.templates.get(SkillList.MINING);
-        mining.setDifficulty(3000f);
-        // Triple lockpicking skill
-        SkillTemplate lockpicking = SkillSystem.templates.get(SkillList.LOCKPICKING);
-        lockpicking.setDifficulty(700f);
+    public static void onServerStarted(){
+        for (int skillId : WyvernMods.skillName.keySet()){
+            setSkillName(skillId, WyvernMods.skillName.get(skillId));
+        }
+        for (int skillId : WyvernMods.skillDifficulty.keySet()){
+            setSkillDifficulty(skillId, WyvernMods.skillDifficulty.get(skillId));
+        }
+        for (int skillId : WyvernMods.skillTickTime.keySet()){
+            setSkillTickTime(skillId, WyvernMods.skillTickTime.get(skillId));
+        }
+
+        if (WyvernMods.changePreachingLocation) {
+            SkillTemplate preaching = SkillSystem.templates.get(SkillList.PREACHING);
+            int[] deps3 = {SkillList.MASONRY};
+            try {
+                ReflectionUtil.setPrivateField(preaching, ReflectionUtil.getField(preaching.getClass(), "dependencies"), deps3);
+            } catch (IllegalAccessException | NoSuchFieldException e) {
+                logger.info("Failed to rename preaching!");
+                e.printStackTrace();
+            }
+        }
     }
 
     public static void preInit(){
@@ -132,13 +119,15 @@ public class SkillChanges {
             final Class<SkillChanges> thisClass = SkillChanges.class;
             String replace;
 
-            Util.setReason("Allow skill check failures to add skill gain.");
-            CtClass ctSkill = classPool.get("com.wurmonline.server.skills.Skill");
-            replace = "{" +
-                    "  double advanceMultiplicator = "+SkillChanges.class.getName()+".newDoSkillGainNew($0, $1, $2, $3, $4, $5);" +
-                    "  $0.alterSkill(advanceMultiplicator, false, $4, true, $5);" +
-                    "}";
-            Util.setBodyDeclared(thisClass, ctSkill, "doSkillGainNew", replace);
+            if (WyvernMods.enableHybridSkillGain) {
+                Util.setReason("Add hybrid skill gain system hook.");
+                CtClass ctSkill = classPool.get("com.wurmonline.server.skills.Skill");
+                replace = "{" +
+                        "  double advanceMultiplicator = " + SkillChanges.class.getName() + ".newDoSkillGainNew($0, $1, $2, $3, $4, $5);" +
+                        "  $0.alterSkill(advanceMultiplicator, false, $4, true, $5);" +
+                        "}";
+                Util.setBodyDeclared(thisClass, ctSkill, "doSkillGainNew", replace);
+            }
 
         } catch ( NotFoundException | IllegalArgumentException | ClassCastException e) {
             throw new HookException(e);

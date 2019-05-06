@@ -16,9 +16,9 @@ import mod.sin.actions.items.SorcerySplitAction;
 import mod.sin.creatures.*;
 import mod.sin.creatures.titans.*;
 import mod.sin.lib.Prop;
+import mod.sin.lib.SkillAssist;
 import mod.sin.lib.Util;
 import mod.sin.wyvern.bestiary.MethodsBestiary;
-import mod.sin.wyvern.mastercraft.Mastercraft;
 import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 import org.gotti.wurmunlimited.modloader.classhooks.HookException;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
@@ -160,6 +160,65 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 	public static boolean statuetteAnyMaterial = true;
 	public static boolean mineGemsToVehicle = true;
 	public static boolean regenerateStaminaOnVehicleAnySlope = true;
+
+	// Combat Module Configuration
+	public static boolean enableCombatModule = true;
+	public static boolean enableCombatRatingAdjustments = true;
+	public static boolean royalExecutionerBonus = true;
+	public static boolean petSoulDepthScaling = true;
+	public static boolean vehicleCombatRatingPenalty = true;
+	public static boolean fixMagranonDamageStacking = true;
+	public static boolean adjustCombatRatingSpellPower = true;
+	public static boolean disableLegendaryRegeneration = true;
+	public static boolean useStaticLegendaryRegeneration = true;
+
+	// Mastercraft Module Configuration
+	public static boolean enableMastercraftModule = true;
+	public static boolean enableDifficultyAdjustments = true;
+	public static boolean affinityDifficultyBonus = true;
+	public static boolean legendDifficultyBonus = true;
+	public static boolean masterDifficultyBonus = true;
+	public static boolean itemRarityDifficultyBonus = true;
+	public static boolean legendItemDifficultyBonus = true;
+	public static boolean masterItemDifficultyBonus = true;
+	public static boolean empoweredChannelers = true;
+	public static boolean channelSkillFavorReduction = true;
+
+	// Skill Module Configuration
+	public static boolean enableSkillModule = true;
+	public static boolean enableHybridSkillGain = true;
+	public static float hybridNegativeDecayRate = 5f;
+	public static float hybridPositiveDecayRate = 3f;
+	public static float hybridValueAtZero = 3.74f;
+	public static float hybridValueAtOneHundred = 0.9f;
+	public static HashMap<Integer,String> skillName = new HashMap<>();
+	public static HashMap<Integer,Float> skillDifficulty = new HashMap<>();
+	public static HashMap<Integer,Long> skillTickTime = new HashMap<>();
+	public static boolean changePreachingLocation = true;
+
+	// Meditation Module Configuration
+	public static boolean enableMeditationModule = true;
+	public static boolean simplifyMeditationTerrain = true;
+	public static boolean removeInsanitySotG = true;
+	public static boolean removeHateWarBonus = true;
+	public static boolean insanitySpeedBonus = true;
+	public static boolean hateMovementBonus = true;
+	public static boolean scalingPowerStaminaBonus = true;
+	public static boolean scalingKnowledgeSkillGain = true;
+	public static boolean removeMeditationTickTimer = true;
+	public static boolean newMeditationBuffs = true;
+	public static boolean enableMeditationAbilityCooldowns = true;
+	public static long loveRefreshCooldown = 64800000L; // 18 hours default
+	public static long loveEnchantNatureCooldown = 64800000L; // 18 hours default
+	public static long loveLoveEffectCooldown = 64800000L; // 18 hours default
+	public static long hateWarDamageCooldown = 64800000L; // 18 hours default
+	public static long hateStructureDamageCooldown = 64800000L; // 18 hours default
+	public static long hateFearCooldown = 64800000L; // 18 hours default
+	public static long powerElementalImmunityCooldown = 64800000L; // 18 hours default
+	public static long powerEruptFreezeCooldown = 64800000L; // 18 hours default
+	public static long powerIgnoreTrapsCooldown = 64800000L; // 18 hours default
+	public static long knowledgeInfoCreatureCooldown = 64800000L; // 18 hours default
+	public static long knowledgeInfoTileCooldown = 64800000L; // 18 hours default
 
 	// Treasure Chest Loot Module Configuration
 	public static boolean enableTreasureChestLootModule = true;
@@ -345,6 +404,62 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 		mineGemsToVehicle = Prop.getBooleanProperty("mineGemsToVehicle", mineGemsToVehicle);
 		regenerateStaminaOnVehicleAnySlope = Prop.getBooleanProperty("regenerateStaminaOnVehicleAnySlope", regenerateStaminaOnVehicleAnySlope);
 
+		// Combat Module
+		enableCombatModule = Prop.getBooleanProperty("enableCombatModule", enableCombatModule);
+		enableCombatRatingAdjustments = Prop.getBooleanProperty("enableCombatRatingAdjustments", enableCombatRatingAdjustments);
+		royalExecutionerBonus = Prop.getBooleanProperty("royalExecutionerBonus", royalExecutionerBonus);
+		petSoulDepthScaling = Prop.getBooleanProperty("petSoulDepthScaling", petSoulDepthScaling);
+		vehicleCombatRatingPenalty = Prop.getBooleanProperty("vehicleCombatRatingPenalty", vehicleCombatRatingPenalty);
+		fixMagranonDamageStacking = Prop.getBooleanProperty("fixMagranonDamageStacking", fixMagranonDamageStacking);
+		adjustCombatRatingSpellPower = Prop.getBooleanProperty("adjustCombatRatingSpellPower", adjustCombatRatingSpellPower);
+		disableLegendaryRegeneration = Prop.getBooleanProperty("disableLegendaryRegeneration", disableLegendaryRegeneration);
+		useStaticLegendaryRegeneration = Prop.getBooleanProperty("useStaticLegendaryRegeneration", useStaticLegendaryRegeneration);
+
+		// Mastercraft Module
+		enableMastercraftModule = Prop.getBooleanProperty("enableMastercraftModule", enableMastercraftModule);
+		enableDifficultyAdjustments = Prop.getBooleanProperty("enableDifficultyAdjustments", enableDifficultyAdjustments);
+		affinityDifficultyBonus = Prop.getBooleanProperty("affinityDifficultyBonus", affinityDifficultyBonus);
+		legendDifficultyBonus = Prop.getBooleanProperty("legendDifficultyBonus", legendDifficultyBonus);
+		masterDifficultyBonus = Prop.getBooleanProperty("masterDifficultyBonus", masterDifficultyBonus);
+		itemRarityDifficultyBonus = Prop.getBooleanProperty("itemRarityDifficultyBonus", itemRarityDifficultyBonus);
+		legendItemDifficultyBonus = Prop.getBooleanProperty("legendItemDifficultyBonus", legendItemDifficultyBonus);
+		masterItemDifficultyBonus = Prop.getBooleanProperty("masterItemDifficultyBonus", masterItemDifficultyBonus);
+		empoweredChannelers = Prop.getBooleanProperty("empoweredChannelers", empoweredChannelers);
+		channelSkillFavorReduction = Prop.getBooleanProperty("channelSkillFavorReduction", channelSkillFavorReduction);
+
+		// Skill Module
+		enableSkillModule = Prop.getBooleanProperty("enableSkillModule", enableSkillModule);
+		enableHybridSkillGain = Prop.getBooleanProperty("enableHybridSkillGain", enableHybridSkillGain);
+		hybridNegativeDecayRate = Prop.getFloatProperty("hybridNegativeDecayRate", hybridNegativeDecayRate);
+		hybridPositiveDecayRate = Prop.getFloatProperty("hybridPositiveDecayRate", hybridPositiveDecayRate);
+		hybridValueAtZero = Prop.getFloatProperty("hybridValueAtZero", hybridValueAtZero);
+		hybridValueAtOneHundred = Prop.getFloatProperty("hybridValueAtOneHundred", hybridValueAtOneHundred);
+		changePreachingLocation = Prop.getBooleanProperty("changePreachingLocation", changePreachingLocation);
+
+		// Meditation Module
+		enableMeditationModule = Prop.getBooleanProperty("enableMeditationModule", enableMeditationModule);
+		simplifyMeditationTerrain = Prop.getBooleanProperty("simplifyMeditationTerrain", simplifyMeditationTerrain);
+		removeInsanitySotG = Prop.getBooleanProperty("removeInsanitySotG", removeInsanitySotG);
+		removeHateWarBonus = Prop.getBooleanProperty("removeHateWarBonus", removeHateWarBonus);
+		insanitySpeedBonus = Prop.getBooleanProperty("insanitySpeedBonus", insanitySpeedBonus);
+		hateMovementBonus = Prop.getBooleanProperty("hateMovementBonus", hateMovementBonus);
+		scalingPowerStaminaBonus = Prop.getBooleanProperty("scalingPowerStaminaBonus", scalingPowerStaminaBonus);
+		scalingKnowledgeSkillGain = Prop.getBooleanProperty("scalingKnowledgeSkillGain", scalingKnowledgeSkillGain);
+		removeMeditationTickTimer = Prop.getBooleanProperty("removeMeditationTickTimer", removeMeditationTickTimer);
+		newMeditationBuffs = Prop.getBooleanProperty("newMeditationBuffs", newMeditationBuffs);
+		enableMeditationAbilityCooldowns = Prop.getBooleanProperty("enableMeditationAbilityCooldowns", enableMeditationAbilityCooldowns);
+		loveRefreshCooldown = Prop.getLongProperty("loveRefreshCooldown", loveRefreshCooldown);
+		loveEnchantNatureCooldown = Prop.getLongProperty("loveEnchantNatureCooldown", loveEnchantNatureCooldown);
+		loveLoveEffectCooldown = Prop.getLongProperty("loveLoveEffectCooldown", loveLoveEffectCooldown);
+		hateWarDamageCooldown = Prop.getLongProperty("hateWarDamageCooldown", hateWarDamageCooldown);
+		hateStructureDamageCooldown = Prop.getLongProperty("hateStructureDamageCooldown", hateStructureDamageCooldown);
+		hateFearCooldown = Prop.getLongProperty("hateFearCooldown", hateFearCooldown);
+		powerElementalImmunityCooldown = Prop.getLongProperty("powerElementalImmunityCooldown", powerElementalImmunityCooldown);
+		powerEruptFreezeCooldown = Prop.getLongProperty("powerEruptFreezeCooldown", powerEruptFreezeCooldown);
+		powerIgnoreTrapsCooldown = Prop.getLongProperty("powerIgnoreTrapsCooldown", powerIgnoreTrapsCooldown);
+		knowledgeInfoCreatureCooldown = Prop.getLongProperty("knowledgeInfoCreatureCooldown", knowledgeInfoCreatureCooldown);
+		knowledgeInfoTileCooldown = Prop.getLongProperty("knowledgeInfoTileCooldown", knowledgeInfoTileCooldown);
+
     	// Treasure Chest Loot Module
 		enableTreasureChestLootModule = Prop.getBooleanProperty("enableTreasureChestLootModule", enableTreasureChestLootModule);
 
@@ -398,6 +513,51 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 								}
 							}
 							awardTitles.put(titleId, playerList);
+						}else if (name.startsWith("skillName")) {
+							String[] values = value.split(",");
+							if(values.length < 2 || values.length > 2){
+								logger.warning("Error parsing Skill Name: Invalid amount of arguments for following property: "+value);
+							}
+							int skillId = SkillAssist.getSkill(values[0]);
+							if (skillId < 0){
+								skillId = Integer.parseInt(values[0]);
+							}
+							if (skillName.containsKey(skillId)){
+								logger.warning("Duplicate skill name configurations for skill id "+skillId);
+							}else{
+								String newName = values[1];
+								skillName.put(skillId, newName);
+							}
+						}else if (name.startsWith("skillDifficulty")) {
+							String[] values = value.split(",");
+							if(values.length < 2 || values.length > 2){
+								logger.warning("Error parsing Skill Difficulty: Invalid amount of arguments for following property: "+value);
+							}
+							int skillId = SkillAssist.getSkill(values[0]);
+							if (skillId < 0){
+								skillId = Integer.parseInt(values[0]);
+							}
+							if (skillDifficulty.containsKey(skillId)){
+								logger.warning("Duplicate difficulty configurations for skill id "+skillId);
+							}else{
+								float difficulty = Float.parseFloat(values[1]);
+								skillDifficulty.put(skillId, difficulty);
+							}
+						}else if (name.startsWith("skillTickTime")) {
+							String[] values = value.split(",");
+							if(values.length < 2 || values.length > 2){
+								logger.warning("Error parsing Skill Tick Time: Invalid amount of arguments for following property: "+value);
+							}
+							int skillId = SkillAssist.getSkill(values[0]);
+							if (skillId < 0){
+								skillId = Integer.parseInt(values[0]);
+							}
+							if (skillTickTime.containsKey(skillId)){
+								logger.warning("Duplicate tick time configurations for skill id "+skillId);
+							}else{
+								long difficulty = Long.parseLong(values[1]);
+								skillTickTime.put(skillId, difficulty);
+							}
 						}
 				}
 			} catch (Exception e) {
@@ -545,6 +705,86 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 			logger.info("Regenerate Stamina On Vehicle Any Slope: "+regenerateStaminaOnVehicleAnySlope);
 		}
 
+		logger.info("Combat Module: "+enableCombatModule);
+		if (enableCombatModule){
+			logger.info("Combat Rating Adjustments: "+enableCombatRatingAdjustments);
+			if (enableCombatRatingAdjustments){
+				logger.info("Royal Executioner Bonus: "+royalExecutionerBonus);
+				logger.info("Pet Soul Depth Scaling: "+petSoulDepthScaling);
+				logger.info("Vehicle Combat Rating Penalty: "+vehicleCombatRatingPenalty);
+			}
+			logger.info("Fix Magranon Damage Stacking: "+fixMagranonDamageStacking);
+			logger.info("Adjust Combat Rating Spell Power: "+adjustCombatRatingSpellPower);
+			logger.info("Disable Legendary Regeneration: "+disableLegendaryRegeneration);
+			logger.info("Use Static Legendary Regeneration: "+useStaticLegendaryRegeneration);
+		}
+
+		logger.info("Mastercraft Module: "+enableMastercraftModule);
+		if (enableMastercraftModule){
+			logger.info("Difficulty Adjustments: "+enableDifficultyAdjustments);
+			if (enableDifficultyAdjustments){
+				logger.info("Affinity Difficulty Bonus: "+affinityDifficultyBonus);
+				logger.info("Legend Difficulty Bonus: "+legendDifficultyBonus);
+				logger.info("Master Difficulty Bonus: "+masterDifficultyBonus);
+				logger.info("Item Rarity Difficulty Bonus: "+itemRarityDifficultyBonus);
+				logger.info("Legend Item Difficulty Bonus: "+legendItemDifficultyBonus);
+				logger.info("Master Item Difficulty Bonus: "+masterItemDifficultyBonus);
+			}
+			logger.info("Empowered Channelers: "+empoweredChannelers);
+			logger.info("Channel Skill Favor Reduction: "+channelSkillFavorReduction);
+		}
+
+		logger.info("Skill Module: "+enableSkillModule);
+		if (enableSkillModule){
+			logger.info("Hybrid Skill Gain: "+enableHybridSkillGain);
+			if (enableHybridSkillGain){
+				logger.info("Hybrid Negative Decay Rate: "+hybridNegativeDecayRate);
+				logger.info("Hybrid Positive Decay Rate: "+hybridPositiveDecayRate);
+				logger.info("Hybrid Value At Zero: "+hybridValueAtZero);
+				logger.info("Hybrid Value At One Hundred: "+hybridValueAtOneHundred);
+			}
+			for (int skillId : skillName.keySet()){
+				logger.info(String.format("Changing name of skill %s to %s.",
+						SkillAssist.getSkill(skillId), skillName.get(skillId)));
+			}
+			for (int skillId : skillDifficulty.keySet()){
+				logger.info(String.format("Setting difficulty of skill %s to %.2f.",
+						SkillAssist.getSkill(skillId), skillDifficulty.get(skillId)));
+			}
+			for (int skillId : skillTickTime.keySet()){
+				logger.info(String.format("Setting tick time of skill %s to %d.",
+						SkillAssist.getSkill(skillId), skillTickTime.get(skillId)));
+			}
+			logger.info("Change Preaching Location: "+changePreachingLocation);
+		}
+
+		logger.info("Meditation Module: "+enableMeditationModule);
+		if (enableMeditationModule){
+			logger.info("Simplify Meditation Terrain: "+simplifyMeditationTerrain);
+			logger.info("Remove Insanity Shield of the Gone: "+removeInsanitySotG);
+			logger.info("Remove Hate War Bonus: "+removeHateWarBonus);
+			logger.info("Insanity Speed Bonus: "+insanitySpeedBonus);
+			logger.info("Hate Movement Bonus: "+hateMovementBonus);
+			logger.info("Scaling Power Stamina Bonus: "+scalingPowerStaminaBonus);
+			logger.info("Scaling Knowledge Skill Gain: "+scalingKnowledgeSkillGain);
+			logger.info("Remove Meditation Tick Timer: "+removeMeditationTickTimer);
+			logger.info("New Meditation Buffs: "+newMeditationBuffs);
+			logger.info("Meditation Ability Cooldowns: "+enableMeditationAbilityCooldowns);
+			if (enableMeditationAbilityCooldowns){
+				logger.info("Love Refresh Cooldown: "+loveRefreshCooldown);
+				logger.info("Love Enchant Nature Cooldown: "+loveEnchantNatureCooldown);
+				logger.info("Love Love Effect Cooldown: "+loveLoveEffectCooldown);
+				logger.info("Hate War Bonus Cooldown: "+hateWarDamageCooldown);
+				logger.info("Hate Structure Damage Cooldown: "+hateStructureDamageCooldown);
+				logger.info("Hate Fear Cooldown: "+hateFearCooldown);
+				logger.info("Power Elemental Immunity Cooldown: "+powerElementalImmunityCooldown);
+				logger.info("Power Erupt/Freeze Cooldown: "+powerEruptFreezeCooldown);
+				logger.info("Power Ignore Traps Cooldown: "+powerIgnoreTrapsCooldown);
+				logger.info("Knowledge Info Creature Cooldown: "+knowledgeInfoCreatureCooldown);
+				logger.info("Knowledge Info Tile Cooldown: "+knowledgeInfoTileCooldown);
+			}
+		}
+
 		logger.info("Treasure Chest Loot Module: "+enableTreasureChestLootModule);
 
         //this.logger.log(Level.INFO, "Property: " + this.somevalue);
@@ -582,11 +822,6 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 				Arena.preInit();
 			}
 
-			// Custom Titles Module Pre-Init
-			if (enableCustomTitlesModule) {
-				PlayerTitles.preInit();
-			}
-
 			// Anti-Cheat Module Pre-Init
 			if (enableAntiCheatModule) {
 				AntiCheat.preInit();
@@ -595,6 +830,24 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 			// Quality Of Life Module Pre-Init
 			if (enableQualityOfLifeModule) {
 				QualityOfLife.preInit();
+			}
+
+			// Combat Module Pre-Init
+			if (enableCombatModule) {
+				CombatChanges.preInit();
+			}
+
+			// Mastercraft Module Pre-Init
+			if (enableMastercraftModule) {
+				Mastercraft.preInit();
+			}
+
+			if (enableSkillModule) {
+				SkillChanges.preInit();
+			}
+
+			if (enableMeditationModule) {
+				MeditationPerks.preInit();
 			}
 
 			// Treasure Chest Loot Module Pre-Init
@@ -607,15 +860,13 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
             TeleportHandler.preInit();
             MethodsBestiary.preInit();
             MissionCreator.preInit();
-            SkillChanges.preInit();
-            MeditationPerks.preInit();
             MountedChanges.preInit();
             EconomicChanges.preInit();
-            Bloodlust.preInit();
-            Mastercraft.preInit();
             SupplyDepots.preInit();
             KeyEvent.preInit();
-            CombatChanges.preInit();
+
+            // Bloodlust might no longer be necessary. Code remains for reference.
+			//Bloodlust.preInit();
 
 			// Gem Augmentation is not complete.
             //GemAugmentation.preInit();
@@ -737,7 +988,11 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 	@Override
     public void onPlayerLogin(Player p) {
         DatabaseHelper.onPlayerLogin(p);
-        PlayerTitles.awardCustomTitles(p);
+
+        // Award Custom Titles on player login
+        if(enableCustomTitlesModule) {
+			PlayerTitles.awardCustomTitles(p);
+		}
     }
 
 	@Override
@@ -778,7 +1033,9 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 			//espCounter = Servers.localServer.PVPSERVER; // Enables on PvP server by default.
 			//espCounter = false;
 
-            SkillChanges.onServerStarted();
+			if (enableSkillModule) {
+				SkillChanges.onServerStarted();
+			}
 
 			CreationEntry lockpicks = CreationMatrix.getInstance().getCreationEntry(ItemList.lockpick);
 			try {
@@ -847,11 +1104,11 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
                 Bloodlust.pollLusts();
                 lastPolledBloodlust += pollBloodlustTime;
             }
-            if(lastPolledUniqueRegeneration + pollUniqueRegenerationTime < System.currentTimeMillis()){
+            if(WyvernMods.useStaticLegendaryRegeneration && lastPolledUniqueRegeneration + pollUniqueRegenerationTime < System.currentTimeMillis()){
                 CombatChanges.pollUniqueRegeneration();
                 lastPolledUniqueRegeneration += pollUniqueRegenerationTime;
             }
-            if(lastPolledUniqueCollection + pollUniqueCollectionTime < System.currentTimeMillis()){
+            if(WyvernMods.enableCombatModule && lastPolledUniqueCollection + pollUniqueCollectionTime < System.currentTimeMillis()){
                 CombatChanges.pollUniqueCollection();
                 lastPolledUniqueCollection += pollUniqueCollectionTime;
             }

@@ -60,7 +60,7 @@ public class MeditationPerks {
                     if(path.getPath() == Cults.PATH_HATE){
                         byte level = path.getLevel();
                         if(level >= 3){
-                            float levelDiff = level-3f;
+                            float levelDiff = level-2f;
                             return 1.0f+(levelDiff*0.01f);
                         }
                     }
@@ -156,36 +156,54 @@ public class MeditationPerks {
             final Class<MeditationPerks> thisClass = MeditationPerks.class;
             String replace;
 
-            Util.setReason("Enable buff icons for meditation.");
             CtClass ctCultist = classPool.get("com.wurmonline.server.players.Cultist");
-            replace = MeditationPerks.class.getName()+".sendPassiveBuffs($0);";
-            Util.insertBeforeDeclared(thisClass, ctCultist, "sendPassiveBuffs", replace);
-
-            Util.setReason("Make meditating paths more straightforward.");
             CtClass ctCults = classPool.get("com.wurmonline.server.players.Cults");
-            replace = "{ return "+MeditationPerks.class.getName()+".getNewPathFor($1, $2, $3); }";
-            Util.setBodyDeclared(thisClass, ctCults, "getPathFor", replace);
-
-            Util.setReason("Replace stamina modifier for new Insanity ability.");
             CtClass ctActions = classPool.get("com.wurmonline.server.behaviours.Actions");
-            replace = "{ return "+MeditationPerks.class.getName()+".newStaminaModifierFor($1, $2); }";
-            Util.setBodyDeclared(thisClass, ctActions, "getStaminaModiferFor", replace);
-
-            Util.setReason("Increase movement speed for Path of Hate users.");
             CtClass ctMovementScheme = classPool.get("com.wurmonline.server.creatures.MovementScheme");
-            replace = "if($_ > 0){" +
-                    "  $_ = $_ * "+MeditationPerks.class.getName()+".getCultistSpeedMultiplier(this);" +
-                    "}";
-            Util.insertAfterDeclared(thisClass, ctMovementScheme, "getSpeedModifier", replace);
-
-            Util.setReason("Scale path of power stamina bonus from level 7 onwards.");
             CtClass ctCreatureStatus = classPool.get("com.wurmonline.server.creatures.CreatureStatus");
-            replace = "staminaMod += "+MeditationPerks.class.getName()+".getPowerStaminaBonus(this.statusHolder);" +
-                    "$_ = false;";
-            Util.instrumentDeclared(thisClass, ctCreatureStatus, "modifyStamina", "usesNoStamina", replace);
-
-            Util.setReason("Scale path of knowledge skill gain from level 7 onwards.");
             CtClass ctSkill = classPool.get("com.wurmonline.server.skills.Skill");
+
+            if (WyvernMods.simplifyMeditationTerrain) {
+                Util.setReason("Make meditating paths more straightforward.");
+                replace = "{ return " + MeditationPerks.class.getName() + ".getNewPathFor($1, $2, $3); }";
+                Util.setBodyDeclared(thisClass, ctCults, "getPathFor", replace);
+            }
+
+            if (WyvernMods.removeInsanitySotG) {
+                Util.setReason("Remove shield of the gone effect.");
+                replace = "{ return 0.0f; }";
+                Util.setBodyDeclared(thisClass, ctCultist, "getHalfDamagePercentage", replace);
+            }
+
+            if (WyvernMods.removeHateWarBonus) {
+                Util.setReason("Remove hate war damage effect.");
+                replace = "{ return false; }";
+                Util.setBodyDeclared(thisClass, ctCultist, "mayStartDoubleWarDamage", replace);
+                Util.setReason("Remove hate war damage effect.");
+                Util.setBodyDeclared(thisClass, ctCultist, "doubleWarDamage", replace);
+            }
+
+            if (WyvernMods.insanitySpeedBonus) {
+                Util.setReason("Replace stamina modifier for new Insanity ability.");
+                replace = "{ return " + MeditationPerks.class.getName() + ".newStaminaModifierFor($1, $2); }";
+                Util.setBodyDeclared(thisClass, ctActions, "getStaminaModiferFor", replace);
+            }
+
+            if (WyvernMods.hateMovementBonus) {
+                Util.setReason("Increase movement speed for Path of Hate users.");
+                replace = "if($_ > 0){" +
+                        "  $_ = $_ * " + MeditationPerks.class.getName() + ".getCultistSpeedMultiplier(this);" +
+                        "}";
+                Util.insertAfterDeclared(thisClass, ctMovementScheme, "getSpeedModifier", replace);
+            }
+
+            if (WyvernMods.scalingPowerStaminaBonus) {
+                Util.setReason("Scale path of power stamina bonus from level 7 onwards.");
+                replace = "staminaMod += " + MeditationPerks.class.getName() + ".getPowerStaminaBonus(this.statusHolder);" +
+                        "$_ = false;";
+                Util.instrumentDeclared(thisClass, ctCreatureStatus, "modifyStamina", "usesNoStamina", replace);
+            }
+
             CtClass[] params1 = {
                     CtClass.doubleType,
                     CtClass.booleanType,
@@ -194,57 +212,61 @@ public class MeditationPerks {
                     CtClass.doubleType
             };
             String desc1 = Descriptor.ofMethod(CtClass.voidType, params1);
-            replace = "staminaMod *= "+MeditationPerks.class.getName()+".getKnowledgeSkillGain(player);" +
-                    "$_ = false;";
-            Util.instrumentDescribed(thisClass, ctSkill, "alterSkill", desc1, "levelElevenSkillgain", replace);
 
-            Util.setReason("Remove shield of the gone effect.");
-            replace = "{ return 0.0f; }";
-            Util.setBodyDeclared(thisClass, ctCultist, "getHalfDamagePercentage", replace);
-            Util.setReason("Remove hate war damage effect.");
-            replace = "{ return false; }";
-            Util.setBodyDeclared(thisClass, ctCultist, "mayStartDoubleWarDamage", replace);
-            Util.setBodyDeclared(thisClass, ctCultist, "doubleWarDamage", replace);
+            if (WyvernMods.scalingKnowledgeSkillGain) {
+                Util.setReason("Scale path of knowledge skill gain from level 7 onwards.");
+                replace = "staminaMod *= " + MeditationPerks.class.getName() + ".getKnowledgeSkillGain(player);" +
+                        "$_ = false;";
+                Util.instrumentDescribed(thisClass, ctSkill, "alterSkill", desc1, "levelElevenSkillgain", replace);
+            }
 
-            Util.setReason("Remove artifical tick timer for meditation.");
-            replace = "$_ = 0;";
-            Util.instrumentDeclared(thisClass, ctCults, "meditate", "getLastMeditated", replace);
+            if (WyvernMods.removeMeditationTickTimer) {
+                Util.setReason("Remove artifical tick timer for meditation.");
+                replace = "$_ = 0;";
+                Util.instrumentDeclared(thisClass, ctCults, "meditate", "getLastMeditated", replace);
+            }
 
-            // - Reduce meditation cooldowns - //
-            replace = "return this.path == 1 && this.level > 3 && System.currentTimeMillis() - this.cooldown1 > "+(TimeConstants.HOUR_MILLIS*8)+";";
-            Util.setBodyDeclared(thisClass, ctCultist, "mayRefresh", replace);
-            //ctCultist.getDeclaredMethod("mayRefresh").setBody("return this.path == 1 && this.level > 3 && System.currentTimeMillis() - this.cooldown1 > 28800000;");
-            replace = "return this.path == 1 && this.level > 6 && System.currentTimeMillis() - this.cooldown2 > "+(TimeConstants.HOUR_MILLIS*8)+";";
-            Util.setBodyDeclared(thisClass, ctCultist, "mayEnchantNature", replace);
-            //ctCultist.getDeclaredMethod("mayEnchantNature").setBody("return this.path == 1 && this.level > 6 && System.currentTimeMillis() - this.cooldown2 > 28800000;");
-            replace = "return this.path == 1 && this.level > 8 && System.currentTimeMillis() - this.cooldown3 > "+(TimeConstants.HOUR_MILLIS*4)+";";
-            Util.setBodyDeclared(thisClass, ctCultist, "mayStartLoveEffect", replace);
-            //ctCultist.getDeclaredMethod("mayStartLoveEffect").setBody("return this.path == 1 && this.level > 8 && System.currentTimeMillis() - this.cooldown3 > 14400000;");
-            replace = "return this.path == 2 && this.level > 6 && System.currentTimeMillis() - this.cooldown1 > "+(TimeConstants.HOUR_MILLIS*6)+";";
-            Util.setBodyDeclared(thisClass, ctCultist, "mayStartDoubleWarDamage", replace);
-            //ctCultist.getDeclaredMethod("mayStartDoubleWarDamage").setBody("return this.path == 2 && this.level > 6 && System.currentTimeMillis() - this.cooldown1 > 21600000;");
-            replace = "return this.path == 2 && this.level > 3 && System.currentTimeMillis() - this.cooldown2 > "+(TimeConstants.HOUR_MILLIS*4)+";";
-            Util.setBodyDeclared(thisClass, ctCultist, "mayStartDoubleStructDamage", replace);
-            //ctCultist.getDeclaredMethod("mayStartDoubleStructDamage").setBody("return this.path == 2 && this.level > 3 && System.currentTimeMillis() - this.cooldown2 > 14400000;");
-            replace = "return this.path == 2 && this.level > 8 && System.currentTimeMillis() - this.cooldown3 > "+(TimeConstants.HOUR_MILLIS*6)+";";
-            Util.setBodyDeclared(thisClass, ctCultist, "mayStartFearEffect", replace);
-            //ctCultist.getDeclaredMethod("mayStartFearEffect").setBody("return this.path == 2 && this.level > 8 && System.currentTimeMillis() - this.cooldown3 > 21600000;");
-            replace = "return this.path == 5 && this.level > 8 && System.currentTimeMillis() - this.cooldown1 > "+(TimeConstants.HOUR_MILLIS*6)+";";
-            Util.setBodyDeclared(thisClass, ctCultist, "mayStartNoElementalDamage", replace);
-            //ctCultist.getDeclaredMethod("mayStartNoElementalDamage").setBody("return this.path == 5 && this.level > 8 && System.currentTimeMillis() - this.cooldown1 > 21600000;");
-            replace = "return this.path == 5 && this.level > 6 && System.currentTimeMillis() - this.cooldown2 > "+(TimeConstants.HOUR_MILLIS*8)+";";
-            Util.setBodyDeclared(thisClass, ctCultist, "maySpawnVolcano", replace);
-            //ctCultist.getDeclaredMethod("maySpawnVolcano").setBody("return this.path == 5 && this.level > 6 && System.currentTimeMillis() - this.cooldown2 > 28800000;");
-            replace = "return this.path == 5 && this.level > 3 && System.currentTimeMillis() - this.cooldown3 > "+(TimeConstants.HOUR_MILLIS*4)+";";
-            Util.setBodyDeclared(thisClass, ctCultist, "mayStartIgnoreTraps", replace);
-            //ctCultist.getDeclaredMethod("mayStartIgnoreTraps").setBody("return this.path == 5 && this.level > 3 && System.currentTimeMillis() - this.cooldown3 > 14400000;");
-            replace = "return this.path == 3 && this.level > 3 && System.currentTimeMillis() - this.cooldown1 > "+(TimeConstants.HOUR_MILLIS*4)+";";
-            Util.setBodyDeclared(thisClass, ctCultist, "mayCreatureInfo", replace);
-            //ctCultist.getDeclaredMethod("mayCreatureInfo").setBody("return this.path == 3 && this.level > 3 && System.currentTimeMillis() - this.cooldown1 > 14400000;");
-            replace = "return this.path == 3 && this.level > 6 && System.currentTimeMillis() - this.cooldown2 > "+(TimeConstants.HOUR_MILLIS*4)+";";
-            Util.setBodyDeclared(thisClass, ctCultist, "mayInfoLocal", replace);
-            //ctCultist.getDeclaredMethod("mayInfoLocal").setBody("return this.path == 3 && this.level > 6 && System.currentTimeMillis() - this.cooldown2 > 14400000;");
+            if (WyvernMods.newMeditationBuffs) {
+                Util.setReason("Enable buff icons for meditation.");
+                replace = MeditationPerks.class.getName() + ".sendPassiveBuffs($0);";
+                Util.insertBeforeDeclared(thisClass, ctCultist, "sendPassiveBuffs", replace);
+            }
 
+            if (WyvernMods.enableMeditationAbilityCooldowns) {
+                // - Adjust meditation ability cooldowns - //
+                replace = "return this.path == 1 && this.level > 3 && System.currentTimeMillis() - this.cooldown1 > " + String.valueOf(WyvernMods.loveRefreshCooldown) + ";";
+                Util.setBodyDeclared(thisClass, ctCultist, "mayRefresh", replace);
+
+                replace = "return this.path == 1 && this.level > 6 && System.currentTimeMillis() - this.cooldown2 > " + String.valueOf(WyvernMods.loveEnchantNatureCooldown) + ";";
+                Util.setBodyDeclared(thisClass, ctCultist, "mayEnchantNature", replace);
+
+                replace = "return this.path == 1 && this.level > 8 && System.currentTimeMillis() - this.cooldown3 > " + String.valueOf(WyvernMods.loveLoveEffectCooldown) + ";";
+                Util.setBodyDeclared(thisClass, ctCultist, "mayStartLoveEffect", replace);
+
+                replace = "return this.path == 2 && this.level > 6 && System.currentTimeMillis() - this.cooldown1 > " + String.valueOf(WyvernMods.hateWarDamageCooldown) + ";";
+                Util.setBodyDeclared(thisClass, ctCultist, "mayStartDoubleWarDamage", replace);
+
+                replace = "return this.path == 2 && this.level > 3 && System.currentTimeMillis() - this.cooldown2 > " + String.valueOf(WyvernMods.hateStructureDamageCooldown) + ";";
+                Util.setBodyDeclared(thisClass, ctCultist, "mayStartDoubleStructDamage", replace);
+
+                replace = "return this.path == 2 && this.level > 8 && System.currentTimeMillis() - this.cooldown3 > " + String.valueOf(WyvernMods.hateFearCooldown) + ";";
+                Util.setBodyDeclared(thisClass, ctCultist, "mayStartFearEffect", replace);
+
+                replace = "return this.path == 5 && this.level > 8 && System.currentTimeMillis() - this.cooldown1 > " + String.valueOf(WyvernMods.powerElementalImmunityCooldown) + ";";
+                Util.setBodyDeclared(thisClass, ctCultist, "mayStartNoElementalDamage", replace);
+
+                replace = "return this.path == 5 && this.level > 6 && System.currentTimeMillis() - this.cooldown2 > " + String.valueOf(WyvernMods.powerEruptFreezeCooldown) + ";";
+                Util.setBodyDeclared(thisClass, ctCultist, "maySpawnVolcano", replace);
+
+                replace = "return this.path == 5 && this.level > 3 && System.currentTimeMillis() - this.cooldown3 > " + String.valueOf(WyvernMods.powerIgnoreTrapsCooldown) + ";";
+                Util.setBodyDeclared(thisClass, ctCultist, "mayStartIgnoreTraps", replace);
+
+                replace = "return this.path == 3 && this.level > 3 && System.currentTimeMillis() - this.cooldown1 > " + String.valueOf(WyvernMods.knowledgeInfoCreatureCooldown) + ";";
+                Util.setBodyDeclared(thisClass, ctCultist, "mayCreatureInfo", replace);
+
+                replace = "return this.path == 3 && this.level > 6 && System.currentTimeMillis() - this.cooldown2 > " + String.valueOf(WyvernMods.knowledgeInfoTileCooldown) + ";";
+                Util.setBodyDeclared(thisClass, ctCultist, "mayInfoLocal", replace);
+            }
         } catch ( NotFoundException | IllegalArgumentException | ClassCastException e) {
             throw new HookException(e);
         }

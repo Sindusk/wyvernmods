@@ -12,7 +12,7 @@ repositories {
 
 dependencies {
     compile 'org.gotti.wurmunlimited:server-modlauncher:0.43'
-    compile 'com.github.Sindusk:sindusklibrary:v2.2'
+    compile 'com.github.Sindusk:sindusklibrary:v2.3'
     compile 'com.github.bdew-wurm:bdew_server_mod_tools:v1.0.0'
     compile 'com.github.Sindusk:DiscordRelay:v1.2'
     compile 'com.github.Sindusk:DUSKombat:v1.0'
