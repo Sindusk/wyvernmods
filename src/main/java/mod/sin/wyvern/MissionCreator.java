@@ -23,8 +23,14 @@ public class MissionCreator {
     public static void pollMissions(){
         int[] deityNums = {
                 1, 2, 3, 4, // Original Gods
+        };
+        int[] epicEntityNums = {
+                1, 2, 3, 4, // Original Gods
                 6, 7, 8, 9, 10, 11, 12 // Valrei Entities
         };
+        if (WyvernMods.useValreiEntities){
+            deityNums = epicEntityNums;
+        }
         EpicServerStatus es = new EpicServerStatus();
         EpicMission[] missions = EpicServerStatus.getCurrentEpicMissions();
         int i = 0;
@@ -43,19 +49,18 @@ public class MissionCreator {
             i++;
         }
         if(EpicServerStatus.getCurrentEpicMissions().length >= deityNums.length){
-            logger.info("All entities already have a mission. Aborting.");
+            logger.info("All entities already have a mission, so no new missions need to be created.");
             return;
         }
         i = 10;
         int number = 1;
         while(i > 0) {
             number = deityNums[Server.rand.nextInt(deityNums.length)];
-            logger.info("Testing number "+number);
             if(EpicServerStatus.getEpicMissionForEntity(number) == null){
-                logger.info("Has no mission, breaking loop.");
+                logger.info("Entity "+number+" has no mission, beginning to .");
                 break;
             }else{
-                logger.info("Has mission, finding new number.");
+                logger.info("Entity "+number+" has a mission, finding new entity.");
             }
             i++;
             if(i == 0){
@@ -63,9 +68,8 @@ public class MissionCreator {
                 return;
             }
         }
-        logger.info("Entity number = "+number);
         String entityName = Deities.getDeityName(number);
-        logger.info("Entity name = "+entityName);
+        logger.info("Creating new mission for entity "+entityName);
         int time = 604800;
         logger.info("Current epic missions: "+EpicServerStatus.getCurrentEpicMissions().length);
         if (EpicServerStatus.getCurrentScenario() != null) {
@@ -118,35 +122,49 @@ public class MissionCreator {
             final Class<MissionCreator> thisClass = MissionCreator.class;
             String replace;
 
-            Util.setReason("Give players currency for completing a mission.");
             CtClass ctTriggerEffect = classPool.get("com.wurmonline.server.tutorial.TriggerEffect");
-            replace = "$_ = $proceed($$);" +
-                    MissionCreator.class.getName()+".awardMissionBonus($0);";
-            Util.instrumentDeclared(thisClass, ctTriggerEffect, "effect", "addToSleep", replace);
-
-            Util.setReason("Prevent mission creatures from spawning in water.");
             CtClass ctEpicServerStatus = classPool.get("com.wurmonline.server.epic.EpicServerStatus");
-            replace = "$_ = false;";
-            Util.instrumentDeclared(thisClass, ctEpicServerStatus, "spawnSingleCreature", "isSwimming", replace);
-
-            Util.setReason("Modify which templates are allowed to spawn on herbivore-only epic missions.");
-            replace = "$_ = "+MissionCreator.class.getName()+".isMissionOkayHerbivore($0);";
-            Util.instrumentDeclared(thisClass, ctEpicServerStatus, "createSlayCreatureMission", "isHerbivore", replace);
-            Util.instrumentDeclared(thisClass, ctEpicServerStatus, "createSlayTraitorMission", "isHerbivore", replace);
-            Util.instrumentDeclared(thisClass, ctEpicServerStatus, "createSacrificeCreatureMission", "isHerbivore", replace);
-
-            Util.setReason("Modify which templates are allowed to spawn on slay missions.");
-            replace = "$_ = "+MissionCreator.class.getName()+".isMissionOkaySlayable($0);";
-            Util.instrumentDeclared(thisClass, ctEpicServerStatus, "createSlayCreatureMission", "isEpicMissionSlayable", replace);
-            Util.instrumentDeclared(thisClass, ctEpicServerStatus, "createSacrificeCreatureMission", "isEpicMissionSlayable", replace);
-
-            Util.setReason("Adjust which epic missions are available..");
             CtClass ctEpicMissionEnum = classPool.get("com.wurmonline.server.epic.EpicMissionEnum");
-            replace = "{ if($0.getMissionType() == 108 || $0.getMissionType() == 120 || $0.getMissionType() == 124){" +
-                    "  return 0;" +
-                    "}" +
-                    "return $0.missionChance; }";
-            Util.setBodyDeclared(thisClass, ctEpicMissionEnum, "getMissionChance", replace);
+
+            if (WyvernMods.addMissionCurrencyReward) {
+                Util.setReason("Give players currency for completing a mission.");
+                replace = "$_ = $proceed($$);" +
+                        MissionCreator.class.getName() + ".awardMissionBonus($0);";
+                Util.instrumentDeclared(thisClass, ctTriggerEffect, "effect", "addToSleep", replace);
+            }
+
+            if (WyvernMods.preventMissionOceanSpawns) {
+                Util.setReason("Prevent mission creatures from spawning in water.");
+                replace = "$_ = false;";
+                Util.instrumentDeclared(thisClass, ctEpicServerStatus, "spawnSingleCreature", "isSwimming", replace);
+            }
+
+            if (WyvernMods.additionalHerbivoreChecks) {
+                Util.setReason("Modify which templates are allowed to spawn on herbivore-only epic missions.");
+                replace = "$_ = " + MissionCreator.class.getName() + ".isMissionOkayHerbivore($0);";
+                Util.instrumentDeclared(thisClass, ctEpicServerStatus, "createSlayCreatureMission", "isHerbivore", replace);
+                Util.setReason("Modify which templates are allowed to spawn on herbivore-only epic missions.");
+                Util.instrumentDeclared(thisClass, ctEpicServerStatus, "createSlayTraitorMission", "isHerbivore", replace);
+                Util.setReason("Modify which templates are allowed to spawn on herbivore-only epic missions.");
+                Util.instrumentDeclared(thisClass, ctEpicServerStatus, "createSacrificeCreatureMission", "isHerbivore", replace);
+            }
+
+            if (WyvernMods.additionalMissionSlayableChecks) {
+                Util.setReason("Modify which templates are allowed to spawn on slay missions.");
+                replace = "$_ = " + MissionCreator.class.getName() + ".isMissionOkaySlayable($0);";
+                Util.instrumentDeclared(thisClass, ctEpicServerStatus, "createSlayCreatureMission", "isEpicMissionSlayable", replace);
+                Util.setReason("Modify which templates are allowed to spawn on slay missions.");
+                Util.instrumentDeclared(thisClass, ctEpicServerStatus, "createSacrificeCreatureMission", "isEpicMissionSlayable", replace);
+            }
+
+            if (WyvernMods.disableEpicMissionTypes) {
+                Util.setReason("Adjust which epic missions are available.");
+                replace = "{ if($0.getMissionType() == 108 || $0.getMissionType() == 120 || $0.getMissionType() == 124){" +
+                        "  return 0;" +
+                        "}" +
+                        "return $0.missionChance; }";
+                Util.setBodyDeclared(thisClass, ctEpicMissionEnum, "getMissionChance", replace);
+            }
 
         } catch ( NotFoundException | IllegalArgumentException | ClassCastException e) {
             throw new HookException(e);

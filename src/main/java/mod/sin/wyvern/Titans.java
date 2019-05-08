@@ -716,9 +716,7 @@ public class Titans {
     }
 
     public static ArrayList<Creature> titans = new ArrayList<>();
-    public static long lastPolledTitanSpawn = 0;
     public static long lastSpawnedTitan = 0;
-    public static final long titanRespawnTime = TimeConstants.HOUR_MILLIS*80L;
     public static void addTitan(Creature mob){
         if(isTitan(mob) && !titans.contains(mob)){
             titans.add(mob);
@@ -755,7 +753,7 @@ public class Titans {
             }
         }
         if(titans.isEmpty()){
-            if(lastSpawnedTitan + titanRespawnTime < System.currentTimeMillis()){
+            if(lastSpawnedTitan + WyvernMods.titanRespawnTime < System.currentTimeMillis()){
                 logger.info("No Titan was found, and the timer has expired. Spawning a new one.");
                 boolean found = false;
                 int spawnX = 2048;
@@ -803,7 +801,6 @@ public class Titans {
             for(Creature c : titans){
                 c.healRandomWound(1000);
             }
-            lastPolledTitanSpawn = System.currentTimeMillis();
         }
     }
 
@@ -813,68 +810,20 @@ public class Titans {
             Class<Titans> thisClass = Titans.class;
             String replace;
 
-            Util.setReason("Disable natural regeneration on titans.");
             CtClass ctWound = classPool.get("com.wurmonline.server.bodys.Wound");
-            replace = "if(!"+Titans.class.getName()+".isTitan(this.creature)){"
-                    + "  $_ = $proceed($$);"
-                    + "}";
-            Util.instrumentDeclared(thisClass, ctWound, "poll", "modifySeverity", replace);
-            Util.instrumentDeclared(thisClass, ctWound, "poll", "checkInfection", replace);
-            Util.instrumentDeclared(thisClass, ctWound, "poll", "checkPoison", replace);
-
-            /*Util.setReason("Disable casting Smite on titans.");
-            CtClass ctSmite = classPool.get("com.wurmonline.server.spells.Smite");
-            replace = "if("+Titans.class.getName()+".isTitan($3)){"
-                    + "  $2.getCommunicator().sendNormalServerMessage(\"You cannot smite a Titan!\");"
-                    + "  return false;"
-                    + "}";
-            Util.insertBeforeDeclared(thisClass, ctSmite, "precondition", replace);*/
-
-            /* Disabled in Wurm Unlimited 1.9 - No longer necessary as spells are balanced.
-
-            Util.setReason("Disable casting Worm Brains on titans.");
-            CtClass ctWormBrains = classPool.get("com.wurmonline.server.spells.WormBrains");
-            replace = "if("+Titans.class.getName()+".isTitan($3)){"
-                    + "  $2.getCommunicator().sendNormalServerMessage(\"Titans are immune to that spell.\");"
-                    + "  return false;"
-                    + "}";
-            Util.insertBeforeDeclared(thisClass, ctWormBrains, "precondition", replace);*/
-
             CtClass ctCreature = classPool.get("com.wurmonline.server.creatures.Creature");
-            Util.setReason("Add spell resistance to titans.");
-            replace = "if("+Titans.class.getName()+".isTitan(this)){" +
-                    "  return 0.05f;" +
-                    "}";
-            Util.insertBeforeDeclared(thisClass, ctCreature, "addSpellResistance", replace);
 
-            /* Disabled in Wurm Unlimited 1.9 - No longer needed while using DUSKombat.
-
-            Util.setReason("Increase titan extra damage to pets.");
-            CtClass ctString = classPool.get("java.lang.String");
-            CtClass ctBattle = classPool.get("com.wurmonline.server.combat.Battle");
-            CtClass ctCombatEngine = classPool.get("com.wurmonline.server.combat.CombatEngine");
-            // @Nullable Creature performer, Creature defender, byte type, int pos, double damage, float armourMod,
-            // String attString, @Nullable Battle battle, float infection, float poison, boolean archery, boolean alreadyCalculatedResist
-            CtClass[] params1 = {
-                    ctCreature,
-                    ctCreature,
-                    CtClass.byteType,
-                    CtClass.intType,
-                    CtClass.doubleType,
-                    CtClass.floatType,
-                    ctString,
-                    ctBattle,
-                    CtClass.floatType,
-                    CtClass.floatType,
-                    CtClass.booleanType,
-                    CtClass.booleanType
-            };
-            String desc1 = Descriptor.ofMethod(CtClass.booleanType, params1);
-            replace = "if($2.isDominated() && $1 != null && "+Titans.class.getName()+".isTitan($1)){" +
-                    "  logger.info(\"Detected titan hit on a pet. Adding damage.\");" +
-                    "  $5 = $5 * 2d;" +
-                    "}";
-            Util.insertBeforeDescribed(thisClass, ctCombatEngine, "addWound", desc1, replace);*/
+            if (WyvernMods.disableTitanNaturalRegeneration) {
+                Util.setReason("Disable natural regeneration on titans.");
+                replace = "if(!" + Titans.class.getName() + ".isTitan(this.creature)){"
+                        + "  $_ = $proceed($$);"
+                        + "}";
+                Util.instrumentDeclared(thisClass, ctWound, "poll", "modifySeverity", replace);
+                Util.setReason("Disable natural regeneration on titans.");
+                Util.instrumentDeclared(thisClass, ctWound, "poll", "checkInfection", replace);
+                Util.setReason("Disable natural regeneration on titans.");
+                Util.instrumentDeclared(thisClass, ctWound, "poll", "checkPoison", replace);
+            }
 
         }catch (NotFoundException e) {
             throw new HookException(e);

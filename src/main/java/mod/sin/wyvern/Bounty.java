@@ -91,34 +91,13 @@ public class Bounty {
 		try {
         	ClassPool classPool = HookManager.getInstance().getClassPool();
             final Class<Bounty> thisClass = Bounty.class;
+			String replace;
             
             CtClass ctCreature = classPool.get("com.wurmonline.server.creatures.Creature");
 
-            /*CtMethod ctCheckBounty = CtMethod.make((String)
-            		  "public void checkBounty(com.wurmonline.server.players.Player player, com.wurmonline.server.creatures.Creature mob){"
-            		+ "  if(!mod.sin.wyvernmods.bounty.MethodsBounty.isCombatant(this.attackers, player.getWurmId()) || mob.isPlayer() || mob.isReborn()){"
-            		+ "    return;"
-            		+ "  }"
-            		+ (mod.bDebug ? "logger.info(player.getName()+\" killed \"+mob.getName());" : "")
-            		+ "  mod.sin.wyvernmods.bounty.MethodsBounty.checkPlayerReward(player, mob);"
-            		+ "}", ctCreature);
-            ctCreature.addMethod(ctCheckBounty);*/
-            String replace;
-            replace = ""
-            		//+ "mod.sin.wyvern.bounty.MethodsBounty.checkBounty(player, this);"
-            		+ PlayerBounty.class.getName()+".checkPlayerBounty(player, this);"
+            replace = PlayerBounty.class.getName()+".checkPlayerBounty(player, this);"
             		+ "$_ = $proceed($$);";
             Util.instrumentDeclared(thisClass, ctCreature, "modifyFightSkill", "checkCoinAward", replace);
-          /*ctCreature.getDeclaredMethod("modifyFightSkill").instrument(new ExprEditor(){
-                public void edit(MethodCall m) throws CannotCompileException {
-                    if (m.getMethodName().equals("checkCoinAward")) {
-                        m.replace("mod.sin.wyvern.bounty.MethodsBounty.checkBounty(player, this);"
-                        		+ "$_ = $proceed($$);");
-                        logger.info("Instrumented checkCoinAward to call checkBounty as well.");
-                        return;
-                    }
-                }
-            });*/
 
 			// Die method description
 			CtClass ctString = classPool.get("java.lang.String");
@@ -130,19 +109,8 @@ public class Bounty {
 			String desc1 = Descriptor.ofMethod(CtClass.voidType, params1);
 
             replace = "$_ = $proceed($$);"
-          		  	//+ "mod.sin.wyvern.bounty.MethodsBounty.checkLootTable(this, corpse);";
           		  	+ LootBounty.class.getName()+".checkLootTable(this, corpse);";
             Util.instrumentDescribed(thisClass, ctCreature, "die", desc1, "setRotation", replace);
-            /*ctCreature.getDeclaredMethod("die").instrument(new ExprEditor(){
-              public void edit(MethodCall m) throws CannotCompileException {
-                  if (m.getMethodName().equals("setRotation")) {
-                      m.replace("$_ = $proceed($$);"
-                    		  + "mod.sin.wyvern.bounty.MethodsBounty.checkLootTable(this, corpse);");
-                      logger.info("Instrumented setRotation to call insertCorpseItems as well.");
-                      return;
-                  }
-              }
-            });*/
 
             // doNew(int templateid, boolean createPossessions, float aPosX, float aPosY, float aRot, int layer, String name, byte gender, byte kingdom, byte ctype, boolean reborn, byte age)
             CtClass[] params2 = {
@@ -161,56 +129,48 @@ public class Bounty {
             		CtClass.intType
             };
             String desc2 = Descriptor.ofMethod(ctCreature, params2);
-            Util.insertBeforeDescribed(thisClass, ctCreature, "doNew", desc2, "logger.info(\"Creating new creature: \"+templateid+\" - \"+(aPosX/4)+\", \"+(aPosY/4)+\" [\"+com.wurmonline.server.creatures.CreatureTemplateFactory.getInstance().getTemplate(templateid).getName()+\"]\");");
-          // Debugging to show all new creatures created.
-          //CtMethod ctDoNew = ctCreature.getMethod("doNew", "(IZFFFILjava/lang/String;BBBZB)Lcom/wurmonline/server/creatures/Creature;");
-          //ctDoNew.insertBefore("logger.info(\"Creating new creature: \"+templateid+\" - \"+(aPosX/4)+\", \"+(aPosY/4)+\" [\"+com.wurmonline.server.creatures.CreatureTemplateFactory.getInstance().getTemplate(templateid).getName()+\"]\");");
-          // Modify new creatures
+
+            Util.setReason("Log new creature spawns.");
+            replace = "logger.info(\"Creating new creature: \"+templateid+\" - \"+(aPosX/4)+\", \"+(aPosY/4)+\" [\"+com.wurmonline.server.creatures.CreatureTemplateFactory.getInstance().getTemplate(templateid).getName()+\"]\");";
+            Util.insertBeforeDescribed(thisClass, ctCreature, "doNew", desc2, replace);
+
+			Util.setReason("Modify newly created creatures.");
             replace = "$_ = $proceed($$);"
               		//+ "mod.sin.wyvern.bestiary.MethodsBestiary.modifyNewCreature($1);";
             		+ MethodsBestiary.class.getName()+".modifyNewCreature($1);";
             Util.instrumentDescribed(thisClass, ctCreature, "doNew", desc2, "sendToWorld", replace);
-          /*ctDoNew.instrument(new ExprEditor(){
-              public void edit(MethodCall m) throws CannotCompileException {
-                  if (m.getMethodName().equals("sendToWorld")) {
-                      m.replace("$_ = $proceed($$);"
-                      		+ "mod.sin.wyvern.bestiary.MethodsBestiary.modifyNewCreature($1);");
-                      return;
-                  }
-              }
-          });*/
           
-          // -- Enable adjusting size for creatures -- //
-          CtClass ctCreatureStatus = classPool.get("com.wurmonline.server.creatures.CreatureStatus");
-          Util.setBodyDeclared(thisClass, ctCreatureStatus, "getSizeMod", "{return "+MethodsBestiary.class.getName()+".getAdjustedSizeMod(this);}");
-          //ctCreatureStatus.getDeclaredMethod("getSizeMod").setBody("{return mod.sin.wyvern.bestiary.MethodsBestiary.getAdjustedSizeMod(this);}");
+		    // -- Enable adjusting size for creatures -- //
+		    CtClass ctCreatureStatus = classPool.get("com.wurmonline.server.creatures.CreatureStatus");
+		    Util.setBodyDeclared(thisClass, ctCreatureStatus, "getSizeMod", "{return "+MethodsBestiary.class.getName()+".getAdjustedSizeMod(this);}");
+		    //ctCreatureStatus.getDeclaredMethod("getSizeMod").setBody("{return mod.sin.wyvern.bestiary.MethodsBestiary.getAdjustedSizeMod(this);}");
           
-          // -- Enable adjusting color for creatures -- //
-          /*CtClass ctCreatureTemplate = classPool.get("com.wurmonline.server.creatures.CreatureTemplate");
-          replace = "if("+MethodsBestiary.class.getName()+".checkColorTemplate(this)){"
+            // -- Enable adjusting color for creatures -- //
+            /*CtClass ctCreatureTemplate = classPool.get("com.wurmonline.server.creatures.CreatureTemplate");
+            replace = "if("+MethodsBestiary.class.getName()+".checkColorTemplate(this)){"
           		+ "  return "+MethodsBestiary.class.getName()+".getCreatureColorRed(this);"
           		+ "}";
-          Util.insertBeforeDeclared(thisClass, ctCreatureTemplate, "getColorRed", replace);
-          replace = "if("+MethodsBestiary.class.getName()+".checkColorTemplate(this)){"
+            Util.insertBeforeDeclared(thisClass, ctCreatureTemplate, "getColorRed", replace);
+            replace = "if("+MethodsBestiary.class.getName()+".checkColorTemplate(this)){"
           		+ "  return "+MethodsBestiary.class.getName()+".getCreatureColorGreen(this);"
           		+ "}";
-          Util.insertBeforeDeclared(thisClass, ctCreatureTemplate, "getColorGreen", replace);
-          replace = "if("+MethodsBestiary.class.getName()+".checkColorTemplate(this)){"
+            Util.insertBeforeDeclared(thisClass, ctCreatureTemplate, "getColorGreen", replace);
+            replace = "if("+MethodsBestiary.class.getName()+".checkColorTemplate(this)){"
           		+ "  return "+MethodsBestiary.class.getName()+".getCreatureColorBlue(this);"
           		+ "}";
-          Util.insertBeforeDeclared(thisClass, ctCreatureTemplate, "getColorBlue", replace);*/
-          /*ctCreatureTemplate.getDeclaredMethod("getColorRed").insertBefore("if(mod.sin.wyvern.bestiary.MethodsBestiary.checkColorTemplate(this)){"
+            Util.insertBeforeDeclared(thisClass, ctCreatureTemplate, "getColorBlue", replace);*/
+            /*ctCreatureTemplate.getDeclaredMethod("getColorRed").insertBefore("if(mod.sin.wyvern.bestiary.MethodsBestiary.checkColorTemplate(this)){"
             		+ "  return mod.sin.wyvern.bestiary.MethodsBestiary.getCreatureColorRed(this);"
             		+ "}");
-          ctCreatureTemplate.getDeclaredMethod("getColorGreen").insertBefore("if(mod.sin.wyvern.bestiary.MethodsBestiary.checkColorTemplate(this)){"
+            ctCreatureTemplate.getDeclaredMethod("getColorGreen").insertBefore("if(mod.sin.wyvern.bestiary.MethodsBestiary.checkColorTemplate(this)){"
             		+ "  return mod.sin.wyvern.bestiary.MethodsBestiary.getCreatureColorGreen(this);"
             		+ "}");
-          ctCreatureTemplate.getDeclaredMethod("getColorBlue").insertBefore("if(mod.sin.wyvern.bestiary.MethodsBestiary.checkColorTemplate(this)){"
+            ctCreatureTemplate.getDeclaredMethod("getColorBlue").insertBefore("if(mod.sin.wyvern.bestiary.MethodsBestiary.checkColorTemplate(this)){"
           			+ "  return mod.sin.wyvern.bestiary.MethodsBestiary.getCreatureColorBlue(this);"
           			+ "}");*/
           
-          // -- When a creature takes damage, track the damage taken -- //
-          /*CtClass[] params2 = {
+            // -- When a creature takes damage, track the damage taken -- //
+            /*CtClass[] params2 = {
         		  ctCreature,
         		  ctCreature,
         		  CtClass.byteType,
@@ -223,18 +183,18 @@ public class Bounty {
         		  CtClass.floatType,
         		  CtClass.booleanType,
         		  CtClass.booleanType
-          };
-          String desc2 = Descriptor.ofMethod(CtClass.booleanType, params2);
-          CtClass ctCombatEngine = classPool.get("com.wurmonline.server.combat.CombatEngine");
-          replace = "if($1 != null && $2 != null){"
+            };
+            String desc2 = Descriptor.ofMethod(CtClass.booleanType, params2);
+            CtClass ctCombatEngine = classPool.get("com.wurmonline.server.combat.CombatEngine");
+            replace = "if($1 != null && $2 != null){"
           		+ "  "+Bounty.class.getName()+".addDealtDamage($2.getWurmId(), $1.getWurmId(), $5);"
           		+ "}";
-          Util.insertBeforeDescribed(thisClass, ctCombatEngine, "addWound", desc2, replace);*/
-          //ctCombatEngine.getMethod("addWound", desc2).insertBefore("if($1 != null && $2 != null){mod.sin.wyvern.bounty.MethodsBounty.addDealtDamage($2.getWurmId(), $1.getWurmId(), $5);}");
+            Util.insertBeforeDescribed(thisClass, ctCombatEngine, "addWound", desc2, replace);*/
+            //ctCombatEngine.getMethod("addWound", desc2).insertBefore("if($1 != null && $2 != null){mod.sin.wyvern.bounty.MethodsBounty.addDealtDamage($2.getWurmId(), $1.getWurmId(), $5);}");
           
-      }
-      catch (NotFoundException e) {
-          throw new HookException(e);
-      }
+        }
+        catch (NotFoundException e) {
+		    throw new HookException(e);
+        }
 	}
 }

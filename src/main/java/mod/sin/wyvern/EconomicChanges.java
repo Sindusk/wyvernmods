@@ -87,6 +87,10 @@ public class EconomicChanges {
             final Class<EconomicChanges> thisClass = EconomicChanges.class;
             String replace;
 
+            CtClass ctItem = classPool.get("com.wurmonline.server.items.Item");
+            CtClass ctCreature = classPool.get("com.wurmonline.server.creatures.Creature");
+            CtClass ctTrade = classPool.get("com.wurmonline.server.items.Trade");
+
             /* [2/4/19] Disabled - Likely causing issues with upkeep fluctuation.
             Util.setReason("Increase deed upkeep by modifying the amount of tiles it thinks it has.");
             CtClass ctGuardPlan = classPool.get("com.wurmonline.server.villages.GuardPlan");
@@ -107,23 +111,26 @@ public class EconomicChanges {
 			replace = "{ return "+EconomicChanges.class.getName()+".getNewDisbandMoney(this, this.getVillage()); }";
 			Util.setBodyDeclared(thisClass, ctGuardPlan, "getDisbandMoneyLeft", replace);*/
 
-            Util.setReason("Adjust value for certain items.");
-            CtClass ctItem = classPool.get("com.wurmonline.server.items.Item");
-            replace = "int newVal = "+EconomicChanges.class.getName()+".getNewValue(this);"
-                    + "if(newVal > 0){"
-                    + "  return newVal;"
-                    + "}";
-            Util.insertBeforeDeclared(thisClass, ctItem, "getValue", replace);
+            if (WyvernMods.adjustSealedMapValue) {
+                Util.setReason("Adjust value for certain items.");
+                replace = "int newVal = " + EconomicChanges.class.getName() + ".getNewValue(this);"
+                        + "if(newVal > 0){"
+                        + "  return newVal;"
+                        + "}";
+                Util.insertBeforeDeclared(thisClass, ctItem, "getValue", replace);
+            }
 
-            Util.setReason("Remove trader refilling off kings coffers.");
-            CtClass ctCreature = classPool.get("com.wurmonline.server.creatures.Creature");
-            replace = "$_ = 1;";
-            Util.instrumentDeclared(thisClass, ctCreature, "removeRandomItems", "nextInt", replace);
+            if (WyvernMods.disableTraderRefill) {
+                Util.setReason("Remove trader refilling off kings coffers.");
+                replace = "$_ = 1;";
+                Util.instrumentDeclared(thisClass, ctCreature, "removeRandomItems", "nextInt", replace);
+            }
 
-            Util.setReason("Void 80% of all currency put into traders.");
-            CtClass ctTrade = classPool.get("com.wurmonline.server.items.Trade");
-            replace = "$1 = "+EconomicChanges.class.getName()+".getNewShopDiff($0, $1, $0.shopDiff);";
-            Util.insertBeforeDeclared(thisClass, ctTrade, "addShopDiff", replace);
+            if (WyvernMods.voidTraderMoney) {
+                Util.setReason("Void 80% of all currency put into traders.");
+                replace = "$1 = " + EconomicChanges.class.getName() + ".getNewShopDiff($0, $1, $0.shopDiff);";
+                Util.insertBeforeDeclared(thisClass, ctTrade, "addShopDiff", replace);
+            }
 
         } catch ( NotFoundException | IllegalArgumentException | ClassCastException e) {
             throw new HookException(e);

@@ -114,14 +114,19 @@ public class MountedChanges {
             final Class<MountedChanges> thisClass = MountedChanges.class;
             String replace;
 
-            Util.setReason("Scaling horse speed.");
             CtClass ctCreature = classPool.get("com.wurmonline.server.creatures.Creature");
-            replace = "{ return "+MountedChanges.class.getName()+".newMountSpeedMultiplier(this, $1); }";
-            Util.setBodyDeclared(thisClass, ctCreature, "getMountSpeedPercent", replace);
 
-            Util.setReason("Force mount speed change check on damage.");
-            replace = "forceMountSpeedChange();";
-            Util.insertBeforeDeclared(thisClass, ctCreature, "setWounded", replace);
+            if (WyvernMods.newMountSpeedScaling) {
+                Util.setReason("New mount speed scaling.");
+                replace = "{ return " + MountedChanges.class.getName() + ".newMountSpeedMultiplier(this, $1); }";
+                Util.setBodyDeclared(thisClass, ctCreature, "getMountSpeedPercent", replace);
+            }
+
+            if (WyvernMods.updateMountSpeedOnDamage) {
+                Util.setReason("Force mount speed change check on damage.");
+                replace = "forceMountSpeedChange();";
+                Util.insertBeforeDeclared(thisClass, ctCreature, "setWounded", replace);
+            }
 
         } catch ( NotFoundException | IllegalArgumentException | ClassCastException e) {
             throw new HookException(e);

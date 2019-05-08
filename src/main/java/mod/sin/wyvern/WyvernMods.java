@@ -220,6 +220,51 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 	public static long knowledgeInfoCreatureCooldown = 64800000L; // 18 hours default
 	public static long knowledgeInfoTileCooldown = 64800000L; // 18 hours default
 
+	// Titan Module Configuration
+	public static boolean enableTitanModule = true;
+	public static boolean disableTitanNaturalRegeneration = true;
+	public static long pollTitanSpawnTime = TimeConstants.MINUTE_MILLIS*2;
+	public static long pollTitanTime = TimeConstants.SECOND_MILLIS;
+	public static long titanRespawnTime = TimeConstants.HOUR_MILLIS*80L;
+
+	// Rare Spawn Module Configuration
+	public static boolean enableRareSpawnModule = true;
+	public static long pollRareSpawnTime = TimeConstants.MINUTE_MILLIS*5;
+
+	// Mission Module Configuration
+	public static boolean enableMissionModule = true;
+	public static boolean enableNewMissionCreator = true;
+	public static long pollMissionCreatorTime = TimeConstants.HOUR_MILLIS*4;
+	public static boolean useValreiEntities = true;
+	public static boolean addMissionCurrencyReward = true;
+	public static boolean preventMissionOceanSpawns = true;
+	public static boolean additionalHerbivoreChecks = true;
+	public static boolean additionalMissionSlayableChecks = true;
+	public static boolean disableEpicMissionTypes = true;
+
+	// Mounted Module Configuration
+	public static boolean enableMountedModule = true;
+	public static boolean newMountSpeedScaling = true;
+	public static boolean updateMountSpeedOnDamage = true;
+	public static boolean allowBisonMounts = true;
+
+	// Teleport Module Configuration
+	public static boolean enableTeleportModule = true;
+	public static boolean useArenaTeleportMethod = true;
+
+	// Economic Module Configuration
+	public static boolean enableEconomyModule = true;
+	public static boolean adjustSealedMapValue = true;
+	public static boolean disableTraderRefill = true;
+	public static boolean voidTraderMoney = true;
+
+	// Supply Depot Module Configuration
+	public static boolean enableSupplyDepotModule = true;
+	public static boolean useSupplyDepotLights = true;
+	public static long pollDepotTime = TimeConstants.MINUTE_MILLIS;
+	public static long captureMessageInterval = TimeConstants.MINUTE_MILLIS*3L;
+	public static long depotRespawnTime = TimeConstants.HOUR_MILLIS*11L;
+
 	// Treasure Chest Loot Module Configuration
 	public static boolean enableTreasureChestLootModule = true;
 
@@ -459,6 +504,51 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 		powerIgnoreTrapsCooldown = Prop.getLongProperty("powerIgnoreTrapsCooldown", powerIgnoreTrapsCooldown);
 		knowledgeInfoCreatureCooldown = Prop.getLongProperty("knowledgeInfoCreatureCooldown", knowledgeInfoCreatureCooldown);
 		knowledgeInfoTileCooldown = Prop.getLongProperty("knowledgeInfoTileCooldown", knowledgeInfoTileCooldown);
+
+		// Titan Module
+		enableTitanModule = Prop.getBooleanProperty("enableTitanModule", enableTitanModule);
+		disableTitanNaturalRegeneration = Prop.getBooleanProperty("disableTitanNaturalRegeneration", disableTitanNaturalRegeneration);
+		pollTitanSpawnTime = Prop.getLongProperty("pollTitanSpawnTime", pollTitanSpawnTime);
+		pollTitanTime = Prop.getLongProperty("pollTitanTime", pollTitanTime);
+		titanRespawnTime = Prop.getLongProperty("titanRespawnTime", titanRespawnTime);
+
+		// Rare Spawn Module
+		enableRareSpawnModule = Prop.getBooleanProperty("enableRareSpawnModule", enableRareSpawnModule);
+		pollRareSpawnTime = Prop.getLongProperty("pollRareSpawnTime", pollRareSpawnTime);
+
+		// Mission Module
+		enableMissionModule = Prop.getBooleanProperty("enableMissionModule", enableMissionModule);
+		enableNewMissionCreator = Prop.getBooleanProperty("enableNewMissionCreator", enableNewMissionCreator);
+		pollMissionCreatorTime = Prop.getLongProperty("pollMissionCreatorTime", pollMissionCreatorTime);
+		useValreiEntities = Prop.getBooleanProperty("useValreiEntities", useValreiEntities);
+		addMissionCurrencyReward = Prop.getBooleanProperty("addMissionCurrencyReward", addMissionCurrencyReward);
+		preventMissionOceanSpawns = Prop.getBooleanProperty("preventMissionOceanSpawns", preventMissionOceanSpawns);
+		additionalHerbivoreChecks = Prop.getBooleanProperty("additionalHerbivoreChecks", additionalHerbivoreChecks);
+		additionalMissionSlayableChecks = Prop.getBooleanProperty("additionalMissionSlayableChecks", additionalMissionSlayableChecks);
+		disableEpicMissionTypes = Prop.getBooleanProperty("disableEpicMissionTypes", disableEpicMissionTypes);
+
+		// Mounted Module
+		enableMountedModule = Prop.getBooleanProperty("enableMountedModule", enableMountedModule);
+		newMountSpeedScaling = Prop.getBooleanProperty("newMountSpeedScaling", newMountSpeedScaling);
+		updateMountSpeedOnDamage = Prop.getBooleanProperty("updateMountSpeedOnDamage", updateMountSpeedOnDamage);
+		allowBisonMounts = Prop.getBooleanProperty("allowBisonMounts", allowBisonMounts);
+
+		// Teleport Module
+		enableTeleportModule = Prop.getBooleanProperty("enableTeleportModule", enableTeleportModule);
+		useArenaTeleportMethod = Prop.getBooleanProperty("useArenaTeleportMethod", useArenaTeleportMethod);
+
+		// Economy Module
+		enableEconomyModule = Prop.getBooleanProperty("enableEconomyModule", enableEconomyModule);
+		adjustSealedMapValue = Prop.getBooleanProperty("adjustSealedMapValue", adjustSealedMapValue);
+		disableTraderRefill = Prop.getBooleanProperty("disableTraderRefill", disableTraderRefill);
+		voidTraderMoney = Prop.getBooleanProperty("voidTraderMoney", voidTraderMoney);
+
+		// Supply Depot Module
+		enableSupplyDepotModule = Prop.getBooleanProperty("enableSupplyDepotModule", enableSupplyDepotModule);
+		useSupplyDepotLights = Prop.getBooleanProperty("useSupplyDepotLights", useSupplyDepotLights);
+		pollDepotTime = Prop.getLongProperty("pollDepotTime", pollDepotTime);
+		captureMessageInterval = Prop.getLongProperty("captureMessageInterval", captureMessageInterval);
+		depotRespawnTime = Prop.getLongProperty("depotRespawnTime", depotRespawnTime);
 
     	// Treasure Chest Loot Module
 		enableTreasureChestLootModule = Prop.getBooleanProperty("enableTreasureChestLootModule", enableTreasureChestLootModule);
@@ -785,9 +875,61 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 			}
 		}
 
-		logger.info("Treasure Chest Loot Module: "+enableTreasureChestLootModule);
+		logger.info("Titan Module: "+enableTitanModule);
+		if (enableTitanModule){
+			logger.info("Disable Titan Natural Regeneration: "+disableTitanNaturalRegeneration);
+			logger.info("Poll Titan Spawn Timer: "+pollTitanSpawnTime);
+			logger.info("Poll Titan Timer: "+pollTitanTime);
+			logger.info("Titan Respawn Timer: "+titanRespawnTime);
+		}
 
-        //this.logger.log(Level.INFO, "Property: " + this.somevalue);
+		logger.info("Rare Spawn Module: "+enableRareSpawnModule);
+		if (enableRareSpawnModule){
+			logger.info("Poll Rare Spawn Timer: "+pollRareSpawnTime);
+		}
+
+		logger.info("Mission Module: "+enableMissionModule);
+		if (enableMissionModule){
+			logger.info("New Mission Creator: "+enableNewMissionCreator);
+			if (enableNewMissionCreator){
+				logger.info("New Mission Creator Timer: " + pollMissionCreatorTime);
+				logger.info("Use Valrei Entities: "+useValreiEntities);
+			}
+			logger.info("Add Mission Currency Reward: "+addMissionCurrencyReward);
+			logger.info("Prevent Ocean Mission Spawns: "+preventMissionOceanSpawns);
+			logger.info("Additional Herbivore Checks: "+additionalHerbivoreChecks);
+			logger.info("Additional Mission Slayable Checks: "+additionalMissionSlayableChecks);
+			logger.info("Disable Epic Mission Types: "+disableEpicMissionTypes);
+		}
+
+		logger.info("Mounted Module: "+enableMountedModule);
+		if (enableMountedModule){
+			logger.info("New Mount Speed Scaling: "+newMountSpeedScaling);
+			logger.info("Update Mount Speed On Damage: "+updateMountSpeedOnDamage);
+			logger.info("Allow Bison Mounts: "+allowBisonMounts);
+		}
+
+		logger.info("Teleport Module: "+enableTeleportModule);
+		if (enableTeleportModule){
+			logger.info("Use Arena Teleport Method: "+useArenaTeleportMethod);
+		}
+
+		logger.info("Economy Module: "+enableEconomyModule);
+		if (enableEconomyModule){
+			logger.info("Adjust Sealed Map Value: "+adjustSealedMapValue);
+			logger.info("Disable Trader Refill: "+disableTraderRefill);
+			logger.info("Void Trader Money: "+voidTraderMoney);
+		}
+
+		logger.info("Supply Depot Module: "+enableSupplyDepotModule);
+		if (enableSupplyDepotModule){
+			logger.info("Use Supply Depot Lights: "+useSupplyDepotLights);
+			logger.info("Poll Depot Timer: "+pollDepotTime);
+			logger.info("Capture Message Interval: "+captureMessageInterval);
+			logger.info("Depot Respawn Timer: "+depotRespawnTime);
+		}
+
+		logger.info("Treasure Chest Loot Module: "+enableTreasureChestLootModule);
     }
 
     public static void handleExamine(Creature performer, Item target) {
@@ -842,12 +984,44 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 				Mastercraft.preInit();
 			}
 
+			// Skill Module Pre-Init
 			if (enableSkillModule) {
 				SkillChanges.preInit();
 			}
 
+			// Meditation Module Pre-Init
 			if (enableMeditationModule) {
 				MeditationPerks.preInit();
+			}
+
+			// Titan Module Pre-Init
+			if (enableTitanModule) {
+				Titans.preInit();
+			}
+
+			// Mission Module Pre-Init
+			if (enableMissionModule) {
+				MissionCreator.preInit();
+			}
+
+			// Mounted Module Pre-Init
+			if (enableMountedModule) {
+				MountedChanges.preInit();
+			}
+
+			// Teleport Module Pre-Init
+			if (enableTeleportModule) {
+				TeleportHandler.preInit();
+			}
+
+			// Economy Module Pre-Init
+			if (enableEconomyModule) {
+				EconomicChanges.preInit();
+			}
+
+			// Supply Depot Module Pre-Init
+			if (enableSupplyDepotModule) {
+				SupplyDepots.preInit();
 			}
 
 			// Treasure Chest Loot Module Pre-Init
@@ -855,14 +1029,9 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 				TreasureChests.preInit();
 			}
 
-            Titans.preInit();
-            RareSpawns.preInit();
-            TeleportHandler.preInit();
             MethodsBestiary.preInit();
-            MissionCreator.preInit();
-            MountedChanges.preInit();
-            EconomicChanges.preInit();
-            SupplyDepots.preInit();
+
+            // Only clears responses, doesn't have any effect. Harmless to run even if key fragments are not used.
             KeyEvent.preInit();
 
             // Bloodlust might no longer be necessary. Code remains for reference.
@@ -907,7 +1076,10 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 		
 		// Vanilla:
 		logger.info("Registering Vanilla creature changes.");
-		ModCreatures.addCreature(new Bison());
+		if (enableMountedModule && allowBisonMounts) {
+			logger.info("Allowing Bison to be mounted.");
+			ModCreatures.addCreature(new Bison());
+		}
 		
 		// Epic:
 		logger.info("Registering Epic creatures.");
@@ -1054,19 +1226,15 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 	
 	public static long lastSecondPolled = 0;
 	public static long lastPolledTitanSpawn = 0;
-	public static final long pollTitanSpawnTime = TimeConstants.MINUTE_MILLIS*2;
 	public static long lastPolledTitans = 0;
-	public static final long pollTitanTime = TimeConstants.SECOND_MILLIS;
 	public static long lastPolledDepots = 0;
-	public static final long pollDepotTime = TimeConstants.MINUTE_MILLIS;
 	public static long lastPolledRareSpawns = 0;
-	public static final long pollRareSpawnTime = TimeConstants.MINUTE_MILLIS*5;
 	public static long lastPolledEternalReservoirs = 0;
 	public static final long pollEternalReservoirTime = TimeConstants.MINUTE_MILLIS*10;
 	public static long lastPolledMissionCreator = 0;
-	public static final long pollMissionCreatorTime = TimeConstants.HOUR_MILLIS*4;
+    /* Disabled for now, might need to be revisited.
     public static long lastPolledBloodlust = 0;
-    public static final long pollBloodlustTime = TimeConstants.MINUTE_MILLIS;
+    public static final long pollBloodlustTime = TimeConstants.MINUTE_MILLIS;*/
     public static long lastPolledUniqueRegeneration = 0;
     public static final long pollUniqueRegenerationTime = TimeConstants.SECOND_MILLIS;
     public static long lastPolledUniqueCollection = 0;
@@ -1076,19 +1244,19 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 	@Override
 	public void onServerPoll() {
 		if((lastSecondPolled + TimeConstants.SECOND_MILLIS) < System.currentTimeMillis()){
-			if(lastPolledDepots + pollDepotTime < System.currentTimeMillis()){
+			if(enableSupplyDepotModule && lastPolledDepots + pollDepotTime < System.currentTimeMillis()){
 				SupplyDepots.pollDepotSpawn();
 				lastPolledDepots += pollDepotTime;
 			}
-			if(lastPolledTitanSpawn + pollTitanSpawnTime < System.currentTimeMillis()){
+			if(enableTitanModule && lastPolledTitanSpawn + pollTitanSpawnTime < System.currentTimeMillis()){
 				Titans.pollTitanSpawn();
 				lastPolledTitanSpawn += pollTitanSpawnTime;
 			}
-			if(lastPolledTitans + pollTitanTime < System.currentTimeMillis()){
+			if(enableTitanModule && lastPolledTitans + pollTitanTime < System.currentTimeMillis()){
 				Titans.pollTitans();
 				lastPolledTitans += pollTitanTime;
 			}
-			if(lastPolledRareSpawns + pollRareSpawnTime < System.currentTimeMillis()){
+			if(enableRareSpawnModule && lastPolledRareSpawns + pollRareSpawnTime < System.currentTimeMillis()){
 			    RareSpawns.pollRareSpawns();
 			    lastPolledRareSpawns += pollRareSpawnTime;
             }
@@ -1096,14 +1264,15 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 				Soulstealing.pollSoulForges();
 				lastPolledEternalReservoirs += pollEternalReservoirTime;
 			}
-			if(lastPolledMissionCreator + pollMissionCreatorTime < System.currentTimeMillis()){
+			if(enableMissionModule && enableNewMissionCreator && lastPolledMissionCreator + pollMissionCreatorTime < System.currentTimeMillis()){
 				MissionCreator.pollMissions();
 				lastPolledMissionCreator += pollMissionCreatorTime;
 			}
+            /* Disabled for now, might need to be revisited.
             if(lastPolledBloodlust + pollBloodlustTime < System.currentTimeMillis()){
                 Bloodlust.pollLusts();
                 lastPolledBloodlust += pollBloodlustTime;
-            }
+            }*/
             if(WyvernMods.useStaticLegendaryRegeneration && lastPolledUniqueRegeneration + pollUniqueRegenerationTime < System.currentTimeMillis()){
                 CombatChanges.pollUniqueRegeneration();
                 lastPolledUniqueRegeneration += pollUniqueRegenerationTime;
@@ -1129,7 +1298,7 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 				lastPolledRareSpawns = System.currentTimeMillis();
 				lastPolledEternalReservoirs = System.currentTimeMillis();
 				lastPolledMissionCreator = System.currentTimeMillis();
-				lastPolledBloodlust = System.currentTimeMillis();
+				//lastPolledBloodlust = System.currentTimeMillis();
 				lastPolledUniqueRegeneration = System.currentTimeMillis();
 				lastPolledUniqueCollection = System.currentTimeMillis();
 				lastPolledTerrainSmooth = System.currentTimeMillis();

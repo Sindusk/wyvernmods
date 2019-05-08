@@ -104,15 +104,18 @@ public class TeleportHandler {
             final Class<TeleportHandler> thisClass = TeleportHandler.class;
             String replace;
 
-            Util.setReason("Custom teleportation system for Arena teleport/escape.");
             CtClass ctPlayerMetaData = classPool.get("com.wurmonline.server.players.PlayerMetaData");
-            replace = "logger.info(\"posx = \"+this.posx+\", posy = \"+this.posy);" +
-                    "if(this.posx >= 4000f && this.posx <= 4050f && this.posy >= 4000f && this.posy <= 4050f){" +
-                    "  this.posx = "+TeleportHandler.class.getName()+".getTeleportPosX(this.wurmid);" +
-                    "  this.posy = "+TeleportHandler.class.getName()+".getTeleportPosY(this.wurmid);" +
-                    "}" +
-                    "$_ = $proceed($$);";
-            Util.instrumentDeclared(thisClass, ctPlayerMetaData, "save", "getPosition", replace);
+
+            if (WyvernMods.useArenaTeleportMethod) {
+                Util.setReason("Custom teleportation system for Arena teleport/escape.");
+                replace = "logger.info(\"posx = \"+this.posx+\", posy = \"+this.posy);" +
+                        "if(this.posx >= 4000f && this.posx <= 4050f && this.posy >= 4000f && this.posy <= 4050f){" +
+                        "  this.posx = " + TeleportHandler.class.getName() + ".getTeleportPosX(this.wurmid);" +
+                        "  this.posy = " + TeleportHandler.class.getName() + ".getTeleportPosY(this.wurmid);" +
+                        "}" +
+                        "$_ = $proceed($$);";
+                Util.instrumentDeclared(thisClass, ctPlayerMetaData, "save", "getPosition", replace);
+            }
 
         } catch ( NotFoundException | IllegalArgumentException | ClassCastException e) {
             throw new HookException(e);

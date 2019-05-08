@@ -1,5 +1,26 @@
 package mod.sin.wyvern;
 
+import com.wurmonline.mesh.Tiles;
+import com.wurmonline.server.*;
+import com.wurmonline.server.creatures.Creature;
+import com.wurmonline.server.creatures.Creatures;
+import com.wurmonline.server.economy.Economy;
+import com.wurmonline.server.items.Item;
+import com.wurmonline.server.items.ItemFactory;
+import com.wurmonline.server.items.ItemList;
+import com.wurmonline.server.items.NoSuchTemplateException;
+import com.wurmonline.server.players.Player;
+import com.wurmonline.server.zones.Zones;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.NotFoundException;
+import mod.sin.items.ArenaSupplyDepot;
+import mod.sin.items.caches.*;
+import mod.sin.lib.Util;
+import mod.sin.wyvern.util.ItemUtil;
+import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
+import org.gotti.wurmunlimited.modsupport.ModSupportDb;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -7,41 +28,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
-import com.wurmonline.server.economy.Economy;
-import mod.sin.items.SorceryFragment;
-import org.gotti.wurmunlimited.modloader.classhooks.HookException;
-import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
-
-import com.wurmonline.mesh.Tiles;
-import com.wurmonline.server.FailedException;
-import com.wurmonline.server.Items;
-import com.wurmonline.server.Players;
-import com.wurmonline.server.Server;
-import com.wurmonline.server.Servers;
-import com.wurmonline.server.TimeConstants;
-import com.wurmonline.server.creatures.Creature;
-import com.wurmonline.server.creatures.Creatures;
-import com.wurmonline.server.items.Item;
-import com.wurmonline.server.items.ItemFactory;
-import com.wurmonline.server.items.ItemList;
-import com.wurmonline.server.items.NoSuchTemplateException;
-import com.wurmonline.server.players.Player;
-import com.wurmonline.server.zones.Zones;
-
-import javassist.CannotCompileException;
-import javassist.ClassPool;
-import javassist.CtClass;
-import javassist.NotFoundException;
-import mod.sin.items.ArenaSupplyDepot;
-import mod.sin.items.caches.*;
-import mod.sin.wyvern.util.ItemUtil;
-import org.gotti.wurmunlimited.modsupport.ModSupportDb;
-
 public class SupplyDepots {
 	private static Logger logger = Logger.getLogger(SupplyDepots.class.getName());
 	public static ArrayList<Item> depots = new ArrayList<>();
 	public static Creature host = null;
-	public static final long depotRespawnTime = TimeConstants.HOUR_MILLIS*11L;
 	public static long lastSpawnedDepot = 0;
 	protected static boolean initalizedSupplyDepot = false;
 
@@ -90,6 +80,9 @@ public class SupplyDepots {
         }
     }
 	public static void sendDepotEffect(Player player, Item depot){
+		if (!WyvernMods.useSupplyDepotLights){
+			return;
+		}
 		player.getCommunicator().sendAddEffect(depot.getWurmId(), (byte) 25, depot.getPosX(), depot.getPosY(), depot.getPosZ(), (byte) 0);
 	}
 	public static void sendDepotEffectsToPlayer(Player player){
@@ -150,7 +143,7 @@ public class SupplyDepots {
 					MiscChanges.sendGlobalFreedomChat(host, "Greetings! I'll be your host, informing you of the next depot to appear over here on the Arena!", 255, 128, 0);
 				}
 			}
-			if(System.currentTimeMillis() > lastSpawnedDepot + depotRespawnTime){
+			if(System.currentTimeMillis() > lastSpawnedDepot + WyvernMods.depotRespawnTime){
 				logger.info("No Depots were found, and the timer has expired. Spawning a new one.");
 				boolean spawned = false;
 				int i = 0;
@@ -191,7 +184,7 @@ public class SupplyDepots {
 					logger.warning("Could not find a valid location within 20 tries for a supply depot.");
 				}
 			}else if(host != null){
-				long timeleft = (lastSpawnedDepot + depotRespawnTime) - System.currentTimeMillis();
+				long timeleft = (lastSpawnedDepot + WyvernMods.depotRespawnTime) - System.currentTimeMillis();
 				long minutesLeft = timeleft/TimeConstants.MINUTE_MILLIS;
 				if(minutesLeft > 0){
 					if(minutesLeft == 4){
@@ -209,13 +202,12 @@ public class SupplyDepots {
 	}
 	
 	public static long lastAttemptedDepotCapture = 0;
-	public static final long captureMessageInterval = TimeConstants.MINUTE_MILLIS*3L;
 	public static void broadcastCapture(Creature performer){
         MiscChanges.sendServerTabMessage("arena", performer.getName()+" has claimed an Arena depot!", 255, 128, 0);
         MiscChanges.sendGlobalFreedomChat(performer, performer.getName()+" has claimed an Arena depot!", 255, 128, 0);
     }
 	public static void maybeBroadcastOpen(Creature performer){
-		if(System.currentTimeMillis() > lastAttemptedDepotCapture + captureMessageInterval){
+		if(System.currentTimeMillis() > lastAttemptedDepotCapture + WyvernMods.captureMessageInterval){
 			MiscChanges.sendServerTabMessage("arena", performer.getName()+" is beginning to capture an Arena depot!", 255, 128, 0);
             MiscChanges.sendGlobalFreedomChat(performer, performer.getName()+" is beginning to capture an Arena depot!", 255, 128, 0);
 			lastAttemptedDepotCapture = System.currentTimeMillis();
@@ -285,13 +277,20 @@ public class SupplyDepots {
 	public static void preInit(){
 		try{
 			ClassPool classPool = HookManager.getInstance().getClassPool();
-			
-            // - Add light effects for the supply depots, since they are unique - //
+			Class<SupplyDepots> thisClass = SupplyDepots.class;
+			String replace;
+
 			CtClass ctPlayers = classPool.get("com.wurmonline.server.Players");
-            ctPlayers.getDeclaredMethod("sendAltarsToPlayer").insertBefore("mod.sin.wyvern.SupplyDepots.sendDepotEffectsToPlayer($1);");
+
+			if (WyvernMods.useSupplyDepotLights) {
+				Util.setReason("Add depot lights for players.");
+				replace = "mod.sin.wyvern.SupplyDepots.sendDepotEffectsToPlayer($1);";
+				Util.insertBeforeDeclared(thisClass, ctPlayers, "sendAltarsToPlayer", replace);
+				//ctPlayers.getDeclaredMethod("sendAltarsToPlayer").insertBefore("mod.sin.wyvern.SupplyDepots.sendDepotEffectsToPlayer($1);");
+			}
 			
-		}catch (CannotCompileException | NotFoundException e) {
-			throw new HookException(e);
+		}catch (NotFoundException e) {
+			e.printStackTrace();
         }
 	}
 }
