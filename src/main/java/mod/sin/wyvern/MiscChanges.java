@@ -28,6 +28,7 @@ import javassist.expr.ExprEditor;
 import javassist.expr.FieldAccess;
 import javassist.expr.MethodCall;
 import mod.sin.lib.Util;
+import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 import org.gotti.wurmunlimited.modloader.classhooks.HookException;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
 import org.gotti.wurmunlimited.modsupport.ModSupportDb;
@@ -324,6 +325,18 @@ public class MiscChanges {
 
         // Is send to buff bar and not something we're stopping, so allow it.
         return true;
+    }
+
+    public static void changeExistingTitles(){
+        for (Titles.Title title : Titles.Title.values()) {
+            if (Objects.equals("Pumpkin King", title.getFemaleName())){
+                try {
+                    ReflectionUtil.setPrivateField(title,  ReflectionUtil.getField(title.getClass(), "femaleName"), "Pumpkin Queen");
+                } catch (IllegalArgumentException | IllegalAccessException | ClassCastException | NoSuchFieldException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
 	public static void preInit(){

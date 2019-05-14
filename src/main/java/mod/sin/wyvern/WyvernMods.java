@@ -3,7 +3,8 @@ package mod.sin.wyvern;
 import com.wurmonline.server.Message;
 import com.wurmonline.server.TimeConstants;
 import com.wurmonline.server.creatures.Creature;
-import com.wurmonline.server.items.*;
+import com.wurmonline.server.items.Item;
+import com.wurmonline.server.items.NoSuchTemplateException;
 import com.wurmonline.server.players.Player;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
@@ -18,8 +19,6 @@ import mod.sin.creatures.titans.*;
 import mod.sin.lib.Prop;
 import mod.sin.lib.SkillAssist;
 import mod.sin.lib.Util;
-import mod.sin.wyvern.bestiary.MethodsBestiary;
-import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 import org.gotti.wurmunlimited.modloader.classhooks.HookException;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
 import org.gotti.wurmunlimited.modloader.interfaces.*;
@@ -95,6 +94,8 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 	public static boolean disableSmeltingPots = true;
 	public static boolean hideSorceryBuffBar = true;
 	public static boolean sqlAchievementFix = true;
+	public static boolean changePumpkinKingTitle = true;
+	public static boolean changeDeityPassives = true;
 
 	// Arena Module Configuration
 	public static boolean enableArenaModule = true;
@@ -265,6 +266,99 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 	public static long captureMessageInterval = TimeConstants.MINUTE_MILLIS*3L;
 	public static long depotRespawnTime = TimeConstants.HOUR_MILLIS*11L;
 
+	// Bestiary Module Configuration
+	public static boolean enableBestiaryModule = true;
+	public static boolean fixSacrificingStrongCreatures = true;
+	public static boolean disableAfkTraining = true;
+	public static boolean fixChargersWalkingThroughWalls = true;
+	public static boolean conditionWildCreatures = true;
+	public static boolean allowGhostArchery = true;
+	public static boolean disableArcheryOnStrongCreatures = true;
+	public static boolean genesisEnchantedGrassNewborns = true;
+	public static boolean useCustomCorpseSizes = true;
+	public static boolean allowCustomCreatureBreedNames = true;
+	public static boolean allowGhostBreeding = true;
+	public static boolean allowGhostCorpses = true;
+	public static boolean useCustomCreatureSizes = true;
+	public static boolean useCustomCreatureSFX = true;
+	public static boolean preventLegendaryHitching = true;
+	public static boolean modifyNewCreatures = true;
+	public static boolean logCreatureSpawns = true;
+	public static boolean allowEpicCreatureNaturalSpawns = true;
+	public static boolean enableCustomCreatures = true;
+	public static boolean enableWyverns = true;
+	public static boolean enableFlavorMobs = true;
+	public static boolean enableEventMobs = true;
+	public static boolean enableRareSpawns = true;
+	public static boolean enableCustomLegendaries = true;
+	public static boolean enableTitans = true;
+
+	// Bounty Module Configuration
+	public static boolean enableBountyModule = true;
+	public static boolean usePlayerBounty = true;
+	public static boolean useLootTable = true;
+
+	// Item Module Configuration
+	public static boolean enableItemModule = true;
+	public static boolean combineLeather = true;
+	public static boolean combineLogs = true;
+	public static boolean reduceLogVolume = true;
+	public static boolean reduceKindlingVolume = true;
+	public static boolean droppableSleepPowder = true;
+	public static boolean setSilverMirrorPrice = true;
+	public static boolean setGoldMirrorPrice = true;
+	public static boolean setCreatureCratePrice = true;
+	public static boolean setResurrectionStonePrice = true;
+	public static boolean setShakerOrbPrice = true;
+	public static boolean loadableMailbox = true;
+	public static boolean loadableBellTower = true;
+	public static boolean loadableTrashBin = true;
+	public static boolean loadableAltars = true;
+	public static boolean oneHandedLongSpear = true;
+	public static boolean reduceDirtDifficulty = true;
+	public static boolean reduceSandDifficulty = true;
+	public static boolean reduceSandstoneDifficulty = true;
+	public static boolean decorationStoneKeystone = true;
+	public static boolean decorationMarbleKeystone = true;
+	public static boolean decorationSkull = true;
+	public static boolean useCustomCacheFragments = true;
+	public static boolean adjustStatueFragmentCount = true;
+	public static boolean removeLockpickSkillRequirement = true;
+	public static boolean createCustomItemTemplates = true;
+	public static boolean enableCustomItemCreation = true;
+	public static boolean craftHuntingArrowPacks = true;
+	public static boolean craftWarArrowPacks = true;
+	public static boolean craftBattleYoyo = true;
+	public static boolean craftClub = true;
+	public static boolean craftDepthDrill = true;
+	public static boolean craftEternalReservoir = true;
+	public static boolean craftEviscerator = true;
+	public static boolean craftKnuckles = true;
+	public static boolean craftMassStorageUnit = true;
+	public static boolean craftStatuetteDeities = true;
+	public static boolean craftWarhammer = true;
+
+	// Soulstealing Module Configuration
+	public static boolean enableSoulstealingModule = true;
+	public static long pollEternalReservoirTime = TimeConstants.MINUTE_MILLIS*10;
+
+	// Action Module Configuration
+	public static boolean enableActionModule = true;
+	public static boolean actionUnequipAll = true;
+	public static boolean actionReceiveAllMail = true;
+	public static boolean actionSplitSorcery = true;
+	public static boolean actionLeaderboard = true;
+	public static boolean actionSorceryFragmentCombine = true;
+	public static boolean actionArenaTeleports = true;
+	public static boolean actionAddMissionDev = true;
+	public static boolean actionRemoveMissionDev = true;
+	public static boolean actionCreatureReportDev = true;
+	public static boolean actionSmoothTerrainDev = true;
+
+	// Erosion Module Configuration
+    public static boolean enableErosionModule = true;
+    public static long pollTerrainSmoothTime = TimeConstants.SECOND_MILLIS*5;
+
 	// Treasure Chest Loot Module Configuration
 	public static boolean enableTreasureChestLootModule = true;
 
@@ -385,6 +479,8 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 		disableSmeltingPots = Prop.getBooleanProperty("disableSmeltingPots", disableSmeltingPots);
 		hideSorceryBuffBar = Prop.getBooleanProperty("hideSorceryBuffBar", hideSorceryBuffBar);
 		sqlAchievementFix = Prop.getBooleanProperty("sqlAchievementFix", sqlAchievementFix);
+		changePumpkinKingTitle = Prop.getBooleanProperty("changePumpkinKingTitle", changePumpkinKingTitle);
+        changeDeityPassives = Prop.getBooleanProperty("changeDeityPassives", changeDeityPassives);
 
 		// Arena Module
 		enableArenaModule = Prop.getBooleanProperty("enableArenaModule", enableArenaModule);
@@ -549,6 +645,98 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 		pollDepotTime = Prop.getLongProperty("pollDepotTime", pollDepotTime);
 		captureMessageInterval = Prop.getLongProperty("captureMessageInterval", captureMessageInterval);
 		depotRespawnTime = Prop.getLongProperty("depotRespawnTime", depotRespawnTime);
+
+		// Bestiary Module
+		enableBestiaryModule = Prop.getBooleanProperty("enableBestiaryModule", enableBestiaryModule);
+		fixSacrificingStrongCreatures = Prop.getBooleanProperty("fixSacrificingStrongCreatures", fixSacrificingStrongCreatures);
+		disableAfkTraining = Prop.getBooleanProperty("disableAfkTraining", disableAfkTraining);
+		fixChargersWalkingThroughWalls = Prop.getBooleanProperty("fixChargersWalkingThroughWalls", fixChargersWalkingThroughWalls);
+		conditionWildCreatures = Prop.getBooleanProperty("conditionWildCreatures", conditionWildCreatures);
+		allowGhostArchery = Prop.getBooleanProperty("allowGhostArchery", allowGhostArchery);
+		disableArcheryOnStrongCreatures = Prop.getBooleanProperty("disableArcheryOnStrongCreatures", disableArcheryOnStrongCreatures);
+		genesisEnchantedGrassNewborns = Prop.getBooleanProperty("genesisEnchantedGrassNewborns", genesisEnchantedGrassNewborns);
+		useCustomCorpseSizes = Prop.getBooleanProperty("useCustomCorpseSizes", useCustomCorpseSizes);
+		allowCustomCreatureBreedNames = Prop.getBooleanProperty("allowCustomCreatureBreedNames", allowCustomCreatureBreedNames);
+		allowGhostBreeding = Prop.getBooleanProperty("allowGhostBreeding", allowGhostBreeding);
+		useCustomCreatureSizes = Prop.getBooleanProperty("useCustomCreatureSizes", useCustomCreatureSizes);
+		useCustomCreatureSFX = Prop.getBooleanProperty("useCustomCreatureSFX", useCustomCreatureSFX);
+		preventLegendaryHitching = Prop.getBooleanProperty("preventLegendaryHitching", preventLegendaryHitching);
+		modifyNewCreatures = Prop.getBooleanProperty("modifyNewCreatures", modifyNewCreatures);
+		logCreatureSpawns = Prop.getBooleanProperty("logCreatureSpawns", logCreatureSpawns);
+		allowEpicCreatureNaturalSpawns = Prop.getBooleanProperty("allowEpicCreatureNaturalSpawns", allowEpicCreatureNaturalSpawns);
+		enableCustomCreatures = Prop.getBooleanProperty("enableCustomCreatures", enableCustomCreatures);
+		enableWyverns = Prop.getBooleanProperty("enableWyverns", enableWyverns);
+		enableFlavorMobs = Prop.getBooleanProperty("enableFlavorMobs", enableFlavorMobs);
+		enableEventMobs = Prop.getBooleanProperty("enableEventMobs", enableEventMobs);
+		enableRareSpawns = Prop.getBooleanProperty("enableRareSpawns", enableRareSpawns);
+		enableCustomLegendaries = Prop.getBooleanProperty("enableCustomLegendaries", enableCustomLegendaries);
+		enableTitans = Prop.getBooleanProperty("enableTitans", enableTitans);
+
+		// Bounty Module
+		enableBountyModule = Prop.getBooleanProperty("enableBountyModule", enableBountyModule);
+		usePlayerBounty = Prop.getBooleanProperty("usePlayerBounty", usePlayerBounty);
+		useLootTable = Prop.getBooleanProperty("useLootTable", useLootTable);
+
+		// Item Module
+		enableItemModule = Prop.getBooleanProperty("enableItemModule", enableItemModule);
+		combineLeather = Prop.getBooleanProperty("combineLeather", combineLeather);
+		combineLogs = Prop.getBooleanProperty("combineLogs", combineLogs);
+		reduceLogVolume = Prop.getBooleanProperty("reduceLogVolume", reduceLogVolume);
+		reduceKindlingVolume = Prop.getBooleanProperty("reduceKindlingVolume", reduceKindlingVolume);
+		droppableSleepPowder = Prop.getBooleanProperty("droppableSleepPowder", droppableSleepPowder);
+		setSilverMirrorPrice = Prop.getBooleanProperty("setSilverMirrorPrice", setSilverMirrorPrice);
+		setGoldMirrorPrice = Prop.getBooleanProperty("setGoldMirrorPrice", setGoldMirrorPrice);
+		setCreatureCratePrice = Prop.getBooleanProperty("setCreatureCratePrice", setCreatureCratePrice);
+		setResurrectionStonePrice = Prop.getBooleanProperty("setResurrectionStonePrice", setResurrectionStonePrice);
+		setShakerOrbPrice = Prop.getBooleanProperty("setShakerOrbPrice", setShakerOrbPrice);
+		loadableMailbox = Prop.getBooleanProperty("loadableMailbox", loadableMailbox);
+		loadableBellTower = Prop.getBooleanProperty("loadableBellTower", loadableBellTower);
+		loadableTrashBin = Prop.getBooleanProperty("loadableTrashBin", loadableTrashBin);
+		loadableAltars = Prop.getBooleanProperty("loadableAltars", loadableAltars);
+		oneHandedLongSpear = Prop.getBooleanProperty("oneHandedLongSpear", oneHandedLongSpear);
+		reduceDirtDifficulty = Prop.getBooleanProperty("reduceDirtDifficulty", reduceDirtDifficulty);
+		reduceSandDifficulty = Prop.getBooleanProperty("reduceSandDifficulty", reduceSandDifficulty);
+		reduceSandstoneDifficulty = Prop.getBooleanProperty("reduceSandstoneDifficulty", reduceSandstoneDifficulty);
+		decorationStoneKeystone = Prop.getBooleanProperty("decorationStoneKeystone", decorationStoneKeystone);
+		decorationMarbleKeystone = Prop.getBooleanProperty("decorationMarbleKeystone", decorationMarbleKeystone);
+		decorationSkull = Prop.getBooleanProperty("decorationSkull", decorationSkull);
+		useCustomCacheFragments = Prop.getBooleanProperty("useCustomCacheFragments", useCustomCacheFragments);
+		adjustStatueFragmentCount = Prop.getBooleanProperty("adjustStatueFragmentCount", adjustStatueFragmentCount);
+		removeLockpickSkillRequirement = Prop.getBooleanProperty("removeLockpickSkillRequirement", removeLockpickSkillRequirement);
+		createCustomItemTemplates = Prop.getBooleanProperty("createCustomItemTemplates", createCustomItemTemplates);
+		enableCustomItemCreation = Prop.getBooleanProperty("enableCustomItemCreation", enableCustomItemCreation);
+		craftHuntingArrowPacks = Prop.getBooleanProperty("craftHuntingArrowPacks", craftHuntingArrowPacks);
+		craftWarArrowPacks = Prop.getBooleanProperty("craftWarArrowPacks", craftWarArrowPacks);
+		craftBattleYoyo = Prop.getBooleanProperty("craftBattleYoyo", craftBattleYoyo);
+		craftClub = Prop.getBooleanProperty("craftClub", craftClub);
+		craftDepthDrill = Prop.getBooleanProperty("craftDepthDrill", craftDepthDrill);
+		craftEternalReservoir = Prop.getBooleanProperty("craftEternalReservoir", craftEternalReservoir);
+		craftEviscerator = Prop.getBooleanProperty("craftEviscerator", craftEviscerator);
+		craftKnuckles = Prop.getBooleanProperty("craftKnuckles", craftKnuckles);
+		craftMassStorageUnit = Prop.getBooleanProperty("craftMassStorageUnit", craftMassStorageUnit);
+		craftStatuetteDeities = Prop.getBooleanProperty("craftStatuetteDeities", craftStatuetteDeities);
+		craftWarhammer = Prop.getBooleanProperty("craftWarhammer", craftWarhammer);
+
+		// Soulstealing Module
+		enableSoulstealingModule = Prop.getBooleanProperty("enableSoulstealingModule", enableSoulstealingModule);
+		pollEternalReservoirTime = Prop.getLongProperty("pollEternalReservoirTime", pollEternalReservoirTime);
+
+		// Action Module
+		enableActionModule = Prop.getBooleanProperty("enableActionModule", enableActionModule);
+		actionUnequipAll = Prop.getBooleanProperty("actionUnequipAll", actionUnequipAll);
+		actionReceiveAllMail = Prop.getBooleanProperty("actionReceiveAllMail", actionReceiveAllMail);
+        actionSplitSorcery = Prop.getBooleanProperty("actionSplitSorcery", actionSplitSorcery);
+        actionLeaderboard = Prop.getBooleanProperty("actionLeaderboard", actionLeaderboard);
+        actionSorceryFragmentCombine = Prop.getBooleanProperty("actionSorceryFragmentCombine", actionSorceryFragmentCombine);
+        actionArenaTeleports = Prop.getBooleanProperty("actionArenaTeleports", actionArenaTeleports);
+        actionAddMissionDev = Prop.getBooleanProperty("actionAddMissionDev", actionAddMissionDev);
+        actionRemoveMissionDev = Prop.getBooleanProperty("actionRemoveMissionDev", actionRemoveMissionDev);
+        actionCreatureReportDev = Prop.getBooleanProperty("actionCreatureReportDev", actionCreatureReportDev);
+        actionSmoothTerrainDev = Prop.getBooleanProperty("actionSmoothTerrainDev", actionSmoothTerrainDev);
+
+        // Erosion Module
+        enableErosionModule = Prop.getBooleanProperty("enableErosionModule", enableErosionModule);
+        pollTerrainSmoothTime = Prop.getLongProperty("pollTerrainSmoothTime", pollTerrainSmoothTime);
 
     	// Treasure Chest Loot Module
 		enableTreasureChestLootModule = Prop.getBooleanProperty("enableTreasureChestLootModule", enableTreasureChestLootModule);
@@ -716,6 +904,8 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 			logger.info("Disable Smelting Pots: " + disableSmeltingPots);
 			logger.info("Hide Sorcery Buff Bar: " + hideSorceryBuffBar);
 			logger.info("SQL Achievement Fix: " + sqlAchievementFix);
+			logger.info("Change Pumpkin King Title: "+changePumpkinKingTitle);
+			logger.info("Change Deity Passives: "+changeDeityPassives);
 		}
 
 		logger.info("Arena Module: "+enableArenaModule);
@@ -929,6 +1119,109 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 			logger.info("Depot Respawn Timer: "+depotRespawnTime);
 		}
 
+		logger.info("Bestiary Module: "+enableBestiaryModule);
+		if (enableBestiaryModule){
+			logger.info("Fix Sacrificing Strong Creatures: "+fixSacrificingStrongCreatures);
+			logger.info("Disable AFK Training: "+disableAfkTraining);
+			logger.info("Fix Chargers Walking Through Walls: "+fixChargersWalkingThroughWalls);
+			logger.info("Condition Wild Creatures: "+conditionWildCreatures);
+			logger.info("Allow Ghost Archery: "+allowGhostArchery);
+			logger.info("Disable Archery On Strong Creatures: "+disableArcheryOnStrongCreatures);
+			logger.info("Genesis Enchanted Grass Newborns: "+genesisEnchantedGrassNewborns);
+			logger.info("Use Custom Corpse Sizes: "+useCustomCorpseSizes);
+			logger.info("Allow Custom Creature Breed Names: "+allowCustomCreatureBreedNames);
+			logger.info("Allow Ghost Breeding: "+allowGhostBreeding);
+			logger.info("Allow Ghost Corpses: "+allowGhostCorpses);
+			logger.info("Use Custom Creature Sizes: "+useCustomCreatureSizes);
+			logger.info("Use Custom Creature SFX: "+useCustomCreatureSFX);
+			logger.info("Prevent Legendary Hitching: "+preventLegendaryHitching);
+			logger.info("Modify New Creatures: "+modifyNewCreatures);
+			logger.info("Log Creature Spawns: "+logCreatureSpawns);
+			logger.info("Enable Epic Creature Natural Spawns: "+allowEpicCreatureNaturalSpawns);
+			logger.info("Custom Creatures: "+enableCustomCreatures);
+			if (enableCustomCreatures){
+				logger.info("Enable Wyverns: "+enableWyverns);
+				logger.info("Enable Flavor Mobs: "+enableFlavorMobs);
+				logger.info("Enable Event Mobs: "+enableEventMobs);
+				logger.info("Enable Rare Spawn Mobs: "+enableRareSpawns);
+				logger.info("Enable Custom Legendaries: "+enableCustomLegendaries);
+				logger.info("Enable Titans: "+enableTitans);
+			}
+		}
+
+		logger.info("Bounty Module: "+enableBountyModule);
+		if (enableBountyModule){
+			logger.info("Use Player Bounty: "+usePlayerBounty);
+			logger.info("Use Loot Table: "+useLootTable);
+		}
+
+		logger.info("Item Module: "+enableItemModule);
+		if (enableItemModule){
+			logger.info("Combine Leather: "+combineLeather);
+			logger.info("Combine Logs: "+combineLogs);
+			logger.info("Reduce Log Volume: "+reduceLogVolume);
+			logger.info("Reduce Kindling Volume: "+reduceKindlingVolume);
+			logger.info("Droppable Sleep Powder: "+droppableSleepPowder);
+			logger.info("Set Silver Mirror Price: "+setSilverMirrorPrice);
+			logger.info("Set Gold Mirror Price: "+setGoldMirrorPrice);
+			logger.info("Set Creature Crate Price: "+setCreatureCratePrice);
+			logger.info("Set Resurrection Stone Price: "+setResurrectionStonePrice);
+			logger.info("Set Shaker Orb Price: "+setShakerOrbPrice);
+			logger.info("Loadable Mailbox: "+loadableMailbox);
+			logger.info("Loadable Bell Tower: "+loadableBellTower);
+			logger.info("Loadable Trash Bin: "+loadableTrashBin);
+			logger.info("Loadable Altars: "+loadableAltars);
+			logger.info("One Handed Long Spear: "+oneHandedLongSpear);
+			logger.info("Reduce Dirt Difficulty: "+reduceDirtDifficulty);
+			logger.info("Reduce Sand Difficulty: "+reduceSandDifficulty);
+			logger.info("Reduce Sandstone Difficulty: "+reduceSandstoneDifficulty);
+			logger.info("Decoration Stone Keystone: "+decorationStoneKeystone);
+			logger.info("Decoration Marble Keystone: "+decorationMarbleKeystone);
+			logger.info("Decoration Skull: "+decorationSkull);
+			logger.info("Use Custom Cache Fragments: "+useCustomCacheFragments);
+			logger.info("Adjust Statue Fragment Count: "+adjustStatueFragmentCount);
+			logger.info("Remove Lockpick Skill Requirement: "+removeLockpickSkillRequirement);
+			logger.info("Create Custom Item Templates: "+createCustomItemTemplates);
+			logger.info("Custom Item Creation: "+enableCustomItemCreation);
+			if (enableCustomItemCreation){
+				logger.info("Craft Hunting Arrow Packs: "+craftHuntingArrowPacks);
+				logger.info("Craft War Arrow Packs: "+craftWarArrowPacks);
+				logger.info("Craft Battle Yoyo: "+craftBattleYoyo);
+				logger.info("Craft Club: "+craftClub);
+				logger.info("Craft Depth Drill: "+craftDepthDrill);
+				logger.info("Craft Eternal Reservoir: "+craftEternalReservoir);
+				logger.info("Craft Eviscerator: "+craftEviscerator);
+				logger.info("Craft Knuckles: "+craftKnuckles);
+				logger.info("Craft Mass Storage Unit: "+craftMassStorageUnit);
+				logger.info("Craft Statuette Deities: "+craftStatuetteDeities);
+				logger.info("Craft Warhammer: "+craftWarhammer);
+			}
+		}
+
+		logger.info("Soulstealing Module: "+enableSoulstealingModule);
+		if (enableSoulstealingModule){
+			logger.info("Poll Eternal Reservoir Timer: "+pollEternalReservoirTime);
+		}
+
+		logger.info("Action Module: "+enableActionModule);
+		if (enableActionModule){
+			logger.info("Unequip All Action: "+actionUnequipAll);
+			logger.info("Receive All Mail Action: "+actionReceiveAllMail);
+			logger.info("Split Sorcery Action: "+actionSplitSorcery);
+			logger.info("Leaderboard Action: "+actionLeaderboard);
+			logger.info("Sorcery Fragment Combine Action: "+actionSorceryFragmentCombine);
+			logger.info("Arena Teleport Actions: "+actionArenaTeleports);
+			logger.info("Add Mission Dev Action: "+actionAddMissionDev);
+			logger.info("Remove Mission Dev Action: "+actionRemoveMissionDev);
+			logger.info("Creature Report Dev Action: "+actionCreatureReportDev);
+			logger.info("Smooth Terrain Dev Action: "+actionSmoothTerrainDev);
+		}
+
+		logger.info("Erosion Module: "+enableErosionModule);
+		if (enableErosionModule){
+		    logger.info("Poll Terrain Smooth Timer: "+pollTerrainSmoothTime);
+        }
+
 		logger.info("Treasure Chest Loot Module: "+enableTreasureChestLootModule);
     }
 
@@ -1024,12 +1317,15 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 				SupplyDepots.preInit();
 			}
 
+			// Bestiary Module Pre-Init
+			if (enableBestiaryModule) {
+				Bestiary.preInit();
+			}
+
 			// Treasure Chest Loot Module Pre-Init
 			if (enableTreasureChestLootModule) {
 				TreasureChests.preInit();
 			}
-
-            MethodsBestiary.preInit();
 
             // Only clears responses, doesn't have any effect. Harmless to run even if key fragments are not used.
             KeyEvent.preInit();
@@ -1068,92 +1364,113 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 	@Override
 	public void init() {
 		logger.info("Initializing.");
+		ModCreatures.init();
+		ModVehicleBehaviours.init();
+
 		if (WyvernMods.enableCustomTitlesModule) {
 			PlayerTitles.init();
 		}
-		ModCreatures.init();
-		ModVehicleBehaviours.init();
+
+		if (WyvernMods.enableMiscChangesModule) {
+			MiscChanges.changeExistingTitles();
+		}
+
+		if (WyvernMods.enableBountyModule) {
+			Bounty.init();
+		}
 		
 		// Vanilla:
-		logger.info("Registering Vanilla creature changes.");
-		if (enableMountedModule && allowBisonMounts) {
+		if (WyvernMods.enableMountedModule && WyvernMods.allowBisonMounts) {
 			logger.info("Allowing Bison to be mounted.");
 			ModCreatures.addCreature(new Bison());
 		}
 		
 		// Epic:
-		logger.info("Registering Epic creatures.");
-		ModCreatures.addCreature(new LavaFiend());
-		ModCreatures.addCreature(new SolDemon());
-		ModCreatures.addCreature(new Worg());
-		
-		// Wyverns:
-        logger.info("Registering Wyverns.");
-        ModCreatures.addCreature(new WyvernBlack());
-        ModCreatures.addCreature(new WyvernGreen());
-        ModCreatures.addCreature(new WyvernRed());
-        ModCreatures.addCreature(new WyvernWhite());
-        ModCreatures.addCreature(new WyvernBlue());
-		
-		// Flavor Mobs:
-        logger.info("Registering Flavor creatures.");
-		ModCreatures.addCreature(new Avenger());
-        ModCreatures.addCreature(new FireCrab());
-		ModCreatures.addCreature(new ForestSpider());
-		ModCreatures.addCreature(new Giant());
-        ModCreatures.addCreature(new Charger());
-        ModCreatures.addCreature(new HornedPony());
-		ModCreatures.addCreature(new LargeBoar());
-		ModCreatures.addCreature(new SpiritTroll());
+		if (WyvernMods.enableBestiaryModule && WyvernMods.allowEpicCreatureNaturalSpawns) {
+			logger.info("Allowing epic creatures to spawn naturally.");
+			ModCreatures.addCreature(new LavaFiend());
+			ModCreatures.addCreature(new SolDemon());
+			ModCreatures.addCreature(new Worg());
+		}
 
-		// Event Mobs:
-        logger.info("Registering Event creatures.");
-        ModCreatures.addCreature(new IceCat());
-        ModCreatures.addCreature(new FireGiant());
-        ModCreatures.addCreature(new GuardianMagranon());
-		
-		// Bosses:
-		logger.info("Registering Custom Boss creatures.");
-		ModCreatures.addCreature(new Reaper());
-		ModCreatures.addCreature(new SpectralDrake());
-		// Uniques:
-		ModCreatures.addCreature(new Facebreyker());
-		
-		// Titans:
-		ModCreatures.addCreature(new Ifrit());
-		ModCreatures.addCreature(new Lilith());
-		// Titan Spawns:
-		ModCreatures.addCreature(new IfritFiend());
-		ModCreatures.addCreature(new IfritSpider());
-		ModCreatures.addCreature(new LilithWraith());
-		ModCreatures.addCreature(new LilithZombie());
-		
-		// NPC's
-		logger.info("Registering Custom NPC creatures.");
-		//ModCreatures.addCreature(new RobZombie());
-		//ModCreatures.addCreature(new MacroSlayer());
-        ModCreatures.addCreature(new Terror());
-		
-		Bounty.init();
-		
-		Mastercraft.changeExistingTitles();
+		if (WyvernMods.enableBestiaryModule && WyvernMods.enableCustomCreatures) {
+			// Wyverns:
+			if (WyvernMods.enableWyverns) {
+				logger.info("Registering Wyverns.");
+				ModCreatures.addCreature(new WyvernBlack());
+				ModCreatures.addCreature(new WyvernGreen());
+				ModCreatures.addCreature(new WyvernRed());
+				ModCreatures.addCreature(new WyvernWhite());
+				ModCreatures.addCreature(new WyvernBlue());
+			}
+
+			// Flavor Mobs:
+			if (WyvernMods.enableFlavorMobs) {
+				logger.info("Registering Flavor creatures.");
+				ModCreatures.addCreature(new Avenger());
+				ModCreatures.addCreature(new FireCrab());
+				ModCreatures.addCreature(new ForestSpider());
+				ModCreatures.addCreature(new Giant());
+				ModCreatures.addCreature(new Charger());
+				ModCreatures.addCreature(new HornedPony());
+				ModCreatures.addCreature(new LargeBoar());
+				ModCreatures.addCreature(new SpiritTroll());
+			}
+
+			// Event Mobs:
+			if (WyvernMods.enableEventMobs) {
+				logger.info("Registering Event creatures.");
+				ModCreatures.addCreature(new IceCat());
+				ModCreatures.addCreature(new FireGiant());
+				ModCreatures.addCreature(new GuardianMagranon());
+				ModCreatures.addCreature(new Terror());
+			}
+
+			// Rare Spawns:
+			if (WyvernMods.enableRareSpawns) {
+				logger.info("Registering Rare Spawn creatures.");
+				ModCreatures.addCreature(new Reaper());
+				ModCreatures.addCreature(new SpectralDrake());
+			}
+
+			// Legendaries:
+			if (WyvernMods.enableCustomLegendaries) {
+				logger.info("Registering Legendary creatures.");
+				ModCreatures.addCreature(new Facebreyker());
+			}
+
+			// Titans:
+			if (WyvernMods.enableTitans) {
+				logger.info("Registering Titans.");
+				ModCreatures.addCreature(new Ifrit());
+				ModCreatures.addCreature(new Lilith());
+				// Titan Spawns:
+				logger.info("Register Titan Spawns.");
+				ModCreatures.addCreature(new IfritFiend());
+				ModCreatures.addCreature(new IfritSpider());
+				ModCreatures.addCreature(new LilithWraith());
+				ModCreatures.addCreature(new LilithZombie());
+			}
+		}
 	}
 
 	@Override
 	public void onItemTemplatesCreated() {
-		logger.info("Creating Item Mod items.");
-		ItemMod.createItems();
-		logger.info("Creating Cache items.");
-		Caches.createItems();
-		logger.info("Initiating Title changes.");
-		//PlayerTitles.onItemTemplatesCreated();
-		try {
-			logger.info("Editing existing item templates.");
-			ItemMod.modifyItems();
-			logger.info("Registering permissions hook for custom items.");
-			ItemMod.registerPermissionsHook();
-		} catch (NoSuchTemplateException | IllegalArgumentException | IllegalAccessException | ClassCastException | NoSuchFieldException e) {
-			e.printStackTrace();
+		if (WyvernMods.enableItemModule) {
+			if (WyvernMods.createCustomItemTemplates) {
+				logger.info("Creating Item Mod item templates.");
+				ItemMod.createItems();
+				logger.info("Creating Cache item templates.");
+				Caches.createItems();
+			}
+			try {
+				logger.info("Editing existing item templates.");
+				ItemMod.modifyItems();
+				logger.info("Registering permissions hook for custom items.");
+				ItemMod.registerPermissionsHook();
+			} catch (NoSuchTemplateException | IllegalArgumentException | IllegalAccessException | ClassCastException | NoSuchFieldException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -1170,52 +1487,78 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 	@Override
 	public void onServerStarted() {
 		try {
-			logger.info("Registering Item Mod creation entries.");
-			ItemMod.initCreationEntries();
-			logger.info("Registering Item Mod actions.");
-			ItemMod.registerActions();
-			logger.info("Registering Cache actions.");
-			Caches.registerActions();
-			logger.info("Registering Soulstealer actions.");
-			Soulstealing.registerActions();
-			logger.info("Registering Custom actions.");
-			ModActions.registerAction(new UnequipAllAction());
-			ModActions.registerAction(new ReceiveMailAction());
-			ModActions.registerAction(new LeaderboardAction());
-			ModActions.registerAction(new AddSubGroupAction());
-			ModActions.registerAction(new SorcerySplitAction());
-			ModActions.registerAction(new LeaderboardSkillAction());
-			logger.info("Registering Arena actions.");
-			ModActions.registerAction(new SorceryCombineAction());
-			//ModActions.registerAction(new VillageTeleportAction()); // [3/28/18] Disabled - Highway Portals added instead.
-			ModActions.registerAction(new ArenaTeleportAction());
-			ModActions.registerAction(new ArenaEscapeAction());
-			logger.info("Registering Dev actions.");
-			ModActions.registerAction(new MissionAddAction());
-			ModActions.registerAction(new MissionRemoveAction());
-			ModActions.registerAction(new CreatureReportAction());
-			ModActions.registerAction(new SmoothTerrainAction());
-			logger.info("Setting custom creature corpse models.");
-			MethodsBestiary.setTemplateVariables();
-			logger.info("Setting up Achievement templates.");
-			AchievementChanges.onServerStarted();
-
-			DeityChanges.onServerStarted();
-			
-			//espCounter = Servers.localServer.PVPSERVER; // Enables on PvP server by default.
-			//espCounter = false;
-
-			if (enableSkillModule) {
-				SkillChanges.onServerStarted();
+			if (WyvernMods.enableBestiaryModule) {
+				logger.info("Setting custom creature template variables.");
+				Bestiary.setTemplateVariables();
+			}
+			if (WyvernMods.enableItemModule) {
+				ItemMod.onServerStarted();
+				if (WyvernMods.enableCustomItemCreation) {
+					logger.info("Registering Item Mod creation entries.");
+					ItemMod.initCreationEntries();
+				}
+				if (WyvernMods.createCustomItemTemplates) {
+					logger.info("Registering Item Mod actions.");
+					ItemMod.registerActions();
+					logger.info("Registering Cache actions.");
+					Caches.registerActions();
+				}
+			}
+			if (WyvernMods.enableSoulstealingModule) {
+				logger.info("Registering Soulstealer actions.");
+				Soulstealing.registerActions();
+			}
+			if (WyvernMods.enableActionModule) {
+				logger.info("Registering Custom actions.");
+				if (WyvernMods.actionUnequipAll) {
+					ModActions.registerAction(new UnequipAllAction());
+				}
+				if (WyvernMods.actionReceiveAllMail) {
+					ModActions.registerAction(new ReceiveMailAction());
+				}
+				if (WyvernMods.actionSplitSorcery) {
+                    ModActions.registerAction(new SorcerySplitAction());
+                }
+                if (WyvernMods.actionLeaderboard) {
+                    ModActions.registerAction(new LeaderboardAction());
+                    ModActions.registerAction(new LeaderboardSkillAction());
+                }
+				//ModActions.registerAction(new AddSubGroupAction()); // [5/14/19] Disabled - Added to base game.
+				logger.info("Registering Arena actions.");
+				if (WyvernMods.actionSorceryFragmentCombine) {
+                    ModActions.registerAction(new SorceryCombineAction());
+                }
+				if (WyvernMods.actionArenaTeleports) {
+                    ModActions.registerAction(new ArenaTeleportAction());
+                    ModActions.registerAction(new ArenaEscapeAction());
+                }
+				logger.info("Registering Dev actions.");
+				if (WyvernMods.actionAddMissionDev) {
+                    ModActions.registerAction(new MissionAddAction());
+                }
+                if (WyvernMods.actionRemoveMissionDev) {
+                    ModActions.registerAction(new MissionRemoveAction());
+                }
+                if (WyvernMods.actionCreatureReportDev) {
+                    ModActions.registerAction(new CreatureReportAction());
+                }
+                if (WyvernMods.actionSmoothTerrainDev) {
+                    ModActions.registerAction(new SmoothTerrainAction());
+                }
 			}
 
-			CreationEntry lockpicks = CreationMatrix.getInstance().getCreationEntry(ItemList.lockpick);
-			try {
-				ReflectionUtil.setPrivateField(lockpicks, ReflectionUtil.getField(lockpicks.getClass(), "hasMinimumSkillRequirement"), false);
-				ReflectionUtil.setPrivateField(lockpicks, ReflectionUtil.getField(lockpicks.getClass(), "minimumSkill"), 0.0);
-			} catch (IllegalAccessException | NoSuchFieldException e) {
-				logger.info("Failed to set lockpick creation entry changes!");
-				e.printStackTrace();
+			// Sets up achievement changes specifically for the Leaderboard system.
+			if (WyvernMods.enableActionModule && WyvernMods.actionLeaderboard) {
+                logger.info("Setting up Leaderboard Achievement templates.");
+                AchievementChanges.onServerStarted();
+            }
+
+            if (WyvernMods.enableMiscChangesModule && WyvernMods.changeDeityPassives) {
+                DeityChanges.onServerStarted();
+            }
+
+			if (WyvernMods.enableSkillModule) {
+				SkillChanges.onServerStarted();
 			}
 
 		} catch (IllegalArgumentException | ClassCastException e) {
@@ -1230,7 +1573,6 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
 	public static long lastPolledDepots = 0;
 	public static long lastPolledRareSpawns = 0;
 	public static long lastPolledEternalReservoirs = 0;
-	public static final long pollEternalReservoirTime = TimeConstants.MINUTE_MILLIS*10;
 	public static long lastPolledMissionCreator = 0;
     /* Disabled for now, might need to be revisited.
     public static long lastPolledBloodlust = 0;
@@ -1240,31 +1582,30 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
     public static long lastPolledUniqueCollection = 0;
     public static final long pollUniqueCollectionTime = TimeConstants.MINUTE_MILLIS*5;
     public static long lastPolledTerrainSmooth = 0;
-    public static final long pollTerrainSmoothTime = TimeConstants.SECOND_MILLIS*5;
 	@Override
 	public void onServerPoll() {
 		if((lastSecondPolled + TimeConstants.SECOND_MILLIS) < System.currentTimeMillis()){
-			if(enableSupplyDepotModule && lastPolledDepots + pollDepotTime < System.currentTimeMillis()){
+			if(WyvernMods.enableSupplyDepotModule && lastPolledDepots + pollDepotTime < System.currentTimeMillis()){
 				SupplyDepots.pollDepotSpawn();
 				lastPolledDepots += pollDepotTime;
 			}
-			if(enableTitanModule && lastPolledTitanSpawn + pollTitanSpawnTime < System.currentTimeMillis()){
+			if(WyvernMods.enableTitanModule && lastPolledTitanSpawn + pollTitanSpawnTime < System.currentTimeMillis()){
 				Titans.pollTitanSpawn();
 				lastPolledTitanSpawn += pollTitanSpawnTime;
 			}
-			if(enableTitanModule && lastPolledTitans + pollTitanTime < System.currentTimeMillis()){
+			if(WyvernMods.enableTitanModule && lastPolledTitans + pollTitanTime < System.currentTimeMillis()){
 				Titans.pollTitans();
 				lastPolledTitans += pollTitanTime;
 			}
-			if(enableRareSpawnModule && lastPolledRareSpawns + pollRareSpawnTime < System.currentTimeMillis()){
+			if(WyvernMods.enableRareSpawnModule && lastPolledRareSpawns + pollRareSpawnTime < System.currentTimeMillis()){
 			    RareSpawns.pollRareSpawns();
 			    lastPolledRareSpawns += pollRareSpawnTime;
             }
-			if(lastPolledEternalReservoirs + pollEternalReservoirTime < System.currentTimeMillis()){
+			if(WyvernMods.enableSoulstealingModule && lastPolledEternalReservoirs + pollEternalReservoirTime < System.currentTimeMillis()){
 				Soulstealing.pollSoulForges();
 				lastPolledEternalReservoirs += pollEternalReservoirTime;
 			}
-			if(enableMissionModule && enableNewMissionCreator && lastPolledMissionCreator + pollMissionCreatorTime < System.currentTimeMillis()){
+			if(WyvernMods.enableMissionModule && enableNewMissionCreator && lastPolledMissionCreator + pollMissionCreatorTime < System.currentTimeMillis()){
 				MissionCreator.pollMissions();
 				lastPolledMissionCreator += pollMissionCreatorTime;
 			}
@@ -1273,7 +1614,7 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
                 Bloodlust.pollLusts();
                 lastPolledBloodlust += pollBloodlustTime;
             }*/
-            if(WyvernMods.useStaticLegendaryRegeneration && lastPolledUniqueRegeneration + pollUniqueRegenerationTime < System.currentTimeMillis()){
+            if(WyvernMods.enableCombatModule && WyvernMods.useStaticLegendaryRegeneration && lastPolledUniqueRegeneration + pollUniqueRegenerationTime < System.currentTimeMillis()){
                 CombatChanges.pollUniqueRegeneration();
                 lastPolledUniqueRegeneration += pollUniqueRegenerationTime;
             }
@@ -1281,7 +1622,7 @@ implements WurmServerMod, Configurable, PreInitable, Initable, ItemTemplatesCrea
                 CombatChanges.pollUniqueCollection();
                 lastPolledUniqueCollection += pollUniqueCollectionTime;
             }
-            if(lastPolledTerrainSmooth + pollTerrainSmoothTime < System.currentTimeMillis()){
+            if(WyvernMods.enableErosionModule && lastPolledTerrainSmooth + pollTerrainSmoothTime < System.currentTimeMillis()){
                 SmoothTerrainAction.onServerPoll();
                 lastPolledTerrainSmooth += pollTerrainSmoothTime;
             }

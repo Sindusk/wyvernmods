@@ -17,7 +17,6 @@ import javassist.CtClass;
 import javassist.NotFoundException;
 import javassist.bytecode.Descriptor;
 import mod.sin.lib.Util;
-import mod.sin.wyvern.bestiary.MethodsBestiary;
 import mod.sin.wyvern.bounty.LootBounty;
 import mod.sin.wyvern.bounty.PlayerBounty;
 
@@ -95,9 +94,12 @@ public class Bounty {
             
             CtClass ctCreature = classPool.get("com.wurmonline.server.creatures.Creature");
 
-            replace = PlayerBounty.class.getName()+".checkPlayerBounty(player, this);"
-            		+ "$_ = $proceed($$);";
-            Util.instrumentDeclared(thisClass, ctCreature, "modifyFightSkill", "checkCoinAward", replace);
+            if (WyvernMods.usePlayerBounty) {
+                Util.setReason("Hook for Player Bounty.");
+                replace = PlayerBounty.class.getName() + ".checkPlayerBounty(player, this);"
+                        + "$_ = $proceed($$);";
+                Util.instrumentDeclared(thisClass, ctCreature, "modifyFightSkill", "checkCoinAward", replace);
+            }
 
 			// Die method description
 			CtClass ctString = classPool.get("java.lang.String");
@@ -113,60 +115,29 @@ public class Bounty {
             Util.instrumentDescribed(thisClass, ctCreature, "die", desc1, "setRotation", replace);
 
             // doNew(int templateid, boolean createPossessions, float aPosX, float aPosY, float aRot, int layer, String name, byte gender, byte kingdom, byte ctype, boolean reborn, byte age)
-            CtClass[] params2 = {
-            		CtClass.intType,
-            		CtClass.booleanType,
-            		CtClass.floatType,
-            		CtClass.floatType,
-            		CtClass.floatType,
-            		CtClass.intType,
-            		classPool.get("java.lang.String"),
-            		CtClass.byteType,
-            		CtClass.byteType,
-            		CtClass.byteType,
-            		CtClass.booleanType,
-            		CtClass.byteType,
-            		CtClass.intType
-            };
-            String desc2 = Descriptor.ofMethod(ctCreature, params2);
 
-            Util.setReason("Log new creature spawns.");
-            replace = "logger.info(\"Creating new creature: \"+templateid+\" - \"+(aPosX/4)+\", \"+(aPosY/4)+\" [\"+com.wurmonline.server.creatures.CreatureTemplateFactory.getInstance().getTemplate(templateid).getName()+\"]\");";
-            Util.insertBeforeDescribed(thisClass, ctCreature, "doNew", desc2, replace);
-
-			Util.setReason("Modify newly created creatures.");
-            replace = "$_ = $proceed($$);"
-              		//+ "mod.sin.wyvern.bestiary.MethodsBestiary.modifyNewCreature($1);";
-            		+ MethodsBestiary.class.getName()+".modifyNewCreature($1);";
-            Util.instrumentDescribed(thisClass, ctCreature, "doNew", desc2, "sendToWorld", replace);
-          
-		    // -- Enable adjusting size for creatures -- //
-		    CtClass ctCreatureStatus = classPool.get("com.wurmonline.server.creatures.CreatureStatus");
-		    Util.setBodyDeclared(thisClass, ctCreatureStatus, "getSizeMod", "{return "+MethodsBestiary.class.getName()+".getAdjustedSizeMod(this);}");
-		    //ctCreatureStatus.getDeclaredMethod("getSizeMod").setBody("{return mod.sin.wyvern.bestiary.MethodsBestiary.getAdjustedSizeMod(this);}");
-          
             // -- Enable adjusting color for creatures -- //
             /*CtClass ctCreatureTemplate = classPool.get("com.wurmonline.server.creatures.CreatureTemplate");
-            replace = "if("+MethodsBestiary.class.getName()+".checkColorTemplate(this)){"
-          		+ "  return "+MethodsBestiary.class.getName()+".getCreatureColorRed(this);"
+            replace = "if("+Bestiary.class.getName()+".checkColorTemplate(this)){"
+          		+ "  return "+Bestiary.class.getName()+".getCreatureColorRed(this);"
           		+ "}";
             Util.insertBeforeDeclared(thisClass, ctCreatureTemplate, "getColorRed", replace);
-            replace = "if("+MethodsBestiary.class.getName()+".checkColorTemplate(this)){"
-          		+ "  return "+MethodsBestiary.class.getName()+".getCreatureColorGreen(this);"
+            replace = "if("+Bestiary.class.getName()+".checkColorTemplate(this)){"
+          		+ "  return "+Bestiary.class.getName()+".getCreatureColorGreen(this);"
           		+ "}";
             Util.insertBeforeDeclared(thisClass, ctCreatureTemplate, "getColorGreen", replace);
-            replace = "if("+MethodsBestiary.class.getName()+".checkColorTemplate(this)){"
-          		+ "  return "+MethodsBestiary.class.getName()+".getCreatureColorBlue(this);"
+            replace = "if("+Bestiary.class.getName()+".checkColorTemplate(this)){"
+          		+ "  return "+Bestiary.class.getName()+".getCreatureColorBlue(this);"
           		+ "}";
             Util.insertBeforeDeclared(thisClass, ctCreatureTemplate, "getColorBlue", replace);*/
-            /*ctCreatureTemplate.getDeclaredMethod("getColorRed").insertBefore("if(mod.sin.wyvern.bestiary.MethodsBestiary.checkColorTemplate(this)){"
-            		+ "  return mod.sin.wyvern.bestiary.MethodsBestiary.getCreatureColorRed(this);"
+            /*ctCreatureTemplate.getDeclaredMethod("getColorRed").insertBefore("if(mod.sin.wyvern.Bestiary.checkColorTemplate(this)){"
+            		+ "  return mod.sin.wyvern.Bestiary.getCreatureColorRed(this);"
             		+ "}");
-            ctCreatureTemplate.getDeclaredMethod("getColorGreen").insertBefore("if(mod.sin.wyvern.bestiary.MethodsBestiary.checkColorTemplate(this)){"
-            		+ "  return mod.sin.wyvern.bestiary.MethodsBestiary.getCreatureColorGreen(this);"
+            ctCreatureTemplate.getDeclaredMethod("getColorGreen").insertBefore("if(mod.sin.wyvern.Bestiary.checkColorTemplate(this)){"
+            		+ "  return mod.sin.wyvern.Bestiary.getCreatureColorGreen(this);"
             		+ "}");
-            ctCreatureTemplate.getDeclaredMethod("getColorBlue").insertBefore("if(mod.sin.wyvern.bestiary.MethodsBestiary.checkColorTemplate(this)){"
-          			+ "  return mod.sin.wyvern.bestiary.MethodsBestiary.getCreatureColorBlue(this);"
+            ctCreatureTemplate.getDeclaredMethod("getColorBlue").insertBefore("if(mod.sin.wyvern.Bestiary.checkColorTemplate(this)){"
+          			+ "  return mod.sin.wyvern.Bestiary.getCreatureColorBlue(this);"
           			+ "}");*/
           
             // -- When a creature takes damage, track the damage taken -- //

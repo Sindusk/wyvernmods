@@ -124,14 +124,14 @@ public class WyvernBlack implements ModCreature, CreatureTypes {
 			new EncounterBuilder(Tiles.Tile.TILE_SAND.id)
 					.addCreatures(templateId, 1)
 					.build(1);
-		//}else if(Servers.localServer.PVPSERVER){
-			/*new EncounterBuilder(Tiles.Tile.TILE_GRASS.id)
+		}/*else if(Servers.localServer.PVPSERVER){
+			new EncounterBuilder(Tiles.Tile.TILE_GRASS.id)
 				.addCreatures(templateId, 1)
 				.build(1);
 			
 			new EncounterBuilder(Tiles.Tile.TILE_TREE.id)
 				.addCreatures(templateId, 1)
-				.build(1);*/
-		}
+				.build(1);
+		}*/
 	}
 }

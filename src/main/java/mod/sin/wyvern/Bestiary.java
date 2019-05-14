@@ -1,11 +1,10 @@
-package mod.sin.wyvern.bestiary;
+package mod.sin.wyvern;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Logger;
 
 import com.wurmonline.mesh.Tiles;
 import com.wurmonline.server.Servers;
-import com.wurmonline.server.behaviours.AutoEquipMethods;
 import com.wurmonline.server.combat.Weapon;
 import com.wurmonline.server.creatures.*;
 import com.wurmonline.server.items.*;
@@ -21,8 +20,6 @@ import javassist.expr.ExprEditor;
 import javassist.expr.MethodCall;
 import mod.sin.items.SealedMap;
 import mod.sin.lib.Util;
-import mod.sin.wyvern.RareSpawns;
-import mod.sin.wyvern.Titans;
 import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 
 import com.wurmonline.server.FailedException;
@@ -38,12 +35,11 @@ import mod.sin.creatures.*;
 import mod.sin.creatures.titans.*;
 import mod.sin.weapons.Club;
 import mod.sin.weapons.titan.*;
-import mod.sin.wyvern.MiscChanges;
 import org.gotti.wurmunlimited.modloader.classhooks.HookException;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
 
-public class MethodsBestiary {
-	protected static Logger logger = Logger.getLogger(MethodsBestiary.class.getName());
+public class Bestiary {
+	protected static Logger logger = Logger.getLogger(Bestiary.class.getName());
 
 	protected static boolean isUsuallyHitched(int templateId){
 	    if(templateId == Charger.templateId){
@@ -701,55 +697,68 @@ public class MethodsBestiary {
 	public static void preInit(){
         try{
             ClassPool classPool = HookManager.getInstance().getClassPool();
-            final Class<MethodsBestiary> thisClass = MethodsBestiary.class;
+            final Class<Bestiary> thisClass = Bestiary.class;
             String replace;
 
-            Util.setReason("Disable sacrificing strong creatures.");
-            CtClass ctCreature = classPool.get("com.wurmonline.server.creatures.Creature");
-            CtClass ctItem = classPool.get("com.wurmonline.server.items.Item");
-            CtClass ctAction = classPool.get("com.wurmonline.server.behaviours.Action");
-            CtClass ctMethodsReligion = classPool.get("com.wurmonline.server.behaviours.MethodsReligion");
-            CtClass[] params1 = {
-                    ctCreature,
-                    ctCreature,
-                    ctItem,
-                    ctAction,
-                    CtClass.floatType
-            };
-            String desc1 = Descriptor.ofMethod(CtClass.booleanType, params1);
-            replace = "if("+MethodsBestiary.class.getName()+".isSacrificeImmune($2)){" +
-                    "  performer.getCommunicator().sendNormalServerMessage(\"This creature cannot be sacrificed.\");" +
-                    "  return true;" +
-                    "}";
-            Util.insertBeforeDescribed(thisClass, ctMethodsReligion, "sacrifice", desc1, replace);
+			CtClass ctCreature = classPool.get("com.wurmonline.server.creatures.Creature");
+			CtClass ctItem = classPool.get("com.wurmonline.server.items.Item");
+			CtClass ctAction = classPool.get("com.wurmonline.server.behaviours.Action");
+			CtClass ctMethodsReligion = classPool.get("com.wurmonline.server.behaviours.MethodsReligion");
+			CtClass ctPathFinder = classPool.get("com.wurmonline.server.creatures.ai.PathFinder");
+			CtClass ctArchery = classPool.get("com.wurmonline.server.combat.Archery");
+			CtClass ctVirtualZone = classPool.get("com.wurmonline.server.zones.VirtualZone");
+			CtClass ctVehicle = classPool.get("com.wurmonline.server.behaviours.Vehicle");
+			CtClass ctCreatureStatus = classPool.get("com.wurmonline.server.creatures.CreatureStatus");
 
-            Util.setReason("Disable afk training.");
-            CtClass ctCombatHandler = classPool.get("com.wurmonline.server.creatures.CombatHandler");
-            replace = "if("+MethodsBestiary.class.getName()+".blockSkillFrom($1, $0)){"+//"if($1.isPlayer() && $1.getTarget() != $0){" +
-                    //"  logger.info(\"Non-targeted mob detected - \" + $1.getName());" +
-                    "  $_ = true;" +
-                    "}else{" +
-                    "  $_ = $proceed($$);" +
-                    "}";
-            Util.instrumentDeclared(thisClass, ctCombatHandler, "setDamage", "isNoSkillFor", replace);
-            Util.instrumentDeclared(thisClass, ctCombatHandler, "checkDefenderParry", "isNoSkillFor", replace);
-            Util.instrumentDeclared(thisClass, ctCombatHandler, "checkShield", "isNoSkillFor", replace);
-            Util.instrumentDeclared(thisClass, ctCombatHandler, "setBonuses", "isNoSkillFor", replace);
-            CtMethod[] ctGetDamages = ctCombatHandler.getDeclaredMethods("getDamage");
-            for(CtMethod method : ctGetDamages){
-                method.instrument(new ExprEditor(){
-                    public void edit(MethodCall m) throws CannotCompileException {
-                        if (m.getMethodName().equals("isNoSkillFor")) {
-                            m.replace("if("+MethodsBestiary.class.getName()+".blockSkillFrom($1, $0)){" + //"if($1.isPlayer() && $1.getTarget() != $0){" +
-                                    //"  logger.info(\"Non-targeted mob detected - \" + $1.getName());" +
-                                    "  $_ = true;" +
-                                    "}else{" +
-                                    "  $_ = $proceed($$);" +
-                                    "}");
-                        }
-                    }
-                });
-            }
+            if (WyvernMods.fixSacrificingStrongCreatures) {
+				Util.setReason("Disable sacrificing strong creatures.");
+				CtClass[] params1 = {
+						ctCreature,
+						ctCreature,
+						ctItem,
+						ctAction,
+						CtClass.floatType
+				};
+				String desc1 = Descriptor.ofMethod(CtClass.booleanType, params1);
+				replace = "if(" + Bestiary.class.getName() + ".isSacrificeImmune($2)){" +
+						"  performer.getCommunicator().sendNormalServerMessage(\"This creature cannot be sacrificed.\");" +
+						"  return true;" +
+						"}";
+				Util.insertBeforeDescribed(thisClass, ctMethodsReligion, "sacrifice", desc1, replace);
+			}
+
+			if (WyvernMods.disableAfkTraining) {
+				Util.setReason("Disable afk training.");
+				CtClass ctCombatHandler = classPool.get("com.wurmonline.server.creatures.CombatHandler");
+				replace = "if(" + Bestiary.class.getName() + ".blockSkillFrom($1, $0)){" +//"if($1.isPlayer() && $1.getTarget() != $0){" +
+						//"  logger.info(\"Non-targeted mob detected - \" + $1.getName());" +
+						"  $_ = true;" +
+						"}else{" +
+						"  $_ = $proceed($$);" +
+						"}";
+				Util.instrumentDeclared(thisClass, ctCombatHandler, "setDamage", "isNoSkillFor", replace);
+				Util.setReason("Disable afk training.");
+				Util.instrumentDeclared(thisClass, ctCombatHandler, "checkDefenderParry", "isNoSkillFor", replace);
+				Util.setReason("Disable afk training.");
+				Util.instrumentDeclared(thisClass, ctCombatHandler, "checkShield", "isNoSkillFor", replace);
+				Util.setReason("Disable afk training.");
+				Util.instrumentDeclared(thisClass, ctCombatHandler, "setBonuses", "isNoSkillFor", replace);
+				CtMethod[] ctGetDamages = ctCombatHandler.getDeclaredMethods("getDamage");
+				for (CtMethod method : ctGetDamages) {
+					method.instrument(new ExprEditor() {
+						public void edit(MethodCall m) throws CannotCompileException {
+							if (m.getMethodName().equals("isNoSkillFor")) {
+								m.replace("if(" + Bestiary.class.getName() + ".blockSkillFrom($1, $0)){" + //"if($1.isPlayer() && $1.getTarget() != $0){" +
+										//"  logger.info(\"Non-targeted mob detected - \" + $1.getName());" +
+										"  $_ = true;" +
+										"}else{" +
+										"  $_ = $proceed($$);" +
+										"}");
+							}
+						}
+					});
+				}
+			}
 
 			// Die method description
 			CtClass ctString = classPool.get("java.lang.String");
@@ -760,125 +769,203 @@ public class MethodsBestiary {
 			};
 			String desc5 = Descriptor.ofMethod(CtClass.voidType, params5);
 
-            Util.setReason("Deny chargers walking through walls.");
-            CtClass ctPathFinder = classPool.get("com.wurmonline.server.creatures.ai.PathFinder");
-            replace = "if("+MethodsBestiary.class.getName()+".denyPathingOverride($0)){" +
-                    "  $_ = false;" +
-                    "}else{" +
-                    "  $_ = $proceed($$);" +
-                    "}";
-            Util.instrumentDeclared(thisClass, ctPathFinder, "canPass", "isGhost", replace);
-            Util.instrumentDeclared(thisClass, ctCreature, "setPathing", "isGhost", replace);
-            Util.instrumentDeclared(thisClass, ctCreature, "startPathingToTile", "isGhost", replace);
-            Util.instrumentDeclared(thisClass, ctCreature, "moveAlongPath", "isGhost", replace);
-            Util.instrumentDeclared(thisClass, ctCreature, "takeSimpleStep", "isGhost", replace);
-            Util.instrumentDescribed(thisClass, ctCreature, "die", desc5, "isGhost", replace);
+			if (WyvernMods.fixChargersWalkingThroughWalls) {
+				Util.setReason("Deny chargers walking through walls.");
+				replace = "if(" + Bestiary.class.getName() + ".denyPathingOverride($0)){" +
+						"  $_ = false;" +
+						"}else{" +
+						"  $_ = $proceed($$);" +
+						"}";
+				Util.instrumentDeclared(thisClass, ctPathFinder, "canPass", "isGhost", replace);
+				Util.setReason("Deny chargers walking through walls.");
+				Util.instrumentDeclared(thisClass, ctCreature, "setPathing", "isGhost", replace);
+				Util.setReason("Deny chargers walking through walls.");
+				Util.instrumentDeclared(thisClass, ctCreature, "startPathingToTile", "isGhost", replace);
+				Util.setReason("Deny chargers walking through walls.");
+				Util.instrumentDeclared(thisClass, ctCreature, "moveAlongPath", "isGhost", replace);
+				Util.setReason("Deny chargers walking through walls.");
+				Util.instrumentDeclared(thisClass, ctCreature, "takeSimpleStep", "isGhost", replace);
+				Util.setReason("Deny chargers walking through walls.");
+				Util.instrumentDescribed(thisClass, ctCreature, "die", desc5, "isGhost", replace);
+			}
 
-            Util.setReason("Apply random types to creatures in the wilderness.");
-            CtClass[] params2 = {
-                    CtClass.intType,
-                    CtClass.booleanType,
-                    CtClass.floatType,
-                    CtClass.floatType,
-                    CtClass.floatType,
-                    CtClass.intType,
-                    classPool.get("java.lang.String"),
-                    CtClass.byteType,
-                    CtClass.byteType,
-                    CtClass.byteType,
-                    CtClass.booleanType,
-                    CtClass.byteType,
-                    CtClass.intType
-            };
-            String desc2 = Descriptor.ofMethod(ctCreature, params2);
-            replace = "$10 = "+MethodsBestiary.class.getName()+".newCreatureType($1, $10);";
-            Util.insertBeforeDescribed(thisClass, ctCreature, "doNew", desc2, replace);
+			if (WyvernMods.conditionWildCreatures) {
+				Util.setReason("Apply random types to creatures in the wilderness.");
+				CtClass[] params2 = {
+						CtClass.intType,
+						CtClass.booleanType,
+						CtClass.floatType,
+						CtClass.floatType,
+						CtClass.floatType,
+						CtClass.intType,
+						classPool.get("java.lang.String"),
+						CtClass.byteType,
+						CtClass.byteType,
+						CtClass.byteType,
+						CtClass.booleanType,
+						CtClass.byteType,
+						CtClass.intType
+				};
+				String desc2 = Descriptor.ofMethod(ctCreature, params2);
+				replace = "$10 = " + Bestiary.class.getName() + ".newCreatureType($1, $10);";
+				Util.insertBeforeDescribed(thisClass, ctCreature, "doNew", desc2, replace);
+			}
 
-            Util.setReason("Enable archery against ghost targets.");
-            CtClass ctArchery = classPool.get("com.wurmonline.server.combat.Archery");
-            CtMethod[] archeryAttacks = ctArchery.getDeclaredMethods("attack");
-            for(CtMethod method : archeryAttacks){
-                method.instrument(new ExprEditor(){
-                    public void edit(MethodCall m) throws CannotCompileException {
-                        if (m.getMethodName().equals("isGhost")) {
-                            m.replace("$_ = false;");
-                            logger.info("Enabled archery against ghost targets in archery attack method.");
-                        }
-                    }
-                });
-            }
+			if (WyvernMods.allowGhostArchery) {
+				Util.setReason("Enable archery against ghost targets.");
+				CtMethod[] archeryAttacks = ctArchery.getDeclaredMethods("attack");
+				for (CtMethod method : archeryAttacks) {
+					method.instrument(new ExprEditor() {
+						public void edit(MethodCall m) throws CannotCompileException {
+							if (m.getMethodName().equals("isGhost")) {
+								m.replace("$_ = false;");
+								logger.info("Enabled archery against ghost targets in archery attack method.");
+							}
+						}
+					});
+				}
+			}
 
-            Util.setReason("Disable archery altogether against certain creatures.");
-            CtClass[] params3 = {
-                    ctCreature,
-                    ctCreature,
-                    ctItem,
-                    CtClass.floatType,
-                    ctAction
-            };
-            String desc3 = Descriptor.ofMethod(CtClass.booleanType, params3);
-            replace = "if("+MethodsBestiary.class.getName()+".isArcheryImmune($1, $2)){"
-                    + "  return true;"
-                    + "}";
-            Util.insertBeforeDescribed(thisClass, ctArchery, "attack", desc3, replace);
+			if (WyvernMods.disableArcheryOnStrongCreatures) {
+				Util.setReason("Disable archery altogether against certain creatures.");
+				CtClass[] params3 = {
+						ctCreature,
+						ctCreature,
+						ctItem,
+						CtClass.floatType,
+						ctAction
+				};
+				String desc3 = Descriptor.ofMethod(CtClass.booleanType, params3);
+				replace = "if(" + Bestiary.class.getName() + ".isArcheryImmune($1, $2)){"
+						+ "  return true;"
+						+ "}";
+				Util.insertBeforeDescribed(thisClass, ctArchery, "attack", desc3, replace);
+			}
 
-            Util.setReason("Auto-Genesis a creature born on enchanted grass");
-            replace = MethodsBestiary.class.getName()+".checkEnchantedBreed(newCreature);"
-                    + "$_ = $proceed($$);";
-            Util.instrumentDeclared(thisClass, ctCreature, "checkPregnancy", "saveCreatureName", replace);
+			if (WyvernMods.genesisEnchantedGrassNewborns) {
+				Util.setReason("Auto-Genesis a creature born on enchanted grass");
+				replace = Bestiary.class.getName() + ".checkEnchantedBreed(newCreature);"
+						+ "$_ = $proceed($$);";
+				Util.instrumentDeclared(thisClass, ctCreature, "checkPregnancy", "saveCreatureName", replace);
+			}
 
-            Util.setReason("Set custom corpse sizes.");
-            replace = "$_ = $proceed($$);"
-                    + "if("+MethodsBestiary.class.getName()+".hasCustomCorpseSize(this)){"
-                    + "  "+MethodsBestiary.class.getName()+".setCorpseSizes(this, corpse);"
-                    + "}";
-            Util.instrumentDescribed(thisClass, ctCreature, "die", desc5, "addItem", replace);
+			if (WyvernMods.useCustomCorpseSizes) {
+				Util.setReason("Set custom corpse sizes.");
+				replace = "$_ = $proceed($$);"
+						+ "if(" + Bestiary.class.getName() + ".hasCustomCorpseSize(this)){"
+						+ "  " + Bestiary.class.getName() + ".setCorpseSizes(this, corpse);"
+						+ "}";
+				Util.instrumentDescribed(thisClass, ctCreature, "die", desc5, "addItem", replace);
+			}
 
+            /* Disabled for 1.9 - Probably not necessary anymore. Remains for reference or re-implementation.
             Util.setReason("Add spell resistance to custom creatures.");
-            replace = "float cResist = "+MethodsBestiary.class.getName()+".getCustomSpellResistance(this);" +
+            replace = "float cResist = "+Bestiary.class.getName()+".getCustomSpellResistance(this);" +
                     "if(cResist >= 0f){" +
                     "  return cResist;" +
                     "}";
-            Util.insertBeforeDeclared(thisClass, ctCreature, "addSpellResistance", replace);
+            Util.insertBeforeDeclared(thisClass, ctCreature, "addSpellResistance", replace);*/
 
-            Util.setReason("Allow custom creatures to have breeding names.");
-            replace = "$_ = "+MethodsBestiary.class.getName()+".shouldBreedName(this);";
-            Util.instrumentDeclared(thisClass, ctCreature, "checkPregnancy", "isHorse", replace);
+            if (WyvernMods.allowCustomCreatureBreedNames) {
+				Util.setReason("Allow custom creatures to have breeding names.");
+				replace = "$_ = " + Bestiary.class.getName() + ".shouldBreedName(this);";
+				Util.instrumentDeclared(thisClass, ctCreature, "checkPregnancy", "isHorse", replace);
+			}
 
-            Util.setReason("Allow ghost creatures to breed (Chargers).");
-            CtClass ctMethodsCreatures = classPool.get("com.wurmonline.server.behaviours.MethodsCreatures");
-            replace = "$_ = false;";
-            Util.instrumentDeclared(thisClass, ctMethodsCreatures, "breed", "isGhost", replace);
+			if (WyvernMods.allowGhostBreeding) {
+				Util.setReason("Allow ghost creatures to breed (Chargers).");
+				CtClass ctMethodsCreatures = classPool.get("com.wurmonline.server.behaviours.MethodsCreatures");
+				replace = "$_ = false;";
+				Util.instrumentDeclared(thisClass, ctMethodsCreatures, "breed", "isGhost", replace);
+			}
 
-            Util.setReason("Allow ghost creatures to drop corpses.");
-            replace = "if("+MethodsBestiary.class.getName()+".isGhostCorpse(this)){"
-                    + "  $_ = false;"
-                    + "}else{"
-                    + "  $_ = $proceed($$);"
-                    + "}";
-            Util.instrumentDescribed(thisClass, ctCreature, "die", desc5, "isGhost", replace);
+			if (WyvernMods.allowGhostCorpses) {
+				Util.setReason("Allow ghost creatures to drop corpses.");
+				replace = "if(" + Bestiary.class.getName() + ".isGhostCorpse(this)){"
+						+ "  $_ = false;"
+						+ "}else{"
+						+ "  $_ = $proceed($$);"
+						+ "}";
+				Util.instrumentDescribed(thisClass, ctCreature, "die", desc5, "isGhost", replace);
+			}
 
-            Util.setReason("Attach special effects to creatures.");
-            CtClass ctVirtualZone = classPool.get("com.wurmonline.server.zones.VirtualZone");
-            CtClass[] params4 = {
-                    CtClass.longType,
-                    CtClass.booleanType,
-                    CtClass.longType,
-                    CtClass.floatType,
-                    CtClass.floatType,
-                    CtClass.floatType
-            };
-            String desc4 = Descriptor.ofMethod(CtClass.booleanType, params4);
-            replace = "$_ = $proceed($$);" +
-                    MethodsBestiary.class.getName()+".addCreatureSpecialEffect(copyId != -10 ? copyId : creatureId, $0, creature);";
-            Util.instrumentDescribed(thisClass, ctVirtualZone, "addCreature", desc4, "sendNewCreature", replace);
+			if (WyvernMods.useCustomCreatureSizes) {
+				Util.setReason("Enable custom sizes for creatures.");
+				replace = "{return " + Bestiary.class.getName() + ".getAdjustedSizeMod(this);}";
+				Util.setBodyDeclared(thisClass, ctCreatureStatus, "getSizeMod", replace);
+			}
 
-			Util.setReason("Ensure unique creatures cannot be hitched to vehicles.");
-			CtClass ctVehicle = classPool.get("com.wurmonline.server.behaviours.Vehicle");
-			replace = "if("+MethodsBestiary.class.getName()+".isNotHitchable($1)){" +
-					"  return false;" +
-					"}";
-			Util.insertBeforeDeclared(thisClass, ctVehicle, "addDragger", replace);
+			CtClass[] params2 = {
+					CtClass.intType,
+					CtClass.booleanType,
+					CtClass.floatType,
+					CtClass.floatType,
+					CtClass.floatType,
+					CtClass.intType,
+					classPool.get("java.lang.String"),
+					CtClass.byteType,
+					CtClass.byteType,
+					CtClass.byteType,
+					CtClass.booleanType,
+					CtClass.byteType,
+					CtClass.intType
+			};
+			String desc2 = Descriptor.ofMethod(ctCreature, params2);
+
+			if (WyvernMods.modifyNewCreatures) {
+				Util.setReason("Modify newly created creatures.");
+				replace = "$_ = $proceed($$);"
+						+ Bestiary.class.getName() + ".modifyNewCreature($1);";
+				Util.instrumentDescribed(thisClass, ctCreature, "doNew", desc2, "sendToWorld", replace);
+			}
+
+			if (WyvernMods.useCustomCreatureSFX) {
+				Util.setReason("Attach special effects to creatures.");
+				CtClass[] params4 = {
+						CtClass.longType,
+						CtClass.booleanType,
+						CtClass.longType,
+						CtClass.floatType,
+						CtClass.floatType,
+						CtClass.floatType
+				};
+				String desc4 = Descriptor.ofMethod(CtClass.booleanType, params4);
+				replace = "$_ = $proceed($$);" +
+						Bestiary.class.getName() + ".addCreatureSpecialEffect(copyId != -10 ? copyId : creatureId, $0, creature);";
+				Util.instrumentDescribed(thisClass, ctVirtualZone, "addCreature", desc4, "sendNewCreature", replace);
+			}
+
+			if (WyvernMods.preventLegendaryHitching) {
+				Util.setReason("Ensure unique creatures cannot be hitched to vehicles.");
+				replace = "if(" + Bestiary.class.getName() + ".isNotHitchable($1)){" +
+						"  return false;" +
+						"}";
+				Util.insertBeforeDeclared(thisClass, ctVehicle, "addDragger", replace);
+			}
+
+			// doNew(int templateid, boolean createPossessions, float aPosX, float aPosY, float aRot, int layer, String name, byte gender, byte kingdom, byte ctype, boolean reborn, byte age)
+			CtClass[] params3 = {
+					CtClass.intType,
+					CtClass.booleanType,
+					CtClass.floatType,
+					CtClass.floatType,
+					CtClass.floatType,
+					CtClass.intType,
+					classPool.get("java.lang.String"),
+					CtClass.byteType,
+					CtClass.byteType,
+					CtClass.byteType,
+					CtClass.booleanType,
+					CtClass.byteType,
+					CtClass.intType
+			};
+			String desc3 = Descriptor.ofMethod(ctCreature, params3);
+
+			if (WyvernMods.logCreatureSpawns) {
+				Util.setReason("Log new creature spawns.");
+				replace = "logger.info(\"Creating new creature: \"+templateid+\" - \"+(aPosX/4)+\", \"+(aPosY/4)+\" [\"+com.wurmonline.server.creatures.CreatureTemplateFactory.getInstance().getTemplate(templateid).getName()+\"]\");";
+				Util.insertBeforeDescribed(thisClass, ctCreature, "doNew", desc3, replace);
+			}
 
 		} catch ( CannotCompileException | NotFoundException | IllegalArgumentException | ClassCastException e) {
         throw new HookException(e);

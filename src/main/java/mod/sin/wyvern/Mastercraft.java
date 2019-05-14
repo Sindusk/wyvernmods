@@ -67,17 +67,6 @@ public class Mastercraft {
 		return mult;
 	}
 
-	public static void changeExistingTitles(){
-		for (Titles.Title title : Titles.Title.values()) {
-		    if (Objects.equals("Pumpkin King", title.getFemaleName())){
-		        try {
-					ReflectionUtil.setPrivateField(title,  ReflectionUtil.getField(title.getClass(), "femaleName"), "Pumpkin Queen");
-				} catch (IllegalArgumentException | IllegalAccessException | ClassCastException | NoSuchFieldException e) {
-					e.printStackTrace();
-				}
-		    }
-		}
-	}
 	public static void preInit(){
     	try {
     		ClassPool classPool = HookManager.getInstance().getClassPool();

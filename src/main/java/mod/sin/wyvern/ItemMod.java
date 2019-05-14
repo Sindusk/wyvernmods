@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 
 import com.wurmonline.server.Servers;
 import com.wurmonline.server.combat.ArmourTemplate;
+import com.wurmonline.server.items.*;
 import mod.sin.items.caches.*;
 import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
@@ -19,11 +20,6 @@ import org.gotti.wurmunlimited.modsupport.actions.ModActions;
 import com.wurmonline.server.behaviours.ActionEntry;
 import com.wurmonline.server.combat.Weapon;
 import com.wurmonline.server.creatures.Creature;
-import com.wurmonline.server.items.Item;
-import com.wurmonline.server.items.ItemList;
-import com.wurmonline.server.items.ItemTemplate;
-import com.wurmonline.server.items.ItemTemplateFactory;
-import com.wurmonline.server.items.NoSuchTemplateException;
 import javassist.CtClass;
 import javassist.bytecode.Descriptor;
 import mod.sin.actions.items.*;
@@ -52,6 +48,7 @@ public class ItemMod {
 	//public static TitaniumLump ELECTRUM_LUMP = new TitaniumLump();
 	public static EnchantOrb ENCHANT_ORB = new EnchantOrb();
 	public static EternalOrb ETERNAL_ORB = new EternalOrb();
+	public static EternalReservoir ETERNAL_RESERVOIR = new EternalReservoir();
 	public static Eviscerator EVISCERATOR = new Eviscerator();
 	public static FriyanTablet FRIYAN_TABLET = new FriyanTablet();
 	public static HugeCrate HUGE_CRATE = new HugeCrate();
@@ -60,7 +57,6 @@ public class ItemMod {
 	public static SealedMap SEALED_MAP = new SealedMap();
 	public static SkeletonDecoration SKELETON_DECORATION = new SkeletonDecoration();
 	public static Soul SOUL = new Soul();
-	public static EternalReservoir SOUL_FORGE = new EternalReservoir();
 	public static StatuetteBreyk STATUETTE_BREYK = new StatuetteBreyk();
 	public static StatuetteCyberhusky STATUETTE_CYBERHUSKY = new StatuetteCyberhusky();
 	public static TreasureBox TREASURE_BOX = new TreasureBox();
@@ -117,6 +113,7 @@ public class ItemMod {
 			DISINTEGRATION_ROD.createTemplate();
 			ENCHANT_ORB.createTemplate();
 			ETERNAL_ORB.createTemplate();
+			ETERNAL_RESERVOIR.createTemplate();
 			EVISCERATOR.createTemplate();
 			FRIYAN_TABLET.createTemplate();
 			HUGE_CRATE.createTemplate();
@@ -125,7 +122,6 @@ public class ItemMod {
 			SEALED_MAP.createTemplate();
 			SKELETON_DECORATION.createTemplate();
 			SOUL.createTemplate();
-			SOUL_FORGE.createTemplate();
 			STATUETTE_BREYK.createTemplate();
 			STATUETTE_CYBERHUSKY.createTemplate();
 			TREASURE_BOX.createTemplate();
@@ -190,23 +186,44 @@ public class ItemMod {
 	}
 	
 	public static void initCreationEntries(){
-		logger.info("initCreationEntries()");
-		ARROW_PACK_HUNTING.initCreationEntry();
-		ARROW_PACK_WAR.initCreationEntry();
-		BATTLE_YOYO.initCreationEntry();
-		CLUB.initCreationEntry();
+		if (WyvernMods.craftHuntingArrowPacks) {
+			ARROW_PACK_HUNTING.initCreationEntry();
+		}
+		if (WyvernMods.craftWarArrowPacks) {
+			ARROW_PACK_WAR.initCreationEntry();
+		}
+		if (WyvernMods.craftBattleYoyo) {
+			BATTLE_YOYO.initCreationEntry();
+		}
+		if (WyvernMods.craftClub) {
+			CLUB.initCreationEntry();
+		}
 		//COIN_DECORATION.initCreationEntry();
 		//CORPSE_DECORATION.initCreationEntry();
-		DEPTH_DRILL.initCreationEntry();
-		EVISCERATOR.initCreationEntry();
-		KNUCKLES.initCreationEntry();
-		MASS_STORAGE_UNIT.initCreationEntry();
+		if (WyvernMods.craftDepthDrill) {
+			DEPTH_DRILL.initCreationEntry();
+		}
+		if (WyvernMods.craftEternalReservoir) {
+			ETERNAL_RESERVOIR.initCreationEntry();
+		}
+		if (WyvernMods.craftEviscerator) {
+			EVISCERATOR.initCreationEntry();
+		}
+		if (WyvernMods.craftKnuckles) {
+			KNUCKLES.initCreationEntry();
+		}
+		if (WyvernMods.craftMassStorageUnit) {
+			MASS_STORAGE_UNIT.initCreationEntry();
+		}
 		//SKELETON_DECORATION.initCreationEntry();
-		SOUL_FORGE.initCreationEntry();
-		STATUETTE_BREYK.initCreationEntry();
-		STATUETTE_CYBERHUSKY.initCreationEntry();
-		WARHAMMER.initCreationEntry();
-		WARHAMMER_HEAD.initCreationEntry();
+		if (WyvernMods.craftStatuetteDeities) {
+			STATUETTE_BREYK.initCreationEntry();
+			STATUETTE_CYBERHUSKY.initCreationEntry();
+		}
+		if (WyvernMods.craftWarhammer) {
+			WARHAMMER.initCreationEntry();
+			WARHAMMER_HEAD.initCreationEntry();
+		}
 
 		// Spectral set
 		/*SPECTRAL_BOOT.initCreationEntry();
@@ -310,45 +327,66 @@ public class ItemMod {
 	
 	public static void modifyItems() throws NoSuchTemplateException, IllegalArgumentException, IllegalAccessException, ClassCastException, NoSuchFieldException{
 		// Make leather able to be combined.
-		ItemTemplate leather = ItemTemplateFactory.getInstance().getTemplate(ItemList.leather);
-		ReflectionUtil.setPrivateField(leather, ReflectionUtil.getField(leather.getClass(), "combine"), true);
+		if (WyvernMods.combineLeather) {
+			ItemTemplate leather = ItemTemplateFactory.getInstance().getTemplate(ItemList.leather);
+			ReflectionUtil.setPrivateField(leather, ReflectionUtil.getField(leather.getClass(), "combine"), true);
+		}
 
         // Make logs able to be combined. Also reduce their volume.
         ItemTemplate log = ItemTemplateFactory.getInstance().getTemplate(ItemList.log);
-		ReflectionUtil.setPrivateField(log, ReflectionUtil.getField(log.getClass(), "combine"), true);
-		ReflectionUtil.setPrivateField(log, ReflectionUtil.getField(log.getClass(), "centimetersZ"), 50);
-		int newVolume = log.getSizeX()*log.getSizeY()*log.getSizeZ();
-		ReflectionUtil.setPrivateField(log, ReflectionUtil.getField(log.getClass(), "volume"), newVolume);
+		if (WyvernMods.combineLogs) {
+			ReflectionUtil.setPrivateField(log, ReflectionUtil.getField(log.getClass(), "combine"), true);
+		}
+		if (WyvernMods.reduceLogVolume) {
+			ReflectionUtil.setPrivateField(log, ReflectionUtil.getField(log.getClass(), "centimetersZ"), 50);
+			int newVolume = log.getSizeX() * log.getSizeY() * log.getSizeZ();
+			ReflectionUtil.setPrivateField(log, ReflectionUtil.getField(log.getClass(), "volume"), newVolume);
+		}
 
 		// Reduce kindling volume as well to make sure they're not larger than logs.
-        ItemTemplate kindling = ItemTemplateFactory.getInstance().getTemplate(ItemList.kindling);
-        ReflectionUtil.setPrivateField(kindling, ReflectionUtil.getField(kindling.getClass(), "centimetersY"), 10);
-        ReflectionUtil.setPrivateField(kindling, ReflectionUtil.getField(kindling.getClass(), "centimetersZ"), 10);
-        int newKindlingVolume = kindling.getSizeX()*kindling.getSizeY()*kindling.getSizeZ();
-        ReflectionUtil.setPrivateField(kindling, ReflectionUtil.getField(kindling.getClass(), "volume"), newKindlingVolume);
+		if (WyvernMods.reduceKindlingVolume) {
+			ItemTemplate kindling = ItemTemplateFactory.getInstance().getTemplate(ItemList.kindling);
+			ReflectionUtil.setPrivateField(kindling, ReflectionUtil.getField(kindling.getClass(), "centimetersY"), 10);
+			ReflectionUtil.setPrivateField(kindling, ReflectionUtil.getField(kindling.getClass(), "centimetersZ"), 10);
+			int newKindlingVolume = kindling.getSizeX() * kindling.getSizeY() * kindling.getSizeZ();
+			ReflectionUtil.setPrivateField(kindling, ReflectionUtil.getField(kindling.getClass(), "volume"), newKindlingVolume);
+		}
 
         // Allow sleep powder to be dropped.
-        ItemTemplate sleepPowder = ItemTemplateFactory.getInstance().getTemplate(ItemList.sleepPowder);
-		ReflectionUtil.setPrivateField(sleepPowder, ReflectionUtil.getField(sleepPowder.getClass(), "nodrop"), false);
+		if (WyvernMods.droppableSleepPowder) {
+			ItemTemplate sleepPowder = ItemTemplateFactory.getInstance().getTemplate(ItemList.sleepPowder);
+			ReflectionUtil.setPrivateField(sleepPowder, ReflectionUtil.getField(sleepPowder.getClass(), "nodrop"), false);
+		}
 
-		// Set silver mirror price to 10 silver instead of 1 iron.
-		ItemTemplate handMirror = ItemTemplateFactory.getInstance().getTemplate(ItemList.handMirror);
-		ReflectionUtil.setPrivateField(handMirror, ReflectionUtil.getField(handMirror.getClass(), "value"), 200000);
-		ItemTemplate goldMirror = ItemTemplateFactory.getInstance().getTemplate(ItemList.goldenMirror);
-		ReflectionUtil.setPrivateField(goldMirror, ReflectionUtil.getField(goldMirror.getClass(), "value"), 1000000);
+		// Set silver mirror price to 20 silver instead of 1 iron.
+		if (WyvernMods.setSilverMirrorPrice) {
+			ItemTemplate handMirror = ItemTemplateFactory.getInstance().getTemplate(ItemList.handMirror);
+			ReflectionUtil.setPrivateField(handMirror, ReflectionUtil.getField(handMirror.getClass(), "value"), 200000);
+		}
+		// Set golden mirror price to 1 gold instead of 1 iron.
+		if (WyvernMods.setGoldMirrorPrice) {
+			ItemTemplate goldMirror = ItemTemplateFactory.getInstance().getTemplate(ItemList.goldenMirror);
+			ReflectionUtil.setPrivateField(goldMirror, ReflectionUtil.getField(goldMirror.getClass(), "value"), 1000000);
+		}
 
 		// Creature crates to 10 silver.
-		ItemTemplate creatureCage = ItemTemplateFactory.getInstance().getTemplate(ItemList.creatureCrate);
-        ReflectionUtil.setPrivateField(creatureCage, ReflectionUtil.getField(creatureCage.getClass(), "value"), 100000);
-        ReflectionUtil.setPrivateField(creatureCage, ReflectionUtil.getField(creatureCage.getClass(), "fullprice"), true);
+		if (WyvernMods.setCreatureCratePrice) {
+			ItemTemplate creatureCage = ItemTemplateFactory.getInstance().getTemplate(ItemList.creatureCrate);
+			ReflectionUtil.setPrivateField(creatureCage, ReflectionUtil.getField(creatureCage.getClass(), "value"), 100000);
+			ReflectionUtil.setPrivateField(creatureCage, ReflectionUtil.getField(creatureCage.getClass(), "fullprice"), true);
+		}
 
         // Resurrection Stones to 2 silver instead of 5 silver.
-		ItemTemplate resurrectionStone = ItemTemplateFactory.getInstance().getTemplate(ItemList.resurrectionStone);
-		ReflectionUtil.setPrivateField(resurrectionStone, ReflectionUtil.getField(resurrectionStone.getClass(), "value"), 20000);
+		if (WyvernMods.setResurrectionStonePrice) {
+			ItemTemplate resurrectionStone = ItemTemplateFactory.getInstance().getTemplate(ItemList.resurrectionStone);
+			ReflectionUtil.setPrivateField(resurrectionStone, ReflectionUtil.getField(resurrectionStone.getClass(), "value"), 20000);
+		}
 
 		// Shaker Orbs to 2 silver instead of 5 silver.
-		ItemTemplate shakerOrb = ItemTemplateFactory.getInstance().getTemplate(ItemList.shakerOrb);
-		ReflectionUtil.setPrivateField(shakerOrb, ReflectionUtil.getField(shakerOrb.getClass(), "value"), 20000);
+		if (WyvernMods.setShakerOrbPrice) {
+			ItemTemplate shakerOrb = ItemTemplateFactory.getInstance().getTemplate(ItemList.shakerOrb);
+			ReflectionUtil.setPrivateField(shakerOrb, ReflectionUtil.getField(shakerOrb.getClass(), "value"), 20000);
+		}
 
 		// Set transmutation rod to 2 gold instead of 50 silver.
 		//ItemTemplate transmutationRod = ItemTemplateFactory.getInstance().getTemplate(668);
@@ -356,7 +394,7 @@ public class ItemMod {
 
 		// "  return this.isTransportable || (this.getTemplateId() >= 510 && this.getTemplateId() <= 513) || this.getTemplateId() == 722 || this.getTemplateId() == 670;"
 		// Make mailboxes loadable (PvE Only)
-        if(!Servers.localServer.PVPSERVER) {
+        if(WyvernMods.loadableMailbox && !Servers.localServer.PVPSERVER) {
             ItemTemplate mailboxWood = ItemTemplateFactory.getInstance().getTemplate(ItemList.mailboxWood);
             ReflectionUtil.setPrivateField(mailboxWood, ReflectionUtil.getField(mailboxWood.getClass(), "isTransportable"), true);
             ItemTemplate mailboxStone = ItemTemplateFactory.getInstance().getTemplate(ItemList.mailboxStone);
@@ -368,78 +406,117 @@ public class ItemMod {
         }
 		
 		// Make bell towers and trash bins loadable
-		ItemTemplate bellTower = ItemTemplateFactory.getInstance().getTemplate(ItemList.bellTower);
-		ReflectionUtil.setPrivateField(bellTower, ReflectionUtil.getField(bellTower.getClass(), "isTransportable"), true);
-		ItemTemplate trashBin = ItemTemplateFactory.getInstance().getTemplate(ItemList.trashBin);
-		ReflectionUtil.setPrivateField(trashBin, ReflectionUtil.getField(trashBin.getClass(), "isTransportable"), true);
+		if (WyvernMods.loadableBellTower) {
+			ItemTemplate bellTower = ItemTemplateFactory.getInstance().getTemplate(ItemList.bellTower);
+			ReflectionUtil.setPrivateField(bellTower, ReflectionUtil.getField(bellTower.getClass(), "isTransportable"), true);
+		}
+		if (WyvernMods.loadableTrashBin) {
+			ItemTemplate trashBin = ItemTemplateFactory.getInstance().getTemplate(ItemList.trashBin);
+			ReflectionUtil.setPrivateField(trashBin, ReflectionUtil.getField(trashBin.getClass(), "isTransportable"), true);
+		}
 		
 		// Make altars loadable
-		ItemTemplate stoneAltar = ItemTemplateFactory.getInstance().getTemplate(ItemList.altarStone);
-		ReflectionUtil.setPrivateField(stoneAltar, ReflectionUtil.getField(stoneAltar.getClass(), "isTransportable"), true);
-		ItemTemplate woodAltar = ItemTemplateFactory.getInstance().getTemplate(ItemList.altarWood);
-		ReflectionUtil.setPrivateField(woodAltar, ReflectionUtil.getField(woodAltar.getClass(), "isTransportable"), true);
-		ItemTemplate silverAltar = ItemTemplateFactory.getInstance().getTemplate(ItemList.altarSilver);
-		ReflectionUtil.setPrivateField(silverAltar, ReflectionUtil.getField(silverAltar.getClass(), "isTransportable"), true);
-		ItemTemplate goldAltar = ItemTemplateFactory.getInstance().getTemplate(ItemList.altarGold);
-		ReflectionUtil.setPrivateField(goldAltar, ReflectionUtil.getField(goldAltar.getClass(), "isTransportable"), true);
+		if (WyvernMods.loadableAltars) {
+			ItemTemplate stoneAltar = ItemTemplateFactory.getInstance().getTemplate(ItemList.altarStone);
+			ReflectionUtil.setPrivateField(stoneAltar, ReflectionUtil.getField(stoneAltar.getClass(), "isTransportable"), true);
+			ItemTemplate woodAltar = ItemTemplateFactory.getInstance().getTemplate(ItemList.altarWood);
+			ReflectionUtil.setPrivateField(woodAltar, ReflectionUtil.getField(woodAltar.getClass(), "isTransportable"), true);
+			ItemTemplate silverAltar = ItemTemplateFactory.getInstance().getTemplate(ItemList.altarSilver);
+			ReflectionUtil.setPrivateField(silverAltar, ReflectionUtil.getField(silverAltar.getClass(), "isTransportable"), true);
+			ItemTemplate goldAltar = ItemTemplateFactory.getInstance().getTemplate(ItemList.altarGold);
+			ReflectionUtil.setPrivateField(goldAltar, ReflectionUtil.getField(goldAltar.getClass(), "isTransportable"), true);
+		}
 		
 		// Make long spears one-handed.
-		ItemTemplate longSpear = ItemTemplateFactory.getInstance().getTemplate(ItemList.spearLong);
-		ReflectionUtil.setPrivateField(longSpear, ReflectionUtil.getField(longSpear.getClass(), "isTwohanded"), false);
+		if (WyvernMods.oneHandedLongSpear) {
+			ItemTemplate longSpear = ItemTemplateFactory.getInstance().getTemplate(ItemList.spearLong);
+			ReflectionUtil.setPrivateField(longSpear, ReflectionUtil.getField(longSpear.getClass(), "isTwohanded"), false);
+		}
 		
 		// Make dirt/sand difficulty easier
-        ItemTemplate dirt = ItemTemplateFactory.getInstance().getTemplate(ItemList.dirtPile);
-        ReflectionUtil.setPrivateField(dirt, ReflectionUtil.getField(dirt.getClass(), "difficulty"), 50.0f);
+		if (WyvernMods.reduceDirtDifficulty) {
+			ItemTemplate dirt = ItemTemplateFactory.getInstance().getTemplate(ItemList.dirtPile);
+			ReflectionUtil.setPrivateField(dirt, ReflectionUtil.getField(dirt.getClass(), "difficulty"), 50.0f);
+		}
 
-        ItemTemplate sand = ItemTemplateFactory.getInstance().getTemplate(ItemList.sand);
-        ReflectionUtil.setPrivateField(sand, ReflectionUtil.getField(sand.getClass(), "difficulty"), 50.0f);
+		if (WyvernMods.reduceSandDifficulty) {
+			ItemTemplate sand = ItemTemplateFactory.getInstance().getTemplate(ItemList.sand);
+			ReflectionUtil.setPrivateField(sand, ReflectionUtil.getField(sand.getClass(), "difficulty"), 50.0f);
+		}
 
-        ItemTemplate sandstone = ItemTemplateFactory.getInstance().getTemplate(ItemList.sandstone);
-        ReflectionUtil.setPrivateField(sandstone, ReflectionUtil.getField(sandstone.getClass(), "difficulty"), 50.0f);
+		if (WyvernMods.reduceSandstoneDifficulty) {
+			ItemTemplate sandstone = ItemTemplateFactory.getInstance().getTemplate(ItemList.sandstone);
+			ReflectionUtil.setPrivateField(sandstone, ReflectionUtil.getField(sandstone.getClass(), "difficulty"), 50.0f);
+		}
 
         // Make some useless items decorations for added interior design.
-        ItemTemplate stoneKeystone = ItemTemplateFactory.getInstance().getTemplate(ItemList.stoneKeystone);
-        ReflectionUtil.setPrivateField(stoneKeystone, ReflectionUtil.getField(stoneKeystone.getClass(), "decoration"), true);
-        ItemTemplate marbleKeystone = ItemTemplateFactory.getInstance().getTemplate(ItemList.marbleKeystone);
-        ReflectionUtil.setPrivateField(marbleKeystone, ReflectionUtil.getField(marbleKeystone.getClass(), "decoration"), true);
-        ItemTemplate skull = ItemTemplateFactory.getInstance().getTemplate(ItemList.skull);
-        ReflectionUtil.setPrivateField(skull, ReflectionUtil.getField(skull.getClass(), "decoration"), true);
+		if (WyvernMods.decorationStoneKeystone) {
+			ItemTemplate stoneKeystone = ItemTemplateFactory.getInstance().getTemplate(ItemList.stoneKeystone);
+			ReflectionUtil.setPrivateField(stoneKeystone, ReflectionUtil.getField(stoneKeystone.getClass(), "decoration"), true);
+		}
+		if (WyvernMods.decorationMarbleKeystone) {
+			ItemTemplate marbleKeystone = ItemTemplateFactory.getInstance().getTemplate(ItemList.marbleKeystone);
+			ReflectionUtil.setPrivateField(marbleKeystone, ReflectionUtil.getField(marbleKeystone.getClass(), "decoration"), true);
+		}
+		if (WyvernMods.decorationSkull) {
+			ItemTemplate skull = ItemTemplateFactory.getInstance().getTemplate(ItemList.skull);
+			ReflectionUtil.setPrivateField(skull, ReflectionUtil.getField(skull.getClass(), "decoration"), true);
+		}
 
         // Modify fragment counts
-        setFragments(ArmourCache.templateId, 18);
-        setFragments(ArtifactCache.templateId, 33);
-        setFragments(CrystalCache.templateId, 11);
-        setFragments(DragonCache.templateId, 19);
-        setFragments(GemCache.templateId, 7);
-        setFragments(MoonCache.templateId, 14);
-        setFragments(PotionCache.templateId, 18);
-        setFragments(RiftCache.templateId, 24);
-        setFragments(TitanCache.templateId, 100);
-        setFragments(ToolCache.templateId, 27);
-        setFragments(TreasureMapCache.templateId, 38);
+		if (WyvernMods.useCustomCacheFragments) {
+			setFragments(ArmourCache.templateId, 18);
+			setFragments(ArtifactCache.templateId, 33);
+			setFragments(CrystalCache.templateId, 11);
+			setFragments(DragonCache.templateId, 19);
+			setFragments(GemCache.templateId, 7);
+			setFragments(MoonCache.templateId, 14);
+			setFragments(PotionCache.templateId, 18);
+			setFragments(RiftCache.templateId, 24);
+			setFragments(TitanCache.templateId, 100);
+			setFragments(ToolCache.templateId, 27);
+			setFragments(TreasureMapCache.templateId, 38);
 
-        setFragments(AffinityOrb.templateId, 20);
+			setFragments(AffinityOrb.templateId, 20);
+		}
 
-        // Tier 4
-        setFragments(ItemList.statueWorg, 40);
-        setFragments(ItemList.statueEagle, 40);
+		if (WyvernMods.adjustStatueFragmentCount) {
+			// Tier 4
+			setFragments(ItemList.statueWorg, 40);
+			setFragments(ItemList.statueEagle, 40);
 
-        // Tier 5
-        setFragments(ItemList.statueHellHorse, 45);
-        setFragments(ItemList.statueDrake, 45);
+			// Tier 5
+			setFragments(ItemList.statueHellHorse, 45);
+			setFragments(ItemList.statueDrake, 45);
 
-        // Tier 6
-        setFragments(ItemList.statueFo, 50);
-        setFragments(ItemList.statueMagranon, 50);
-        setFragments(ItemList.statueLibila, 50);
-        setFragments(ItemList.statueVynora, 50);
-		
-		createCustomWeapons();
-		createCustomArmours();
+			// Tier 6
+			setFragments(ItemList.statueFo, 50);
+			setFragments(ItemList.statueMagranon, 50);
+			setFragments(ItemList.statueLibila, 50);
+			setFragments(ItemList.statueVynora, 50);
+		}
+
+		if (WyvernMods.enableCustomItemCreation) {
+			createCustomWeapons();
+			createCustomArmours();
+		}
 
 		// Make huge crates larger
 		//ItemTemplate hugeCrate = ItemTemplateFactory.getInstance().getTemplate(HUGE_CRATE.getTemplateId());
 		//ReflectionUtil.setPrivateField(hugeCrate, ReflectionUtil.getField(hugeCrate.getClass(), "combine"), true);
+	}
+
+	public static void onServerStarted(){
+		if (WyvernMods.removeLockpickSkillRequirement) {
+			CreationEntry lockpicks = CreationMatrix.getInstance().getCreationEntry(ItemList.lockpick);
+			try {
+				ReflectionUtil.setPrivateField(lockpicks, ReflectionUtil.getField(lockpicks.getClass(), "hasMinimumSkillRequirement"), false);
+				ReflectionUtil.setPrivateField(lockpicks, ReflectionUtil.getField(lockpicks.getClass(), "minimumSkill"), 0.0);
+			} catch (IllegalAccessException | NoSuchFieldException e) {
+				logger.info("Failed to set lockpick creation entry changes!");
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	public static void registerPermissionsHook(){
